@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="81" height="81" viewBox="0 0 81 81">
+  <g fill="#FF85A2">
+    <!-- 可爱用户头像 - 选中态 -->
+    <circle cx="40.5" cy="32" r="14" fill="#FF85A2"/>
+    <ellipse cx="40.5" cy="58" rx="20" ry="12" fill="#FF85A2"/>
+    <!-- 开心表情 -->
+    <circle cx="36" cy="30" r="2" fill="#fff"/>
+    <circle cx="45" cy="30" r="2" fill="#fff"/>
+    <path d="M36 36 Q40 42 44 36" stroke="#fff" stroke-width="2" fill="none"/>
+    <!-- 小爱心装饰 -->
+    <path d="M52 22 Q54 20 54 22 Q54 24 52 26 Q50 24 50 22 Q50 20 52 22" fill="#FFB6C1"/>
+  </g>
+</svg>

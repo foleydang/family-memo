@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="81" height="81" viewBox="0 0 81 81">
+  <g fill="#999999">
+    <!-- 可爱日历 -->
+    <rect x="16" y="18" width="49" height="48" rx="4" fill="#999"/>
+    <rect x="16" y="18" width="49" height="14" rx="4" fill="#999"/>
+    <rect x="20" y="32" width="41" height="32" fill="#fff"/>
+    <rect x="26" y="14" width="4" height="8" rx="1" fill="#999"/>
+    <rect x="51" y="14" width="4" height="8" rx="1" fill="#999"/>
+    <!-- 日期格子 -->
+    <rect x="24" y="36" width="8" height="8" fill="#999"/>
+    <rect x="34" y="36" width="8" height="8" fill="#999"/>
+    <rect x="44" y="36" width="8" height="8" fill="#999"/>
+    <rect x="24" y="46" width="8" height="8" fill="#999"/>
+    <rect x="34" y="46" width="8" height="8" fill="#999"/>
+  </g>
+</svg>

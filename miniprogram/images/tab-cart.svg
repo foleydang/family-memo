@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="81" height="81" viewBox="0 0 81 81">
+  <g fill="#999999">
+    <!-- 可爱购物车 -->
+    <ellipse cx="40.5" cy="38" rx="20" ry="16" fill="#999"/>
+    <rect x="22" y="24" width="37" height="2" fill="#999"/>
+    <path d="M22 26 L20 40 L60 40 L58 26" fill="#999"/>
+    <circle cx="28" cy="52" r="5" fill="#999"/>
+    <circle cx="52" cy="52" r="5" fill="#999"/>
+    <rect x="34" y="30" width="4" height="8" rx="1" fill="#fff"/>
+  </g>
+</svg>

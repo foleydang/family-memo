@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="81" height="81" viewBox="0 0 81 81">
+  <g fill="#FF85A2">
+    <!-- 可爱日历 - 选中态 -->
+    <rect x="16" y="18" width="49" height="48" rx="4" fill="#FF85A2"/>
+    <rect x="16" y="18" width="49" height="14" rx="4" fill="#FF85A2"/>
+    <rect x="20" y="32" width="41" height="32" fill="#fff"/>
+    <rect x="26" y="14" width="4" height="8" rx="1" fill="#FF85A2"/>
+    <rect x="51" y="14" width="4" height="8" rx="1" fill="#FF85A2"/>
+    <!-- 日期格子 -->
+    <rect x="24" y="36" width="8" height="8" fill="#FFE4EC"/>
+    <rect x="34" y="36" width="8" height="8" fill="#FFE4EC"/>
+    <rect x="44" y="36" width="8" height="8" fill="#FFE4EC"/>
+    <rect x="24" y="46" width="8" height="8" fill="#FFE4EC"/>
+    <rect x="34" y="46" width="8" height="8" fill="#FF85A2"/>
+    <!-- 心形标记今天 -->
+    <path d="M38 48 Q40 46 42 48 Q42 50 38 52 Q34 50 34 48 Q36 46 38 48" fill="#FFB6C1"/>
+  </g>
+</svg>
