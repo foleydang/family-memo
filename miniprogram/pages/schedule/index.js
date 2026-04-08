@@ -5,6 +5,7 @@ Page({
   data: {
     familyId: null,
     scheduleList: [],
+    daySchedules: [], // 当天日程
     currentMonth: '',
     currentYear: 0,
     currentMonthNum: 0,
@@ -22,12 +23,12 @@ Page({
       remind: 0
     },
     types: [
-      { name: '其他', value: 'other' },
       { name: '生日', value: 'birthday' },
       { name: '纪念日', value: 'anniversary' },
       { name: '预约', value: 'appointment' },
       { name: '会议', value: 'meeting' },
-      { name: '出行', value: 'trip' }
+      { name: '出行', value: 'trip' },
+      { name: '其他', value: 'other' }
     ],
     typeIndex: 0,
     remindOptions: ['不提醒', '当天', '提前1天', '提前3天', '提前7天'],
@@ -144,11 +145,17 @@ Page({
     const dateStr = e.currentTarget.dataset.date;
     this.setData({ selectedDate: dateStr });
     this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
+    this.updateDaySchedules(dateStr);
 
     // 设置表单日期
     this.setData({
       'formData.date': dateStr
     });
+  },
+
+  updateDaySchedules(date) {
+    const daySchedules = this.data.scheduleList.filter(s => s.schedule_date === date);
+    this.setData({ daySchedules });
   },
 
   async loadScheduleList() {
@@ -161,6 +168,7 @@ Page({
       });
       this.setData({ scheduleList: res.data });
       this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
+      this.updateDaySchedules(this.data.selectedDate);
     } catch (err) {
       console.error('加载日程失败', err);
     }
@@ -184,6 +192,7 @@ Page({
       });
       this.setData({ scheduleList: res.data });
       this.generateCalendar(currentYear, currentMonthNum);
+      this.updateDaySchedules(this.data.selectedDate);
     } catch (err) {
       console.error('加载日程失败', err);
     }
@@ -215,12 +224,20 @@ Page({
     this.setData({ showModal: false });
   },
 
+  stopPropagation() {
+    // 阻止事件冒泡，空方法即可
+  },
+
   inputTitle(e) {
     this.setData({ 'formData.title': e.detail.value });
   },
 
   inputTime(e) {
     this.setData({ 'formData.time': e.detail.value });
+  },
+
+  onDateChange(e) {
+    this.setData({ 'formData.date': e.detail.value });
   },
 
   inputDescription(e) {
@@ -256,6 +273,11 @@ Page({
       return;
     }
 
+    if (!this.data.familyId) {
+      wx.showToast({ title: '请先创建或加入家庭', icon: 'none' });
+      return;
+    }
+
     wx.showLoading({ title: '提交中' });
 
     try {
@@ -285,6 +307,7 @@ Page({
       wx.showToast({ title: this.data.editMode ? '已保存' : '已添加', icon: 'success' });
       this.hideModal();
       this.loadScheduleList();
+      this.updateDaySchedules(this.data.selectedDate);
     } catch (err) {
       wx.hideLoading();
       wx.showToast({ title: '操作失败', icon: 'none' });

@@ -7,13 +7,10 @@ Page({
     members: [],
     showModal: false,
     inviteCode: '',
-    action: '', // create, join, manage
-    createForm: {
-      name: ''
-    },
-    joinForm: {
-      code: ''
-    }
+    action: '',
+    createForm: { name: '' },
+    joinForm: { code: '' },
+    currentUserId: null // 当前用户 ID
   },
 
   onLoad(options) {
@@ -43,7 +40,8 @@ Page({
       });
       this.setData({
         familyInfo: res.data,
-        members: res.data.members || []
+        members: res.data.members || [],
+        currentUserId: app.globalData.userInfo?.id
       });
     } catch (err) {
       console.error('加载家庭信息失败', err);
@@ -68,6 +66,10 @@ Page({
 
   hideModal() {
     this.setData({ showModal: false });
+  },
+
+  stopPropagation() {
+    // 阻止事件冒泡
   },
 
   inputFamilyName(e) {
@@ -195,6 +197,12 @@ Page({
       return;
     }
 
+    // 检查权限
+    if (!this.isAdmin()) {
+      wx.showToast({ title: '只有管理员可以移除成员', icon: 'none' });
+      return;
+    }
+
     const res = await wx.showModal({
       title: '确认移除',
       content: '确定要移除该成员吗？'
@@ -210,6 +218,44 @@ Page({
         this.loadFamilyInfo();
       } catch (err) {
         wx.showToast({ title: '移除失败', icon: 'none' });
+      }
+    }
+  },
+
+  // 判断当前用户是否是管理员
+  isAdmin() {
+    const familyInfo = this.data.familyInfo;
+    const currentUserId = this.data.currentUserId;
+    return familyInfo && (familyInfo.created_by === currentUserId || familyInfo.owner_id === currentUserId);
+  },
+
+  // 设置/取消管理员
+  async toggleAdmin(e) {
+    const memberId = e.currentTarget.dataset.id;
+    const member = this.data.members.find(m => m.id === memberId);
+    
+    if (!this.isAdmin()) {
+      wx.showToast({ title: '只有创建者可以设置管理员', icon: 'none' });
+      return;
+    }
+
+    const action = member.role === 'admin' ? '取消管理员' : '设为管理员';
+    const res = await wx.showModal({
+      title: '确认操作',
+      content: `确定要${action}吗？`
+    });
+
+    if (res.confirm) {
+      try {
+        await app.request({
+          url: `/family/${this.data.familyInfo.id}/member/${memberId}/role`,
+          method: 'PUT',
+          data: { role: member.role === 'admin' ? 'member' : 'admin' }
+        });
+        wx.showToast({ title: '已更新', icon: 'success' });
+        this.loadFamilyInfo();
+      } catch (err) {
+        wx.showToast({ title: '操作失败', icon: 'none' });
       }
     }
   },

@@ -1,0 +1,99 @@
+/* pages/export/index.wxss */
+.container {
+  padding: 20rpx;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, #FF85A2 0%, #FFB6C1 100%);
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  color: #fff;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.desc {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.export-list {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.export-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.export-item:last-child {
+  border-bottom: none;
+}
+
+.export-icon {
+  font-size: 40rpx;
+  margin-right: 20rpx;
+}
+
+.export-info {
+  flex: 1;
+}
+
+.export-name {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.export-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.export-arrow {
+  font-size: 26rpx;
+  color: #FF85A2;
+}
+
+.export-all {
+  background: #FF85A2;
+  color: #fff;
+  text-align: center;
+  padding: 28rpx;
+  border-radius: 16rpx;
+  margin-top: 20rpx;
+  font-size: 30rpx;
+}
+
+.tips {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-top: 20rpx;
+}
+
+.tips-title {
+  font-size: 26rpx;
+  color: #fa8c16;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.tips text {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}

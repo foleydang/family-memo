@@ -13,7 +13,7 @@ Page({
     menuItems: [
       { icon: '📝', title: '我的记录', desc: '查看我添加的内容' },
       { icon: '🔔', title: '提醒设置', desc: '管理通知提醒' },
-      { icon: '🌙', title: '深色模式', desc: '切换显示模式' },
+      { icon: '📤', title: '数据导出', desc: '导出数据到剪贴板' },
       { icon: '❓', title: '帮助反馈', desc: '使用帮助与问题反馈' }
     ]
   },
@@ -64,13 +64,13 @@ Page({
     const index = e.currentTarget.dataset.index;
     switch (index) {
       case 0: // 我的记录
-        wx.showToast({ title: '功能开发中', icon: 'none' });
+        wx.navigateTo({ url: '/pages/my-records/index' });
         break;
       case 1: // 提醒设置
-        wx.showToast({ title: '功能开发中', icon: 'none' });
+        wx.navigateTo({ url: '/pages/remind-settings/index' });
         break;
-      case 2: // 深色模式
-        wx.showToast({ title: '功能开发中', icon: 'none' });
+      case 2: // 数据导出
+        wx.navigateTo({ url: '/pages/export/index' });
         break;
       case 3: // 帮助反馈
         wx.showToast({ title: '功能开发中', icon: 'none' });

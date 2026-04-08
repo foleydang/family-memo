@@ -20,25 +20,28 @@ router.post('/create', authMiddleware, (req, res) => {
     const inviteCode = generateInviteCode();
     
     // 创建家庭
-    const result = db.prepare(
-      'INSERT INTO families (name, invite_code, created_by) VALUES (?, ?, ?)'
-    ).run(name, inviteCode, req.userId);
+    db.prepare('INSERT INTO families (name, invite_code, created_by) VALUES (?, ?, ?)').run(name, inviteCode, req.userId);
     
-    const familyId = result.lastInsertRowid;
+    // 获取最后插入的家庭
+    const families = db.prepare('SELECT * FROM families ORDER BY id DESC LIMIT 1').all();
+    const family = families[0];
+    
+    if (!family) {
+      return res.status(500).json({ success: false, message: '创建失败' });
+    }
     
     // 将创建者加入家庭
-    db.prepare(
-      'INSERT INTO family_members (family_id, user_id, nickname) VALUES (?, ?, ?)'
-    ).run(familyId, req.userId, '创建者');
+    db.prepare('INSERT INTO family_members (family_id, user_id, nickname) VALUES (?, ?, ?)').run(family.id, req.userId, '创建者');
     
     // 更新用户角色
     db.prepare('UPDATE users SET role = ? WHERE id = ?').run('admin', req.userId);
     
-    const family = db.prepare('SELECT * FROM families WHERE id = ?').get(familyId);
-    
     res.json({
       success: true,
-      data: family,
+      data: {
+        ...family,
+        inviteCode: inviteCode
+      },
       message: '家庭创建成功'
     });
   } catch (error) {
@@ -283,6 +286,47 @@ router.delete('/:familyId/member/:memberId', authMiddleware, (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: '移除失败' 
+    });
+  }
+});
+
+// 设置成员角色
+router.put('/:familyId/member/:memberId/role', authMiddleware, (req, res) => {
+  const db = getDb();
+  const { familyId, memberId } = req.params;
+  const { role } = req.body;
+  
+  if (!['admin', 'member'].includes(role)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: '无效的角色' 
+    });
+  }
+  
+  try {
+    // 检查是否是家庭创建者
+    const family = db.prepare('SELECT created_by FROM families WHERE id = ?').get(familyId);
+    
+    if (family?.created_by !== req.userId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: '只有创建者可以设置管理员' 
+      });
+    }
+    
+    db.prepare(
+      'UPDATE family_members SET role = ? WHERE family_id = ? AND user_id = ?'
+    ).run(role, familyId, memberId);
+    
+    res.json({
+      success: true,
+      message: '角色已更新'
+    });
+  } catch (error) {
+    console.error('设置角色失败:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: '操作失败' 
     });
   }
 });

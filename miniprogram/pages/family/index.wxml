@@ -32,11 +32,15 @@
           <view class="member-item">
             <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
             <view class="member-info">
-              <view class="member-name">{{item.name}}</view>
-              <view class="member-role {{item.role}}">{{item.role === 'owner' ? '创建者' : item.role === 'admin' ? '管理员' : '成员'}}</view>
+              <view class="member-name">{{item.name || item.nickname}}</view>
+              <view class="member-role {{item.role}}">{{item.role === 'owner' ? '👑 创建者' : item.role === 'admin' ? '⭐ 管理员' : '成员'}}</view>
             </view>
-            <view wx:if="{{familyInfo.owner_id === userInfo.id && item.id !== userInfo.id}}" class="member-action" bindtap="removeMember" data-id="{{item.id}}">
-              移除
+            <!-- 权限管理按钮（仅创建者可见） -->
+            <view wx:if="{{familyInfo.created_by === currentUserId && item.id !== currentUserId}}" class="member-actions">
+              <view class="action-btn" catchtap="toggleAdmin" data-id="{{item.id}}">
+                {{item.role === 'admin' ? '取消管理员' : '设为管理员'}}
+              </view>
+              <view class="action-btn danger" catchtap="removeMember" data-id="{{item.id}}">移除</view>
             </view>
           </view>
         </block>

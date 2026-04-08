@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS family_members (
     family_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     nickname TEXT,
+    role TEXT DEFAULT 'member',
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(family_id, user_id)
 );

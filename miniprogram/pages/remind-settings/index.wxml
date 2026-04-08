@@ -1,0 +1,58 @@
+<!--pages/remind-settings/index.wxml-->
+<view class="container">
+  <view class="section">
+    <view class="section-title">提醒设置</view>
+    
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-title">购物提醒</view>
+        <view class="setting-desc">购物清单有变化时提醒</view>
+      </view>
+      <switch checked="{{settings.shoppingRemind}}" bindchange="toggleShopping" color="#FF85A2"/>
+    </view>
+
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-title">待办提醒</view>
+        <view class="setting-desc">待办即将到期时提醒</view>
+      </view>
+      <switch checked="{{settings.todoRemind}}" bindchange="toggleTodo" color="#FF85A2"/>
+    </view>
+
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-title">日程提醒</view>
+        <view class="setting-desc">日程即将到来时提醒</view>
+      </view>
+      <switch checked="{{settings.scheduleRemind}}" bindchange="toggleSchedule" color="#FF85A2"/>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">提前提醒时间</view>
+    
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-title">日程/待办提前提醒</view>
+      </view>
+      <picker mode="selector" range="{{remindOptions}}" value="{{settings.advanceDays === 1 ? 0 : settings.advanceDays === 3 ? 1 : 2}}" bindchange="changeAdvanceDays">
+        <view class="picker-value">{{settings.advanceDays === 1 ? '提前1天' : settings.advanceDays === 3 ? '提前3天' : '提前7天'}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="section tips">
+    <view class="tips-title">💡 提示</view>
+    <view class="tips-content">
+      <text>• 消息提醒需要小程序正式发布后才能使用</text>
+      <text>• 请在小程序后台申请消息模板</text>
+      <text>• 体验版暂不支持推送通知</text>
+    </view>
+  </view>
+
+  <!-- 暂时隐藏，正式版可用
+  <view class="section">
+    <button class="subscribe-btn" bindtap="requestSubscribe">订阅消息通知</button>
+  </view>
+  -->
+</view>

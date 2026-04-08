@@ -253,4 +253,29 @@ router.delete('/clear-done/:familyId', authMiddleware, (req, res) => {
   }
 });
 
+// 获取我的待办记录
+router.get('/my-records', authMiddleware, (req, res) => {
+  const db = getDb();
+  const { familyId } = req.query;
+  
+  if (!familyId) {
+    return res.json({ success: true, data: [] });
+  }
+  
+  try {
+    const items = db.prepare(`
+      SELECT t.*, u.nickname as assignee_name
+      FROM todos t
+      LEFT JOIN users u ON t.assignee_id = u.id
+      WHERE t.family_id = ? AND t.added_by = ?
+      ORDER BY t.created_at DESC
+    `).all(familyId, req.userId);
+    
+    res.json({ success: true, data: items });
+  } catch (error) {
+    console.error('获取我的待办记录失败:', error);
+    res.json({ success: true, data: [] });
+  }
+});
+
 module.exports = router;

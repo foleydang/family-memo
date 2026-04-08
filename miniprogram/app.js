@@ -4,7 +4,7 @@ App({
     userInfo: null,
     familyInfo: null,
     token: null,
-    baseUrl: 'http://YOUR_SERVER_IP:3000/api' // 替换为你的服务器地址
+    baseUrl: 'https://api.yanten.top/api'
   },
 
   onLaunch() {
@@ -37,8 +37,13 @@ App({
         success: (res) => {
           if (res.data.success) {
             this.globalData.userInfo = res.data.data;
-            if (res.data.data.families && res.data.data.families.length > 0) {
+            // 优先使用 familyInfo，否则从 families 数组获取
+            if (res.data.data.familyInfo) {
+              this.globalData.familyInfo = res.data.data.familyInfo;
+            } else if (res.data.data.families && res.data.data.families.length > 0) {
               this.globalData.familyInfo = res.data.data.families[0];
+            } else {
+              this.globalData.familyInfo = null;
             }
             resolve(res.data.data);
           } else {
@@ -57,6 +62,7 @@ App({
       wx.login({
         success: (res) => {
           if (res.code) {
+            // 尝试微信登录
             wx.request({
               url: `${this.globalData.baseUrl}/auth/login`,
               method: 'POST',
@@ -69,13 +75,44 @@ App({
                   wx.setStorageSync('token', token);
                   resolve(response.data);
                 } else {
-                  reject(response.data.message);
+                  // 微信登录失败，尝试测试登录
+                  this.devLogin().then(resolve).catch(reject);
                 }
               },
-              fail: reject
+              fail: () => {
+                // 网络失败，尝试测试登录
+                this.devLogin().then(resolve).catch(reject);
+              }
             });
           } else {
-            reject('登录失败');
+            // 没有 code，尝试测试登录
+            this.devLogin().then(resolve).catch(reject);
+          }
+        },
+        fail: () => {
+          // 登录失败，尝试测试登录
+          this.devLogin().then(resolve).catch(reject);
+        }
+      });
+    });
+  },
+
+  // 测试登录（开发环境）
+  devLogin() {
+    return new Promise((resolve, reject) => {
+      wx.request({
+        url: `${this.globalData.baseUrl}/auth/dev-login`,
+        method: 'POST',
+        data: {},
+        success: (response) => {
+          if (response.data.success) {
+            const { token, user } = response.data.data;
+            this.globalData.token = token;
+            this.globalData.userInfo = user;
+            wx.setStorageSync('token', token);
+            resolve(response.data);
+          } else {
+            reject(response.data.message);
           }
         },
         fail: reject

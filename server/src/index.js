@@ -4,7 +4,8 @@ const path = require('path');
 require('dotenv').config();
 
 const config = require('../config/default');
-const { initDatabase } = require('./utils/database');
+const { initDatabase, getDb } = require('./utils/database');
+const { authMiddleware } = require('./middleware/auth');
 
 // 导入路由
 const authRoutes = require('./routes/auth');
@@ -29,6 +30,44 @@ app.use('/api/family', familyRoutes);
 app.use('/api/shopping', shoppingRoutes);
 app.use('/api/todo', todoRoutes);
 app.use('/api/schedule', scheduleRoutes);
+
+// 用户统计 API
+app.get('/api/user/stats', authMiddleware, (req, res) => {
+  const db = getDb();
+  const { familyId } = req.query;
+  
+  if (!familyId) {
+    return res.json({
+      success: true,
+      data: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
+    });
+  }
+  
+  try {
+    const shoppingCount = db.prepare(
+      'SELECT COUNT(*) as count FROM shopping_items WHERE family_id = ? AND added_by = ?'
+    ).all(familyId, req.userId)[0]?.count || 0;
+    
+    const todoCount = db.prepare(
+      'SELECT COUNT(*) as count FROM todos WHERE family_id = ? AND added_by = ?'
+    ).all(familyId, req.userId)[0]?.count || 0;
+    
+    const scheduleCount = db.prepare(
+      'SELECT COUNT(*) as count FROM schedules WHERE family_id = ? AND created_by = ?'
+    ).all(familyId, req.userId)[0]?.count || 0;
+    
+    res.json({
+      success: true,
+      data: { shoppingCount, todoCount, scheduleCount }
+    });
+  } catch (error) {
+    console.error('获取统计失败:', error);
+    res.json({
+      success: true,
+      data: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
+    });
+  }
+});
 
 // 健康检查
 app.get('/api/health', (req, res) => {

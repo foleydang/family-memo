@@ -1,0 +1,94 @@
+<!--pages/my-records/index.wxml-->
+<view class="container">
+  <!-- Tab 切换 -->
+  <view class="tabs">
+    <view class="tab {{currentTab === 'shopping' ? 'active' : ''}}" bindtap="switchTab" data-tab="shopping">
+      购物 ({{shoppingList.length}})
+    </view>
+    <view class="tab {{currentTab === 'todo' ? 'active' : ''}}" bindtap="switchTab" data-tab="todo">
+      待办 ({{todoList.length}})
+    </view>
+    <view class="tab {{currentTab === 'schedule' ? 'active' : ''}}" bindtap="switchTab" data-tab="schedule">
+      日程 ({{scheduleList.length}})
+    </view>
+  </view>
+
+  <!-- 购物记录 -->
+  <view wx:if="{{currentTab === 'shopping'}}" class="record-list">
+    <block wx:for="{{shoppingList}}" wx:key="id">
+      <view class="record-item {{item.status === 'done' ? 'done' : ''}}">
+        <view class="record-checkbox" bindtap="toggleShopping" data-id="{{item.id}}">
+          <icon wx:if="{{item.status === 'done'}}" type="success" size="20" color="#52c41a"/>
+          <view wx:else class="checkbox-empty"></view>
+        </view>
+        <view class="record-content">
+          <view class="record-title">{{item.title}}</view>
+          <view class="record-meta">
+            <text class="category-tag">{{item.category}}</text>
+            <text>×{{item.quantity}}{{item.unit}}</text>
+            <text class="record-time">{{item.created_at}}</text>
+          </view>
+        </view>
+        <view class="record-action" catchtap="deleteShopping" data-id="{{item.id}}">删除</view>
+      </view>
+    </block>
+    <view wx:if="{{shoppingList.length === 0}}" class="empty-tip">
+      暂无购物记录
+    </view>
+  </view>
+
+  <!-- 待办记录 -->
+  <view wx:if="{{currentTab === 'todo'}}" class="record-list">
+    <block wx:for="{{todoList}}" wx:key="id">
+      <view class="record-item {{item.priority === 1 ? 'important' : ''}} {{item.priority === 2 ? 'urgent' : ''}}">
+        <view class="record-checkbox {{item.status}}" bindtap="toggleTodo" data-item="{{item}}">
+          <icon wx:if="{{item.status === 'done'}}" type="success" size="20" color="#52c41a"/>
+          <icon wx:elif="{{item.status === 'doing'}}" type="waiting" size="20" color="#1890ff"/>
+          <view wx:else class="checkbox-empty"></view>
+        </view>
+        <view class="record-content">
+          <view class="record-title {{item.status === 'done' ? 'done-text' : ''}}">{{item.title}}</view>
+          <view class="record-meta">
+            <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
+              {{item.priority === 2 ? '紧急' : '重要'}}
+            </text>
+            <text class="status-tag {{item.status}}">{{item.status === 'pending' ? '待处理' : item.status === 'doing' ? '进行中' : '已完成'}}</text>
+            <text class="record-time">{{item.created_at}}</text>
+          </view>
+        </view>
+        <view class="record-action" catchtap="deleteTodo" data-id="{{item.id}}">删除</view>
+      </view>
+    </block>
+    <view wx:if="{{todoList.length === 0}}" class="empty-tip">
+      暂无待办记录
+    </view>
+  </view>
+
+  <!-- 日程记录 -->
+  <view wx:if="{{currentTab === 'schedule'}}" class="record-list">
+    <block wx:for="{{scheduleList}}" wx:key="id">
+      <view class="record-item schedule-item">
+        <view class="schedule-date">
+          <view class="date-day">{{item.day}}</view>
+          <view class="date-week">{{item.week}}</view>
+        </view>
+        <view class="record-content">
+          <view class="record-title">{{item.title}}</view>
+          <view class="record-meta">
+            <text class="type-tag">{{item.typeName}}</text>
+            <text wx:if="{{item.time}}">🕐 {{item.time}}</text>
+          </view>
+        </view>
+        <view class="record-action" catchtap="deleteSchedule" data-id="{{item.id}}">删除</view>
+      </view>
+    </block>
+    <view wx:if="{{scheduleList.length === 0}}" class="empty-tip">
+      暂无日程记录
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading">
+    <text>加载中...</text>
+  </view>
+</view>

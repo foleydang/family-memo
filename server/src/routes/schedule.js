@@ -114,7 +114,7 @@ router.post('/add', authMiddleware, (req, res) => {
   const timeValue = scheduleTime || time;
   const remindValue = remindBefore || remind || 1;
   
-  if (!familyId || !title || !scheduleDate) {
+  if (!familyId || !title || !dateValue) {
     return res.status(400).json({ 
       success: false, 
       message: '请填写完整信息' 
@@ -137,16 +137,19 @@ router.post('/add', authMiddleware, (req, res) => {
       req.userId
     );
     
-    const item = db.prepare(`
+    // 获取刚插入的日程
+    const schedules = db.prepare(`
       SELECT s.*, u.nickname as created_by_name
       FROM schedules s
       LEFT JOIN users u ON s.created_by = u.id
-      WHERE s.id = ?
-    `).get(result.lastInsertRowid);
+      ORDER BY s.id DESC LIMIT 1
+    `).all();
+    
+    const schedule = schedules[0];
     
     res.json({
       success: true,
-      data: item,
+      data: schedule,
       message: '添加成功'
     });
   } catch (error) {
@@ -331,6 +334,53 @@ router.get('/upcoming', authMiddleware, (req, res) => {
       success: false, 
       message: '获取失败' 
     });
+  }
+});
+
+// 获取我的日程记录
+router.get('/my-records', authMiddleware, (req, res) => {
+  const db = getDb();
+  const { familyId } = req.query;
+  
+  if (!familyId) {
+    return res.json({ success: true, data: [] });
+  }
+  
+  try {
+    const items = db.prepare(`
+      SELECT * FROM schedules 
+      WHERE family_id = ? AND created_by = ?
+      ORDER BY schedule_date DESC
+    `).all(familyId, req.userId);
+    
+    // 添加类型名称和日期格式化
+    const typeNames = {
+      birthday: '生日',
+      anniversary: '纪念日',
+      appointment: '预约',
+      meeting: '会议',
+      trip: '出行',
+      other: '其他'
+    };
+    
+    const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    
+    const result = items.map(item => {
+      const date = new Date(item.schedule_date);
+      const day = date.getDate().toString();
+      const week = weekDays[date.getDay()];
+      return {
+        ...item,
+        typeName: typeNames[item.type] || '其他',
+        day,
+        week
+      };
+    });
+    
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('获取我的日程记录失败:', error);
+    res.json({ success: true, data: [] });
   }
 });
 

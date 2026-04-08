@@ -222,6 +222,25 @@
 .family-name {
   font-size: 32rpx;
   font-weight: 600;
+  flex: 1;
+}
+
+.announcement-entry {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  background: #FFE4EC;
+  border-radius: 8rpx;
+}
+
+.entry-icon {
+  font-size: 24rpx;
+  margin-right: 6rpx;
+}
+
+.entry-text {
+  font-size: 24rpx;
+  color: #FF85A2;
 }
 
 .family-members {

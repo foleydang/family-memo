@@ -210,5 +210,9 @@ Page({
 
   goToFamily() {
     wx.switchTab({ url: '/pages/family/index' });
+  },
+
+  goToAnnouncement() {
+    wx.navigateTo({ url: '/pages/announcement/index' });
   }
 });

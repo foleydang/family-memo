@@ -23,7 +23,7 @@
     <view class="category-item {{currentCategory === item.id ? 'active' : ''}}" 
           wx:for="{{categories}}" wx:key="id"
           bindtap="switchCategory" data-category="{{item.id}}">
-      {{item.icon}} {{item.name}}
+      {{item.name}}
     </view>
   </scroll-view>
 

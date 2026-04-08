@@ -37,7 +37,7 @@
     </view>
 
     <view class="schedule-list">
-      <block wx:for="{{scheduleList}}" wx:key="id" wx:if="{{item.schedule_date === selectedDate}}">
+      <block wx:for="{{daySchedules}}" wx:key="id">
         <view class="schedule-item type-{{item.type}}">
           <view class="schedule-type">{{item.typeName || '其他'}}</view>
           <view class="schedule-content">
@@ -52,7 +52,7 @@
         </view>
       </block>
 
-      <view wx:if="{{!scheduleList.filter(s => s.schedule_date === selectedDate).length}}" class="empty-tip">
+      <view wx:if="{{daySchedules.length === 0}}" class="empty-tip">
         <text>当天暂无日程</text>
       </view>
     </view>
@@ -81,7 +81,7 @@
 
         <view class="form-item">
           <text class="form-label">日期</text>
-          <picker mode="date" value="{{formData.date}}" start="2020-01-01" end="2030-12-31" bindchange="e => setData({ 'formData.date': e.detail.value })">
+          <picker mode="date" value="{{formData.date}}" start="2020-01-01" end="2030-12-31" bindchange="onDateChange">
             <view class="picker-value">{{formData.date || '请选择日期'}}</view>
           </picker>
         </view>
@@ -94,8 +94,8 @@
         </view>
 
         <view class="form-item">
-          <text class="form-label">备注说明</text>
-          <textarea class="form-textarea" placeholder="可选备注说明" value="{{formData.description}}" bindinput="inputDescription" />
+          <text class="form-label">备注</text>
+          <input class="form-input" placeholder="可选备注" value="{{formData.description}}" bindinput="inputDescription" />
         </view>
 
         <view class="form-item">

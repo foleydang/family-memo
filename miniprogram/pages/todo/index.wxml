@@ -77,8 +77,8 @@
         </view>
 
         <view class="form-item">
-          <text class="form-label">备注说明</text>
-          <textarea class="form-textarea" placeholder="可选备注说明" value="{{formData.description}}" bindinput="inputDescription" />
+          <text class="form-label">备注</text>
+          <input class="form-input" placeholder="可选备注" value="{{formData.description}}" bindinput="inputDescription" />
         </view>
 
         <view class="form-item">
@@ -92,9 +92,9 @@
 
         <view class="form-item">
           <text class="form-label">指派成员</text>
-          <picker mode="selector" range="{{['不指派', ...members.map(m => m.name)]}}" value="{{assigneeIndex}}" bindchange="pickAssignee">
+          <picker mode="selector" range="{{memberNames}}" value="{{assigneeIndex}}" bindchange="pickAssignee">
             <view class="picker-value">
-              {{assigneeIndex === 0 ? '不指派' : members[assigneeIndex - 1].name}}
+              {{memberNames[assigneeIndex] || '不指派'}}
             </view>
           </picker>
         </view>

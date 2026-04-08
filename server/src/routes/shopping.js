@@ -258,4 +258,27 @@ router.get('/categories', (req, res) => {
   });
 });
 
+// 获取我的购物记录
+router.get('/my-records', authMiddleware, (req, res) => {
+  const db = getDb();
+  const { familyId } = req.query;
+  
+  if (!familyId) {
+    return res.json({ success: true, data: [] });
+  }
+  
+  try {
+    const items = db.prepare(`
+      SELECT * FROM shopping_items 
+      WHERE family_id = ? AND added_by = ?
+      ORDER BY created_at DESC
+    `).all(familyId, req.userId);
+    
+    res.json({ success: true, data: items });
+  } catch (error) {
+    console.error('获取我的购物记录失败:', error);
+    res.json({ success: true, data: [] });
+  }
+});
+
 module.exports = router;

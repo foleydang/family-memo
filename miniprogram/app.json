@@ -5,7 +5,11 @@
     "pages/todo/index",
     "pages/schedule/index",
     "pages/family/index",
-    "pages/user/index"
+    "pages/user/index",
+    "pages/my-records/index",
+    "pages/remind-settings/index",
+    "pages/announcement/index",
+    "pages/export/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

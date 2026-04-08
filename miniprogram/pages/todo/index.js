@@ -18,6 +18,7 @@ Page({
       assignee: ''
     },
     members: [],
+    memberNames: ['不指派'], // 成员名称列表（用于选择器）
     assigneeIndex: 0
   },
 
@@ -44,7 +45,9 @@ Page({
       const res = await app.request({
         url: `/family/${app.globalData.familyInfo.id}`
       });
-      this.setData({ members: res.data.members || [] });
+      const members = res.data.members || [];
+      const memberNames = ['不指派', ...members.map(m => m.name || m.nickname)];
+      this.setData({ members, memberNames });
     } catch (err) {
       console.error('加载成员失败', err);
     }
@@ -103,6 +106,10 @@ Page({
 
   hideModal() {
     this.setData({ showModal: false });
+  },
+
+  stopPropagation() {
+    // 阻止事件冒泡，空方法即可
   },
 
   inputTitle(e) {

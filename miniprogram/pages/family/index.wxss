@@ -148,10 +148,22 @@
   color: #1890ff;
 }
 
-.member-action {
-  font-size: 24rpx;
-  color: #f5222d;
+.member-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.action-btn {
+  font-size: 22rpx;
+  color: #1890ff;
   padding: 8rpx 16rpx;
+  background: #e6f7ff;
+  border-radius: 8rpx;
+}
+
+.action-btn.danger {
+  color: #f5222d;
+  background: #fff1f0;
 }
 
 /* 邀请成员 */

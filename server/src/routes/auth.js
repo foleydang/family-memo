@@ -55,11 +55,16 @@ async function handleLogin(openid, res) {
   let user = db.prepare('SELECT * FROM users WHERE openid = ?').get(openid);
   
   if (!user) {
-    const result = db.prepare(
+    db.prepare(
       'INSERT INTO users (openid, nickname, avatar) VALUES (?, ?, ?)'
     ).run(openid, '新成员', '');
     
-    user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
+    // 重新查询
+    user = db.prepare('SELECT * FROM users WHERE openid = ?').get(openid);
+  }
+  
+  if (!user) {
+    return res.status(500).json({ success: false, message: '创建用户失败' });
   }
   
   // 生成 token

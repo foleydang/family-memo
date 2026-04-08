@@ -108,6 +108,10 @@
     <view class="family-header">
       <text class="family-icon">🏠</text>
       <text class="family-name">{{familyInfo.name}}</text>
+      <view class="announcement-entry" bindtap="goToAnnouncement">
+        <text class="entry-icon">📢</text>
+        <text class="entry-text">公告</text>
+      </view>
     </view>
     <view class="family-members">
       <view class="member" wx:for="{{members}}" wx:key="id">
