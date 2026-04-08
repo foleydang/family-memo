@@ -1,0 +1,326 @@
+/* pages/shopping/index.wxss */
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FF85A2, #FFB6C1);
+  color: white;
+  padding: 28rpx;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 133, 162, 0.3);
+}
+
+.add-icon {
+  font-size: 40rpx;
+  margin-right: 12rpx;
+}
+
+.add-text {
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+/* 筛选标签 */
+.filter-tabs {
+  display: flex;
+  background: white;
+  border-radius: 16rpx;
+  padding: 8rpx;
+  margin-bottom: 24rpx;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+  border-radius: 12rpx;
+  transition: all 0.3s;
+}
+
+.tab.active {
+  background: #FF85A2;
+  color: white;
+  font-weight: 500;
+}
+
+/* 分类滚动 */
+.category-scroll {
+  white-space: nowrap;
+  margin-bottom: 24rpx;
+  padding: 8rpx 0;
+}
+
+.category-item {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  margin-right: 16rpx;
+  background: white;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.category-item.active {
+  background: #FFB6C1;
+  color: #FF6B8A;
+}
+
+/* 购物列表 */
+.shopping-list {
+  background: white;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.shopping-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+  transition: all 0.3s;
+}
+
+.shopping-item:last-child {
+  border-bottom: none;
+}
+
+.shopping-item.done {
+  opacity: 0.6;
+}
+
+.shopping-item.done .item-title {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.item-check {
+  margin-right: 20rpx;
+}
+
+.check-box {
+  width: 44rpx;
+  height: 44rpx;
+  border: 3rpx solid #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: white;
+  transition: all 0.3s;
+}
+
+.check-box.checked {
+  background: #FF85A2;
+  border-color: #FF85A2;
+}
+
+.item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.item-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-badge {
+  margin-left: 12rpx;
+  padding: 4rpx 12rpx;
+  background: #FF6B6B;
+  color: white;
+  font-size: 20rpx;
+  border-radius: 8rpx;
+}
+
+.item-meta {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.item-category {
+  margin-right: 16rpx;
+}
+
+.item-quantity {
+  background: #f5f5f5;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.item-actions {
+  display: flex;
+  margin-left: 16rpx;
+}
+
+.action-btn {
+  padding: 12rpx;
+  font-size: 32rpx;
+}
+
+.action-btn.delete {
+  color: #FF6B6B;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 100rpx 0;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 30rpx;
+  color: #999;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #ccc;
+  margin-top: 12rpx;
+}
+
+/* 清空按钮 */
+.clear-btn {
+  text-align: center;
+  padding: 24rpx;
+  color: #FF6B6B;
+  font-size: 28rpx;
+  margin-top: 24rpx;
+}
+
+/* 弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 600rpx;
+  background: white;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.modal-close {
+  font-size: 40rpx;
+  color: #999;
+  padding: 0 16rpx;
+}
+
+.modal-body {
+  padding: 32rpx;
+}
+
+.form-item {
+  margin-bottom: 28rpx;
+}
+
+.form-item.half {
+  flex: 1;
+}
+
+.form-row {
+  display: flex;
+  gap: 24rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+.form-input {
+  width: 100%;
+  height: 80rpx;
+  background: #f5f5f5;
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.form-picker {
+  height: 80rpx;
+  background: #f5f5f5;
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.picker-arrow {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.priority-check {
+  display: flex;
+  align-items: center;
+}
+
+.priority-label {
+  margin-left: 12rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.modal-footer {
+  display: flex;
+  padding: 24rpx 32rpx 32rpx;
+  gap: 24rpx;
+}
+
+.modal-footer button {
+  flex: 1;
+  margin: 0;
+}

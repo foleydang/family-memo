@@ -1,0 +1,134 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 欢迎卡片 -->
+  <view class="welcome-card card fade-in" wx:if="{{userInfo}}">
+    <view class="welcome-header">
+      <image class="avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="welcome-text">
+        <view class="greeting">{{greeting}}，</view>
+        <view class="nickname">{{userInfo.nickname || '亲爱的'}} 💕</view>
+      </view>
+    </view>
+    <view class="welcome-footer">
+      <text class="welcome-tips">{{todayStr}}</text>
+    </view>
+  </view>
+
+  <!-- 未登录提示 -->
+  <view class="login-prompt card" wx:else>
+    <view class="empty-state">
+      <text class="empty-icon">🏠</text>
+      <text class="empty-text">欢迎使用家庭备忘录</text>
+      <button class="btn-primary mt-24" bindtap="handleLogin">立即登录</button>
+    </view>
+  </view>
+
+  <!-- 未加入家庭提示 -->
+  <view class="card" wx:if="{{userInfo && !familyInfo}}">
+    <view class="empty-state">
+      <text class="empty-icon">👨‍👩‍👧‍👦</text>
+      <text class="empty-text">还没有加入家庭哦</text>
+      <view class="flex mt-24">
+        <button class="btn-secondary mr-16" bindtap="handleJoinFamily">加入家庭</button>
+        <button class="btn-primary" bindtap="handleCreateFamily">创建家庭</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能概览 -->
+  <view class="section" wx:if="{{familyInfo}}">
+    <view class="section-title">📋 今日概览</view>
+    
+    <!-- 待购清单 -->
+    <view class="overview-card card" bindtap="goToShopping">
+      <view class="overview-header">
+        <text class="overview-icon">🛒</text>
+        <text class="overview-title">购物清单</text>
+        <view class="overview-count">
+          <text class="count-num">{{shoppingStats.pending}}</text>
+          <text class="count-label">项待购</text>
+        </view>
+      </view>
+      <view class="overview-items" wx:if="{{shoppingList.length > 0}}">
+        <view class="overview-item" wx:for="{{shoppingList}}" wx:key="id">
+          <text class="item-dot"></text>
+          <text class="item-text">{{item.title}}</text>
+          <text class="item-qty">×{{item.quantity}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 待办事项 -->
+    <view class="overview-card card" bindtap="goToTodo">
+      <view class="overview-header">
+        <text class="overview-icon">✅</text>
+        <text class="overview-title">待办事项</text>
+        <view class="overview-count">
+          <text class="count-num">{{todoStats.pending}}</text>
+          <text class="count-label">项待办</text>
+        </view>
+      </view>
+      <view class="overview-items" wx:if="{{todoList.length > 0}}">
+        <view class="overview-item" wx:for="{{todoList}}" wx:key="id">
+          <text class="item-dot"></text>
+          <text class="item-text">{{item.title}}</text>
+          <text class="item-due" wx:if="{{item.due_date}}">{{item.due_date}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 即将日程 -->
+    <view class="overview-card card" bindtap="goToSchedule">
+      <view class="overview-header">
+        <text class="overview-icon">📅</text>
+        <text class="overview-title">近期日程</text>
+      </view>
+      <view class="schedule-items" wx:if="{{scheduleList.length > 0}}">
+        <view class="schedule-item" wx:for="{{scheduleList}}" wx:key="id">
+          <view class="schedule-date">
+            <text class="date-day">{{item.day}}</text>
+            <text class="date-week">{{item.week}}</text>
+          </view>
+          <view class="schedule-content">
+            <view class="schedule-title">{{item.title}}</view>
+            <view class="schedule-type">
+              <text class="tag tag-primary">{{item.typeName}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="empty-hint" wx:else>
+        <text>暂无近期日程</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 家庭信息 -->
+  <view class="card family-card" wx:if="{{familyInfo}}">
+    <view class="family-header">
+      <text class="family-icon">🏠</text>
+      <text class="family-name">{{familyInfo.name}}</text>
+    </view>
+    <view class="family-members">
+      <view class="member" wx:for="{{members}}" wx:key="id">
+        <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}"></image>
+        <text class="member-name">{{item.nickname || item.member_nickname}}</text>
+      </view>
+      <view class="member add-member" bindtap="goToFamily">
+        <text class="add-icon">+</text>
+        <text class="member-name">邀请</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 首页样式 -->
+<wxs module="utils">
+module.exports = {
+  formatDate: function(date) {
+    if (!date) return '';
+    var d = date.split('-');
+    return d[2] || '';
+  }
+}
+</wxs>

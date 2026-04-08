@@ -1,0 +1,115 @@
+<!--pages/schedule/index.wxml-->
+<view class="container">
+  <!-- 月份导航 -->
+  <view class="month-nav">
+    <view class="nav-btn" bindtap="prevMonth">‹</view>
+    <view class="month-title">{{currentMonth}}</view>
+    <view class="nav-btn" bindtap="nextMonth">›</view>
+  </view>
+
+  <!-- 日历 -->
+  <view class="calendar">
+    <view class="week-header">
+      <view class="week-day">日</view>
+      <view class="week-day">一</view>
+      <view class="week-day">二</view>
+      <view class="week-day">三</view>
+      <view class="week-day">四</view>
+      <view class="week-day">五</view>
+      <view class="week-day">六</view>
+    </view>
+    <view class="calendar-body">
+      <block wx:for="{{calendarDays}}" wx:key="index">
+        <view wx:if="{{item.empty}}" class="day-cell empty"></view>
+        <view wx:else class="day-cell {{item.isToday ? 'today' : ''}} {{item.selected ? 'selected' : ''}} {{item.hasSchedule ? 'has-schedule' : ''}}" bindtap="selectDay" data-date="{{item.dateStr}}">
+          <text class="day-num">{{item.day}}</text>
+          <view wx:if="{{item.hasSchedule}}" class="schedule-dot"></view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 选中日期的日程列表 -->
+  <view class="day-schedules">
+    <view class="date-title">
+      <text>{{selectedDate}}</text>
+      <view class="add-btn" bindtap="showAddModal">+ 添加</view>
+    </view>
+
+    <view class="schedule-list">
+      <block wx:for="{{scheduleList}}" wx:key="id" wx:if="{{item.schedule_date === selectedDate}}">
+        <view class="schedule-item type-{{item.type}}">
+          <view class="schedule-type">{{item.typeName || '其他'}}</view>
+          <view class="schedule-content">
+            <view class="schedule-title">{{item.title}}</view>
+            <view wx:if="{{item.time}}" class="schedule-time">🕐 {{item.time}}</view>
+            <view wx:if="{{item.description}}" class="schedule-desc">{{item.description}}</view>
+          </view>
+          <view class="schedule-actions">
+            <view class="action-btn" catchtap="editItem" data-item="{{item}}">编辑</view>
+            <view class="action-btn delete" catchtap="deleteItem" data-id="{{item.id}}">删除</view>
+          </view>
+        </view>
+      </block>
+
+      <view wx:if="{{!scheduleList.filter(s => s.schedule_date === selectedDate).length}}" class="empty-tip">
+        <text>当天暂无日程</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加/编辑弹窗 -->
+  <view wx:if="{{showModal}}" class="modal-mask" bindtap="hideModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text>{{editMode ? '编辑日程' : '添加日程'}}</text>
+        <view class="modal-close" bindtap="hideModal">×</view>
+      </view>
+
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">日程标题 *</text>
+          <input class="form-input" placeholder="请输入日程标题" value="{{formData.title}}" bindinput="inputTitle" />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">日程类型</text>
+          <picker mode="selector" range="{{types}}" range-key="name" value="{{typeIndex}}" bindchange="pickType">
+            <view class="picker-value">{{types[typeIndex].name}}</view>
+          </picker>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">日期</text>
+          <picker mode="date" value="{{formData.date}}" start="2020-01-01" end="2030-12-31" bindchange="e => setData({ 'formData.date': e.detail.value })">
+            <view class="picker-value">{{formData.date || '请选择日期'}}</view>
+          </picker>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">时间</text>
+          <picker mode="time" value="{{formData.time}}" bindchange="inputTime">
+            <view class="picker-value">{{formData.time || '请选择时间（可选）'}}</view>
+          </picker>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">备注说明</text>
+          <textarea class="form-textarea" placeholder="可选备注说明" value="{{formData.description}}" bindinput="inputDescription" />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">提醒</text>
+          <picker mode="selector" range="{{remindOptions}}" value="{{remindIndex}}" bindchange="pickRemind">
+            <view class="picker-value">{{remindOptions[remindIndex]}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="hideModal">取消</view>
+        <view class="btn-confirm" bindtap="submitForm">{{editMode ? '保存' : '添加'}}</view>
+      </view>
+    </view>
+  </view>
+</view>
