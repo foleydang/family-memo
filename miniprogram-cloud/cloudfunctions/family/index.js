@@ -53,6 +53,9 @@ async function getMyFamily(openid) {
 async function createFamily(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
+    if (userRes.data.length === 0) {
+      return { success: false, message: '用户不存在' }
+    }
     const userId = userRes.data[0]._id
     
     // 生成邀请码
@@ -80,6 +83,7 @@ async function createFamily(openid, data) {
     
     return { success: true, data: { familyId: familyRes._id, inviteCode } }
   } catch (err) {
+    console.error('创建家庭失败:', err)
     return { success: false, message: err.message }
   }
 }
@@ -88,6 +92,9 @@ async function createFamily(openid, data) {
 async function joinFamily(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
+    if (userRes.data.length === 0) {
+      return { success: false, message: '用户不存在' }
+    }
     const userId = userRes.data[0]._id
     
     const familyRes = await db.collection('families')
@@ -121,6 +128,64 @@ async function joinFamily(openid, data) {
     
     return { success: true, data: { familyId: family._id, name: family.name } }
   } catch (err) {
+    console.error('加入家庭失败:', err)
+    return { success: false, message: err.message }
+  }
+}
+
+// 获取家庭成员
+async function getMembers(data) {
+  try {
+    const { familyId } = data
+    
+    // 获取成员列表
+    const memberRes = await db.collection('family_members')
+      .where({ familyId })
+      .get()
+    
+    // 获取成员用户信息
+    const members = []
+    for (const member of memberRes.data) {
+      const userRes = await db.collection('users').doc(member.userId).get()
+      if (userRes.data) {
+        members.push({
+          ...userRes.data,
+          role: member.role,
+          joinTime: member.joinTime
+        })
+      }
+    }
+    
+    return { success: true, data: members }
+  } catch (err) {
+    console.error('获取成员失败:', err)
+    return { success: false, message: err.message }
+  }
+}
+
+// 获取邀请码
+async function getInviteCode(openid) {
+  try {
+    const userRes = await db.collection('users').where({ openid }).get()
+    if (userRes.data.length === 0) {
+      return { success: false, message: '用户不存在' }
+    }
+    const userId = userRes.data[0]._id
+    
+    const memberRes = await db.collection('family_members')
+      .where({ userId })
+      .get()
+    
+    if (memberRes.data.length === 0) {
+      return { success: false, message: '你还没有加入家庭' }
+    }
+    
+    const familyId = memberRes.data[0].familyId
+    const familyRes = await db.collection('families').doc(familyId).get()
+    
+    return { success: true, data: { inviteCode: familyRes.data.inviteCode } }
+  } catch (err) {
+    console.error('获取邀请码失败:', err)
     return { success: false, message: err.message }
   }
 }
