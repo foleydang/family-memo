@@ -58,6 +58,12 @@ Page({
     }
   },
 
+  // 点击头像跳转编辑页
+  handleAvatarClick() {
+    wx.navigateTo({ url: '/pages/profile-edit/index' })
+  },
+
+  // 编辑资料
   goToEditProfile() {
     wx.navigateTo({ url: '/pages/profile-edit/index' })
   },
@@ -108,21 +114,9 @@ Page({
             familyInfo: null,
             stats: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
           })
-          this.login()
+          app.login()
         }
       }
     })
-  },
-
-  async login() {
-    wx.showLoading({ title: '登录中' })
-    try {
-      await app.login()
-      this.setData({ userInfo: app.globalData.userInfo })
-      this.loadStats()
-    } catch (err) {
-      wx.showToast({ title: '登录失败', icon: 'none' })
-    }
-    wx.hideLoading()
   }
 })

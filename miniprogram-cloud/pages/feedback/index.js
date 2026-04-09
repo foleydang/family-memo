@@ -1,5 +1,5 @@
-// pages/feedback/index.js
-const app = getApp();
+// pages/feedback/index.js - 云开发版本
+const app = getApp()
 
 Page({
   data: {
@@ -13,7 +13,6 @@ Page({
     content: '',
     contact: '',
     images: [],
-    uploadedUrls: [],
     maxImages: 4,
     isSubmitting: false,
     feedbackList: [],
@@ -21,44 +20,43 @@ Page({
   },
 
   onLoad() {
-    this.loadFeedbackHistory();
+    this.loadFeedbackHistory()
   },
 
-  // 加载历史反馈
   async loadFeedbackHistory() {
     try {
-      const res = await app.request({
-        url: '/feedback/my',
-        data: { pageSize: 10 }
-      });
-      this.setData({ feedbackList: res.data.list || [] });
+      const res = await wx.cloud.callFunction({
+        name: 'feedback',
+        data: { action: 'list' }
+      })
+      
+      if (res.result.success) {
+        this.setData({ feedbackList: res.result.data || [] })
+      }
     } catch (err) {
-      console.error('加载历史反馈失败:', err);
+      console.error('加载历史反馈失败:', err)
     }
   },
 
-  // 切换反馈类型
   onTypeChange(e) {
-    this.setData({ currentType: e.detail.value });
+    this.setData({ currentType: e.detail.value })
   },
 
-  // 输入内容
   onContentChange(e) {
-    this.setData({ content: e.detail.value });
+    this.setData({ content: e.detail.value })
   },
 
-  // 输入联系方式
   onContactChange(e) {
-    this.setData({ contact: e.detail.value });
+    this.setData({ contact: e.detail.value })
   },
 
   // 选择图片
   chooseImage() {
-    const { images, maxImages } = this.data;
-    const remaining = maxImages - images.length;
+    const { images, maxImages } = this.data
+    const remaining = maxImages - images.length
     
     if (remaining <= 0) {
-      return wx.showToast({ title: `最多上传${maxImages}张图片`, icon: 'none' });
+      return wx.showToast({ title: `最多上传${maxImages}张图片`, icon: 'none' })
     }
     
     wx.chooseMedia({
@@ -66,130 +64,102 @@ Page({
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
       success: (res) => {
-        const newImages = res.tempFiles.map(f => f.tempFilePath);
-        this.setData({ images: [...images, ...newImages] });
+        const newImages = res.tempFiles.map(f => f.tempFilePath)
+        this.setData({ images: [...images, ...newImages] })
       }
-    });
+    })
   },
 
   // 删除图片
   deleteImage(e) {
-    const { index } = e.currentTarget.dataset;
-    const images = this.data.images.filter((_, i) => i !== index);
-    const uploadedUrls = this.data.uploadedUrls.filter((_, i) => i !== index);
-    this.setData({ images, uploadedUrls });
+    const { index } = e.currentTarget.dataset
+    const images = this.data.images.filter((_, i) => i !== index)
+    this.setData({ images })
   },
 
   // 预览图片
   previewImage(e) {
-    const { src } = e.currentTarget.dataset;
+    const { src } = e.currentTarget.dataset
     wx.previewImage({
       current: src,
       urls: this.data.images
-    });
-  },
-
-  // 上传单张图片
-  async uploadSingleImage(filePath) {
-    return new Promise((resolve, reject) => {
-      wx.uploadFile({
-        url: `${app.globalData.baseUrl}/upload/feedback`,
-        filePath: filePath,
-        name: 'image',
-        header: {
-          'Authorization': `Bearer ${app.globalData.token}`
-        },
-        success: (res) => {
-          try {
-            const data = JSON.parse(res.data);
-            if (data.success) {
-              // 返回完整 URL
-              const fullUrl = data.data.url.startsWith('http')
-                ? data.data.url
-                : `${app.globalData.baseUrl.replace('/api', '')}${data.data.url}`;
-              resolve(fullUrl);
-            } else {
-              reject(new Error(data.message || '上传失败'));
-            }
-          } catch (e) {
-            reject(e);
-          }
-        },
-        fail: reject
-      });
-    });
+    })
   },
 
   // 提交反馈
   async handleSubmit() {
-    const { currentType, content, contact, images } = this.data;
+    const { currentType, content, contact, images } = this.data
     
     if (!content.trim()) {
-      return wx.showToast({ title: '请填写反馈内容', icon: 'none' });
+      return wx.showToast({ title: '请填写反馈内容', icon: 'none' })
     }
     
     if (content.trim().length < 10) {
-      return wx.showToast({ title: '反馈内容至少10字', icon: 'none' });
+      return wx.showToast({ title: '反馈内容至少10字', icon: 'none' })
     }
     
-    this.setData({ isSubmitting: true });
-    wx.showLoading({ title: '提交中...' });
+    this.setData({ isSubmitting: true })
+    wx.showLoading({ title: '提交中...' })
     
     try {
-      // 如果有图片，先上传
-      let uploadedUrls = [];
+      // 上传图片到云存储
+      let uploadedImages = []
       if (images.length > 0) {
         for (const img of images) {
           try {
-            const url = await this.uploadSingleImage(img);
-            uploadedUrls.push(url);
+            const res = await wx.cloud.uploadFile({
+              cloudPath: `feedback/${app.globalData.userId}_${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`,
+              filePath: img
+            })
+            if (res.fileID) {
+              uploadedImages.push(res.fileID)
+            }
           } catch (err) {
-            console.error('上传图片失败:', err);
+            console.error('上传图片失败:', err)
           }
         }
       }
       
       // 提交反馈
-      await app.request({
-        url: '/feedback',
-        method: 'POST',
+      const res = await wx.cloud.callFunction({
+        name: 'feedback',
         data: {
-          type: currentType,
-          content: content.trim(),
-          contact: contact.trim(),
-          images: uploadedUrls
+          action: 'add',
+          data: {
+            type: currentType,
+            content: content.trim(),
+            contact: contact.trim(),
+            images: uploadedImages
+          }
         }
-      });
+      })
       
-      wx.hideLoading();
-      wx.showToast({ title: '提交成功', icon: 'success' });
+      wx.hideLoading()
       
-      // 重置表单
-      this.setData({
-        content: '',
-        contact: '',
-        images: [],
-        uploadedUrls: [],
-        isSubmitting: false
-      });
-      
-      // 刷新历史
-      this.loadFeedbackHistory();
+      if (res.result.success) {
+        wx.showToast({ title: '提交成功', icon: 'success' })
+        
+        this.setData({
+          content: '',
+          contact: '',
+          images: [],
+          isSubmitting: false
+        })
+        
+        this.loadFeedbackHistory()
+      } else {
+        wx.showToast({ title: res.result.message || '提交失败', icon: 'none' })
+        this.setData({ isSubmitting: false })
+      }
     } catch (err) {
-      wx.hideLoading();
-      wx.showToast({ title: '提交失败', icon: 'none' });
-      this.setData({ isSubmitting: false });
+      wx.hideLoading()
+      console.error('提交失败:', err)
+      wx.showToast({ title: '提交失败', icon: 'none' })
+      this.setData({ isSubmitting: false })
     }
   },
 
-  // 显示/隐藏历史
   toggleHistory() {
-    this.setData({ showHistory: !this.data.showHistory });
-  },
-
-  // 查看反馈详情
-  viewFeedback(e) {
-    const { id } = e.currentTarget.dataset;
-    wx.showToast({ title: '详情页面开发中', icon: 'none' });
+    this.setData({ showHistory: !this.data.showHistory })
   }
-});
+})
