@@ -13,7 +13,7 @@ App({
     } else {
       wx.cloud.init({
         // TODO: 改成你的云开发环境ID
-        env: 'your-env-id',
+        env: 'cloud1-8guv4kyl1b68e254',
         traceUser: true
       })
     }
