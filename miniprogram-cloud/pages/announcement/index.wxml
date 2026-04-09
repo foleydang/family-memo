@@ -1,0 +1,49 @@
+<!--pages/announcement/index.wxml-->
+<view class="container">
+  <!-- 公告列表 -->
+  <view class="announcement-list">
+    <block wx:for="{{announcements}}" wx:key="id">
+      <view class="announcement-item">
+        <view class="announcement-header">
+          <text class="author">{{item.created_by_name || '匿名'}}</text>
+          <text class="time">{{item.created_at}}</text>
+        </view>
+        <view class="announcement-content">{{item.content}}</view>
+        <view class="announcement-actions">
+          <text class="action-btn" catchtap="deleteAnnouncement" data-id="{{item.id}}">删除</text>
+        </view>
+      </view>
+    </block>
+
+    <view wx:if="{{announcements.length === 0}}" class="empty-tip">
+      <text>暂无公告</text>
+      <text class="empty-desc">点击下方按钮发布家庭公告</text>
+    </view>
+  </view>
+
+  <!-- 发布按钮 -->
+  <view class="publish-btn" bindtap="showAddModal">
+    <text>发布公告</text>
+  </view>
+
+  <!-- 添加弹窗 -->
+  <view wx:if="{{showModal}}" class="modal-mask" bindtap="hideModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text>发布公告</text>
+        <view class="modal-close" bindtap="hideModal">×</view>
+      </view>
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">公告内容 *</text>
+          <textarea class="form-textarea" placeholder="请输入公告内容" value="{{formData.content}}" bindinput="inputContent" maxlength="200" />
+          <text class="char-count">{{formData.content.length}}/200</text>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="hideModal">取消</view>
+        <view class="btn-confirm" bindtap="submitForm">发布</view>
+      </view>
+    </view>
+  </view>
+</view>

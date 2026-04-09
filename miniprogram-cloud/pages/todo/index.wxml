@@ -1,0 +1,109 @@
+<!--pages/todo/index.wxml-->
+<view class="container">
+  <!-- 统计卡片 -->
+  <view class="stats-card">
+    <view class="stat-item" bindtap="switchTab" data-tab="pending">
+      <view class="stat-num">{{stats.pending}}</view>
+      <view class="stat-label">待处理</view>
+    </view>
+    <view class="stat-item" bindtap="switchTab" data-tab="doing">
+      <view class="stat-num">{{stats.doing}}</view>
+      <view class="stat-label">进行中</view>
+    </view>
+    <view class="stat-item" bindtap="switchTab" data-tab="done">
+      <view class="stat-num">{{stats.done}}</view>
+      <view class="stat-label">已完成</view>
+    </view>
+  </view>
+
+  <!-- Tab切换 -->
+  <view class="tabs">
+    <view class="tab {{currentTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+    <view class="tab {{currentTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">待处理</view>
+    <view class="tab {{currentTab === 'doing' ? 'active' : ''}}" bindtap="switchTab" data-tab="doing">进行中</view>
+    <view class="tab {{currentTab === 'done' ? 'active' : ''}}" bindtap="switchTab" data-tab="done">已完成</view>
+  </view>
+
+  <!-- 待办列表 -->
+  <view class="todo-list">
+    <block wx:for="{{filteredList}}" wx:key="id">
+      <view class="todo-item {{item.priority === 1 ? 'important' : ''}} {{item.priority === 2 ? 'urgent' : ''}}">
+        <view class="todo-checkbox {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
+          <icon wx:if="{{item.status === 'done'}}" type="success" size="20" color="#52c41a"/>
+          <icon wx:elif="{{item.status === 'doing'}}" type="waiting" size="20" color="#1890ff"/>
+          <view wx:else class="checkbox-empty"></view>
+        </view>
+        <view class="todo-content">
+          <view class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</view>
+          <view wx:if="{{item.description}}" class="todo-desc">{{item.description}}</view>
+          <view class="todo-meta">
+            <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
+              {{item.priority === 2 ? '紧急' : '重要'}}
+            </text>
+            <text wx:if="{{item.assignee_name}}" class="assignee">👤 {{item.assignee_name}}</text>
+            <text class="create-time">{{item.created_at}}</text>
+          </view>
+        </view>
+        <view class="todo-actions">
+          <view class="action-btn" catchtap="editItem" data-item="{{item}}">编辑</view>
+          <view class="action-btn delete" catchtap="deleteItem" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </block>
+
+    <view wx:if="{{filteredList.length === 0}}" class="empty-tip">
+      <text>暂无待办事项</text>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-bar">
+    <view class="btn-clear" wx:if="{{stats.done > 0}}" bindtap="clearDone">清空已完成</view>
+    <view class="btn-add" bindtap="showAddModal">+ 新待办</view>
+  </view>
+
+  <!-- 添加/编辑弹窗 -->
+  <view wx:if="{{showModal}}" class="modal-mask" bindtap="hideModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text>{{editMode ? '编辑待办' : '添加待办'}}</text>
+        <view class="modal-close" bindtap="hideModal">×</view>
+      </view>
+
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">待办内容 *</text>
+          <input class="form-input" placeholder="请输入待办内容" value="{{formData.title}}" bindinput="inputTitle" />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">备注</text>
+          <input class="form-input" placeholder="可选备注" value="{{formData.description}}" bindinput="inputDescription" />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">优先级</text>
+          <view class="priority-btns">
+            <view class="priority-btn {{formData.priority === 0 ? 'active' : ''}}" bindtap="togglePriority">普通</view>
+            <view class="priority-btn important {{formData.priority === 1 ? 'active' : ''}}" bindtap="togglePriority">重要</view>
+            <view class="priority-btn urgent {{formData.priority === 2 ? 'active' : ''}}" bindtap="togglePriority">紧急</view>
+          </view>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">指派成员</text>
+          <picker mode="selector" range="{{memberNames}}" value="{{assigneeIndex}}" bindchange="pickAssignee">
+            <view class="picker-value">
+              {{memberNames[assigneeIndex] || '不指派'}}
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="hideModal">取消</view>
+        <view class="btn-confirm" bindtap="submitForm">{{editMode ? '保存' : '添加'}}</view>
+      </view>
+    </view>
+  </view>
+</view>

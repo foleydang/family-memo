@@ -1,0 +1,115 @@
+<!--pages/shopping/index.wxml-->
+<view class="container">
+  <!-- 添加按钮 -->
+  <view class="add-btn" bindtap="showAddModal">
+    <text class="add-icon">+</text>
+    <text class="add-text">添加购物项</text>
+  </view>
+
+  <!-- 状态筛选 -->
+  <view class="filter-tabs">
+    <view class="tab {{currentTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">
+      待购 ({{stats.pending}})
+    </view>
+    <view class="tab {{currentTab === 'done' ? 'active' : ''}}" bindtap="switchTab" data-tab="done">
+      已购 ({{stats.done}})
+    </view>
+  </view>
+
+  <!-- 分类筛选 -->
+  <scroll-view class="category-scroll" scroll-x>
+    <view class="category-item {{currentCategory === 'all' ? 'active' : ''}}" 
+          bindtap="switchCategory" data-category="all">全部</view>
+    <view class="category-item {{currentCategory === item.id ? 'active' : ''}}" 
+          wx:for="{{categories}}" wx:key="id"
+          bindtap="switchCategory" data-category="{{item.id}}">
+      {{item.name}}
+    </view>
+  </scroll-view>
+
+  <!-- 购物列表 -->
+  <view class="shopping-list" wx:if="{{filteredList.length > 0}}">
+    <view class="shopping-item {{item.status === 'done' ? 'done' : ''}}" 
+          wx:for="{{filteredList}}" wx:key="id"
+          bindtap="toggleItem" data-id="{{item.id}}">
+      <view class="item-check">
+        <view class="check-box {{item.status === 'done' ? 'checked' : ''}}">
+          <text wx:if="{{item.status === 'done'}}">✓</text>
+        </view>
+      </view>
+      <view class="item-content">
+        <view class="item-header">
+          <text class="item-title">{{item.title}}</text>
+          <view class="item-badge" wx:if="{{item.priority === 1}}">紧急</view>
+        </view>
+        <view class="item-meta">
+          <text class="item-category">{{item.category}}</text>
+          <text class="item-quantity">{{item.quantity}}{{item.unit}}</text>
+        </view>
+      </view>
+      <view class="item-actions">
+        <text class="action-btn" catchtap="editItem" data-item="{{item}}">✏️</text>
+        <text class="action-btn delete" catchtap="deleteItem" data-id="{{item.id}}">🗑️</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:else>
+    <text class="empty-icon">🛒</text>
+    <text class="empty-text">{{currentTab === 'pending' ? '暂无待购物品' : '暂无已购物品'}}</text>
+    <text class="empty-hint" wx:if="{{currentTab === 'pending'}}">点击上方按钮添加购物项</text>
+  </view>
+
+  <!-- 清空已购按钮 -->
+  <view class="clear-btn" wx:if="{{stats.done > 0 && currentTab === 'done'}}" bindtap="clearDone">
+    清空已购列表
+  </view>
+</view>
+
+<!-- 添加/编辑弹窗 -->
+<view class="modal-mask" wx:if="{{showModal}}" bindtap="hideModal">
+  <view class="modal-content" catchtap>
+    <view class="modal-header">
+      <text class="modal-title">{{editMode ? '编辑购物项' : '添加购物项'}}</text>
+      <text class="modal-close" bindtap="hideModal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">物品名称</text>
+        <input class="form-input" placeholder="请输入物品名称" value="{{formData.title}}" bindinput="inputTitle" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">分类</text>
+        <picker mode="selector" range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="pickCategory">
+          <view class="form-picker">
+            {{categories[categoryIndex].name}}
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-row">
+        <view class="form-item half">
+          <text class="form-label">数量</text>
+          <input class="form-input" type="number" placeholder="1" value="{{formData.quantity}}" bindinput="inputQuantity" />
+        </view>
+        <view class="form-item half">
+          <text class="form-label">单位</text>
+          <input class="form-input" placeholder="个" value="{{formData.unit}}" bindinput="inputUnit" />
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="priority-check" bindtap="togglePriority">
+          <view class="check-box {{formData.priority ? 'checked' : ''}}">
+            <text wx:if="{{formData.priority}}">✓</text>
+          </view>
+          <text class="priority-label">标记为紧急</text>
+        </view>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn-secondary" bindtap="hideModal">取消</button>
+      <button class="btn-primary" bindtap="submitForm">{{editMode ? '保存' : '添加'}}</button>
+    </view>
+  </view>
+</view>

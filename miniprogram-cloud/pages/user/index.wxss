@@ -1,0 +1,183 @@
+/* pages/user/index.wxss */
+.container {
+  padding: 20rpx;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 用户信息卡片 */
+.user-card {
+  background: linear-gradient(135deg, #FF85A2 0%, #FFB6C1 100%);
+  border-radius: 16rpx;
+  padding: 40rpx;
+  margin-bottom: 20rpx;
+  color: #fff;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 4rpx solid #fff;
+  margin-right: 24rpx;
+}
+
+.edit-btn {
+  padding: 8rpx 20rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+.user-detail {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.user-family {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.user-family-empty {
+  font-size: 24rpx;
+  opacity: 0.8;
+  padding: 8rpx 16rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8rpx;
+  margin-top: 8rpx;
+}
+
+.user-empty {
+  text-align: center;
+}
+
+.user-avatar-default {
+  font-size: 64rpx;
+  margin-bottom: 16rpx;
+}
+
+.login-tip {
+  font-size: 26rpx;
+  opacity: 0.9;
+  margin-bottom: 24rpx;
+}
+
+.btn-login {
+  display: inline-block;
+  padding: 16rpx 48rpx;
+  background: #fff;
+  color: #FF85A2;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+
+/* 数据统计 */
+.stats-section {
+  margin-bottom: 20rpx;
+}
+
+.stats-card {
+  display: flex;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #FF85A2;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+/* 功能菜单 */
+.menu-section {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.menu-list {
+  padding: 16rpx 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 16rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+}
+
+.menu-content {
+  flex: 1;
+}
+
+.menu-title {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.menu-desc {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.menu-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+}
+
+/* 退出登录 */
+.logout-section {
+  text-align: center;
+  padding: 40rpx 0;
+}
+
+.btn-logout {
+  font-size: 26rpx;
+  color: #999;
+  padding: 16rpx 32rpx;
+  background: #fff;
+  border-radius: 12rpx;
+  display: inline-block;
+}
+
+/* 版本信息 */
+.version-info {
+  text-align: center;
+  padding: 40rpx 0;
+  font-size: 22rpx;
+  color: #999;
+}

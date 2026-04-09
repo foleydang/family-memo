@@ -1,0 +1,46 @@
+<!--pages/profile-edit/index.wxml-->
+<view class="container">
+  <!-- 头像 -->
+  <view class="section">
+    <view class="section-title">头像</view>
+    <view class="avatar-section">
+      <!-- 微信新版授权方式：使用 button open-type="chooseAvatar" -->
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image 
+          class="avatar-img" 
+          src="{{avatar || '/images/default-avatar.png'}}" 
+          mode="aspectFill"
+        ></image>
+        <view class="avatar-tip">点击更换</view>
+      </button>
+    </view>
+  </view>
+
+  <!-- 昵称 -->
+  <view class="section">
+    <view class="section-title">昵称</view>
+    <view class="input-section">
+      <!-- 微信新版授权方式：使用 input type="nickname" -->
+      <input 
+        class="nickname-input"
+        type="nickname"
+        placeholder="请输入昵称"
+        value="{{nickname}}"
+        bindinput="onNicknameChange"
+        bindblur="onNicknameBlur"
+        maxlength="20"
+      />
+    </view>
+  </view>
+
+  <!-- 提示 -->
+  <view class="tips">
+    <text class="tip-item">💡 点击头像可使用微信头像</text>
+    <text class="tip-item">💡 昵称输入框可获取微信昵称</text>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-section">
+    <button class="save-btn" bindtap="handleSave" disabled="{{isSaving}}">保存修改</button>
+  </view>
+</view>

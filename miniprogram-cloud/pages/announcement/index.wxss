@@ -1,0 +1,182 @@
+/* pages/announcement/index.wxss */
+.container {
+  padding: 20rpx;
+  padding-bottom: 120rpx;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 公告列表 */
+.announcement-list {
+  margin-bottom: 20rpx;
+}
+
+.announcement-item {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.announcement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.author {
+  font-size: 26rpx;
+  color: #FF85A2;
+  font-weight: bold;
+}
+
+.time {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.announcement-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+}
+
+.announcement-actions {
+  text-align: right;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  color: #f5222d;
+  padding: 8rpx 16rpx;
+}
+
+/* 空状态 */
+.empty-tip {
+  text-align: center;
+  padding: 80rpx 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.empty-tip text:first-child {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: #bbb;
+}
+
+/* 发布按钮 */
+.publish-btn {
+  position: fixed;
+  bottom: 40rpx;
+  left: 40rpx;
+  right: 40rpx;
+  background: #FF85A2;
+  color: #fff;
+  text-align: center;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(255, 133, 162, 0.3);
+}
+
+/* 弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  width: 85%;
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  background: #FF85A2;
+  color: #fff;
+  font-size: 30rpx;
+}
+
+.modal-close {
+  font-size: 36rpx;
+  padding: 8rpx;
+}
+
+.modal-body {
+  padding: 24rpx;
+}
+
+.form-item {
+  margin-bottom: 16rpx;
+}
+
+.form-label {
+  font-size: 26rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 16rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  min-height: 150rpx;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.modal-footer {
+  display: flex;
+  padding: 24rpx;
+  gap: 20rpx;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 16rpx;
+  text-align: center;
+  background: #f5f5f5;
+  color: #666;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+}
+
+.btn-confirm {
+  flex: 1;
+  padding: 16rpx;
+  text-align: center;
+  background: #FF85A2;
+  color: #fff;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+}

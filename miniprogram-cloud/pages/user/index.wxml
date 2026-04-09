@@ -1,0 +1,73 @@
+<!--pages/user/index.wxml-->
+<view class="container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view wx:if="{{userInfo}}" class="user-info">
+      <!-- 点击头像可以编辑 -->
+      <image 
+        class="user-avatar" 
+        src="{{userInfo.avatar || '/images/default-avatar.png'}}" 
+        mode="aspectFill"
+        bindtap="handleAvatarClick"
+      ></image>
+      <view class="user-detail">
+        <view class="user-name">{{userInfo.name || '微信用户'}}</view>
+        <view class="user-family" wx:if="{{familyInfo}}">🏠 {{familyInfo.name}}</view>
+        <view wx:else class="user-family-empty" bindtap="goToFamily">点击创建或加入家庭</view>
+      </view>
+      <!-- 编辑按钮 -->
+      <view class="edit-btn" bindtap="goToEditProfile">
+        <text>编辑</text>
+      </view>
+    </view>
+    <view wx:else class="user-empty">
+      <view class="user-avatar-default">👤</view>
+      <view class="login-tip">点击登录开始使用</view>
+      <view class="btn-login" bindtap="handleLogin">微信登录</view>
+    </view>
+  </view>
+
+  <!-- 数据统计 -->
+  <view wx:if="{{userInfo && familyInfo}}" class="stats-section">
+    <view class="stats-card">
+      <view class="stat-item" bindtap="goToShopping">
+        <view class="stat-num">{{stats.shoppingCount}}</view>
+        <view class="stat-label">购物记录</view>
+      </view>
+      <view class="stat-item" bindtap="goToTodo">
+        <view class="stat-num">{{stats.todoCount}}</view>
+        <view class="stat-label">待办记录</view>
+      </view>
+      <view class="stat-item" bindtap="goToSchedule">
+        <view class="stat-num">{{stats.scheduleCount}}</view>
+        <view class="stat-label">日程记录</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view wx:if="{{userInfo}}" class="menu-section">
+    <view class="menu-list">
+      <block wx:for="{{menuItems}}" wx:key="index">
+        <view class="menu-item" bindtap="handleMenuClick" data-index="{{index}}">
+          <view class="menu-icon">{{item.icon}}</view>
+          <view class="menu-content">
+            <view class="menu-title">{{item.title}}</view>
+            <view class="menu-desc">{{item.desc}}</view>
+          </view>
+          <view class="menu-arrow">›</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view wx:if="{{userInfo}}" class="logout-section">
+    <view class="btn-logout" bindtap="handleLogout">退出登录</view>
+  </view>
+
+  <!-- 版本信息 -->
+  <view class="version-info">
+    <text>家庭备忘录 v1.1.0</text>
+  </view>
+</view>
