@@ -90,6 +90,19 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 反馈表
+CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    type TEXT DEFAULT 'bug',
+    content TEXT NOT NULL,
+    contact TEXT,
+    images TEXT,
+    status TEXT DEFAULT 'pending',
+    reply TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 创建索引
 CREATE INDEX IF NOT EXISTS idx_shopping_family ON shopping_items(family_id);
 CREATE INDEX IF NOT EXISTS idx_shopping_status ON shopping_items(status);
@@ -98,3 +111,5 @@ CREATE INDEX IF NOT EXISTS idx_todo_status ON todos(status);
 CREATE INDEX IF NOT EXISTS idx_schedule_family ON schedules(family_id);
 CREATE INDEX IF NOT EXISTS idx_schedule_date ON schedules(schedule_date);
 CREATE INDEX IF NOT EXISTS idx_family_members ON family_members(family_id, user_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_user ON feedback(user_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status);

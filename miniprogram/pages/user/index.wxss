@@ -27,6 +27,13 @@
   margin-right: 24rpx;
 }
 
+.edit-btn {
+  padding: 8rpx 20rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
 .user-detail {
   flex: 1;
 }

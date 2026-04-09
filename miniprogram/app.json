@@ -6,6 +6,8 @@
     "pages/schedule/index",
     "pages/family/index",
     "pages/user/index",
+    "pages/profile-edit/index",
+    "pages/feedback/index",
     "pages/my-records/index",
     "pages/remind-settings/index",
     "pages/announcement/index",

@@ -1,0 +1,84 @@
+<!--pages/feedback/index.wxml-->
+<view class="container">
+  <!-- 反馈类型 -->
+  <view class="section">
+    <view class="section-title">反馈类型</view>
+    <radio-group class="type-group" bindchange="onTypeChange">
+      <label class="type-item" wx:for="{{types}}" wx:key="value">
+        <radio value="{{item.value}}" checked="{{currentType === item.value}}" color="#FF85A2"/>
+        <text>{{item.label}}</text>
+      </label>
+    </radio-group>
+  </view>
+
+  <!-- 反馈内容 -->
+  <view class="section">
+    <view class="section-title">问题描述</view>
+    <textarea 
+      class="content-input"
+      placeholder="请详细描述您遇到的问题或建议（至少10字）"
+      value="{{content}}"
+      bindinput="onContentChange"
+      maxlength="500"
+      show-confirm-bar="{{false}}"
+    ></textarea>
+    <view class="word-count">{{content.length || 0}}/500</view>
+  </view>
+
+  <!-- 图片上传 -->
+  <view class="section">
+    <view class="section-title">添加图片（可选）</view>
+    <view class="image-list">
+      <view class="image-item" wx:for="{{images}}" wx:key="index">
+        <image src="{{item}}" mode="aspectFill" bindtap="previewImage" data-src="{{item}}"></image>
+        <view class="delete-btn" bindtap="deleteImage" data-index="{{index}}">×</view>
+      </view>
+      <view class="add-image" wx:if="{{images.length < maxImages}}" bindtap="chooseImage">
+        <text class="add-icon">+</text>
+        <text class="add-text">添加图片</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 联系方式 -->
+  <view class="section">
+    <view class="section-title">联系方式（可选）</view>
+    <input 
+      class="contact-input"
+      placeholder="微信/邮箱/电话，方便我们回复您"
+      value="{{contact}}"
+      bindinput="onContactChange"
+      maxlength="50"
+    />
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button class="submit-btn" bindtap="handleSubmit" disabled="{{isSubmitting}}">
+      提交反馈
+    </button>
+  </view>
+
+  <!-- 历史反馈 -->
+  <view class="history-section">
+    <view class="history-header" bindtap="toggleHistory">
+      <text>我的反馈记录</text>
+      <text class="arrow">{{showHistory ? '▼' : '▶'}}</text>
+    </view>
+    
+    <view class="history-list" wx:if="{{showHistory && feedbackList.length > 0}}">
+      <view class="history-item" wx:for="{{feedbackList}}" wx:key="id" bindtap="viewFeedback" data-id="{{item.id}}">
+        <view class="history-type">{{item.type === 'bug' ? '异常' : item.type === 'suggest' ? '建议' : item.type === 'question' ? '问题' : '其他'}}</view>
+        <view class="history-content">{{item.content}}</view>
+        <view class="history-status">
+          <text class="status-{{item.status}}">{{item.status === 'pending' ? '待处理' : item.status === 'processing' ? '处理中' : '已回复'}}</text>
+          <text class="history-time">{{item.created_at}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="history-empty" wx:if="{{showHistory && feedbackList.length === 0}}">
+      暂无反馈记录
+    </view>
+  </view>
+</view>

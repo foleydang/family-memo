@@ -13,13 +13,15 @@ const familyRoutes = require('./routes/family');
 const shoppingRoutes = require('./routes/shopping');
 const todoRoutes = require('./routes/todo');
 const scheduleRoutes = require('./routes/schedule');
+const feedbackRoutes = require('./routes/feedback');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
 
 // 中间件
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 静态文件
 app.use('/static', express.static(path.join(__dirname, '../public')));
@@ -30,6 +32,8 @@ app.use('/api/family', familyRoutes);
 app.use('/api/shopping', shoppingRoutes);
 app.use('/api/todo', todoRoutes);
 app.use('/api/schedule', scheduleRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // 用户统计 API
 app.get('/api/user/stats', authMiddleware, (req, res) => {
@@ -46,15 +50,15 @@ app.get('/api/user/stats', authMiddleware, (req, res) => {
   try {
     const shoppingCount = db.prepare(
       'SELECT COUNT(*) as count FROM shopping_items WHERE family_id = ? AND added_by = ?'
-    ).all(familyId, req.userId)[0]?.count || 0;
+    ).get(familyId, req.userId)?.count || 0;
     
     const todoCount = db.prepare(
       'SELECT COUNT(*) as count FROM todos WHERE family_id = ? AND added_by = ?'
-    ).all(familyId, req.userId)[0]?.count || 0;
+    ).get(familyId, req.userId)?.count || 0;
     
     const scheduleCount = db.prepare(
       'SELECT COUNT(*) as count FROM schedules WHERE family_id = ? AND created_by = ?'
-    ).all(familyId, req.userId)[0]?.count || 0;
+    ).get(familyId, req.userId)?.count || 0;
     
     res.json({
       success: true,

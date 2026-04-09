@@ -60,6 +60,18 @@ Page({
     }
   },
 
+  // 点击头像，跳转到编辑页面
+  handleAvatarClick() {
+    if (this.data.userInfo) {
+      wx.navigateTo({ url: '/pages/profile-edit/index' });
+    }
+  },
+
+  // 编辑资料
+  goToEditProfile() {
+    wx.navigateTo({ url: '/pages/profile-edit/index' });
+  },
+
   handleMenuClick(e) {
     const index = e.currentTarget.dataset.index;
     switch (index) {
@@ -73,7 +85,7 @@ Page({
         wx.navigateTo({ url: '/pages/export/index' });
         break;
       case 3: // 帮助反馈
-        wx.showToast({ title: '功能开发中', icon: 'none' });
+        wx.navigateTo({ url: '/pages/feedback/index' });
         break;
     }
   },
