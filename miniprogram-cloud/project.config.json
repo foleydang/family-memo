@@ -41,5 +41,5 @@
     "ignore": []
   },
   "condition": {},
-  "cloudfunctionRoot": "../cloudfunctions-cloud/"
+  "cloudfunctionRoot": "cloudfunctions/"
 }
