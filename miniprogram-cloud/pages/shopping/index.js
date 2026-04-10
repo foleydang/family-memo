@@ -4,10 +4,29 @@ const app = getApp()
 Page({
   data: {
     items: [],
+    filteredList: [],
     familyInfo: null,
-    showAdd: false,
-    newItem: { title: '', category: '其他', quantity: 1, unit: '个' },
-    categories: ['食品', '日用品', '蔬果', '肉类', '其他']
+    showModal: false,
+    editMode: false,
+    currentTab: 'pending',
+    currentCategory: 'all',
+    categories: [
+      { id: 'food', name: '食品' },
+      { id: 'daily', name: '日用品' },
+      { id: 'fruit', name: '蔬果' },
+      { id: 'meat', name: '肉类' },
+      { id: 'other', name: '其他' }
+    ],
+    categoryIndex: 4,
+    formData: {
+      _id: '',
+      title: '',
+      category: 'other',
+      quantity: 1,
+      unit: '个',
+      priority: 0
+    },
+    stats: { pending: 0, done: 0 }
   },
 
   onLoad() {
@@ -25,13 +44,26 @@ Page({
         content: '请先创建或加入家庭',
         showCancel: false,
         success: () => {
-          wx.switchTab({ url: '/pages/user/index' })
+          wx.switchTab({ url: '/pages/index/index' })
         }
       })
       return false
     }
     this.setData({ familyInfo: app.globalData.familyInfo })
     return true
+  },
+
+  updateFilteredList() {
+    let list = this.data.items
+    if (this.data.currentTab === 'pending') {
+      list = list.filter(i => i.status === 'pending')
+    } else if (this.data.currentTab === 'done') {
+      list = list.filter(i => i.status === 'done')
+    }
+    if (this.data.currentCategory !== 'all') {
+      list = list.filter(i => i.category === this.data.currentCategory)
+    }
+    this.setData({ filteredList: list })
   },
 
   async loadItems() {
@@ -47,52 +79,105 @@ Page({
       })
       
       if (res.result.success) {
-        this.setData({ items: res.result.data })
+        const items = res.result.data
+        const pending = items.filter(i => i.status === 'pending').length
+        const done = items.filter(i => i.status === 'done').length
+        this.setData({ items, stats: { pending, done } })
+        this.updateFilteredList()
       }
     } catch (err) {
       console.error('加载购物清单失败', err)
     }
   },
 
-  showAddItem() {
-    this.setData({ showAdd: true, newItem: { title: '', category: '其他', quantity: 1, unit: '个' } })
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab
+    this.setData({ currentTab: tab })
+    this.updateFilteredList()
   },
 
-  hideAddItem() {
-    this.setData({ showAdd: false })
+  switchCategory(e) {
+    const category = e.currentTarget.dataset.category
+    this.setData({ currentCategory: category })
+    this.updateFilteredList()
   },
 
-  onTitleInput(e) {
-    this.setData({ 'newItem.title': e.detail.value })
+  showAddModal() {
+    this.setData({
+      showModal: true,
+      editMode: false,
+      formData: { _id: '', title: '', category: 'other', quantity: 1, unit: '个', priority: 0 },
+      categoryIndex: 4
+    })
   },
 
-  onCategoryChange(e) {
-    this.setData({ 'newItem.category': this.data.categories[e.detail.value] })
+  hideModal() {
+    this.setData({ showModal: false })
   },
 
-  onQuantityChange(e) {
-    this.setData({ 'newItem.quantity': parseInt(e.detail.value) || 1 })
+  inputTitle(e) {
+    this.setData({ 'formData.title': e.detail.value })
   },
 
-  onUnitInput(e) {
-    this.setData({ 'newItem.unit': e.detail.value })
+  inputQuantity(e) {
+    this.setData({ 'formData.quantity': parseInt(e.detail.value) || 1 })
   },
 
-  async addItem() {
-    if (!this.data.newItem.title.trim()) {
-      return wx.showToast({ title: '请输入商品名称', icon: 'none' })
+  inputUnit(e) {
+    this.setData({ 'formData.unit': e.detail.value })
+  },
+
+  pickCategory(e) {
+    const index = e.detail.value
+    this.setData({
+      categoryIndex: index,
+      'formData.category': this.data.categories[index].id
+    })
+  },
+
+  togglePriority() {
+    this.setData({ 'formData.priority': this.data.formData.priority ? 0 : 1 })
+  },
+
+  editItem(e) {
+    const item = e.currentTarget.dataset.item
+    const catIndex = this.data.categories.findIndex(c => c.id === item.category) || 4
+    this.setData({
+      showModal: true,
+      editMode: true,
+      formData: {
+        _id: item._id,
+        title: item.title,
+        category: item.category || 'other',
+        quantity: item.quantity || 1,
+        unit: item.unit || '个',
+        priority: item.priority || 0
+      },
+      categoryIndex: catIndex
+    })
+  },
+
+  async submitForm() {
+    if (!this.data.formData.title.trim()) {
+      return wx.showToast({ title: '请输入物品名称', icon: 'none' })
     }
     
-    wx.showLoading({ title: '添加中' })
+    wx.showLoading({ title: this.data.editMode ? '保存中' : '添加中' })
     
     try {
+      const action = this.data.editMode ? 'update' : 'add'
       const res = await wx.cloud.callFunction({
         name: 'shopping',
         data: {
-          action: 'add',
+          action,
           data: {
+            _id: this.data.formData._id,
             familyId: this.data.familyInfo._id,
-            ...this.data.newItem
+            title: this.data.formData.title.trim(),
+            category: this.data.formData.category,
+            quantity: this.data.formData.quantity,
+            unit: this.data.formData.unit,
+            priority: this.data.formData.priority
           }
         }
       })
@@ -100,18 +185,18 @@ Page({
       wx.hideLoading()
       
       if (res.result.success) {
-        wx.showToast({ title: '添加成功', icon: 'success' })
-        this.hideAddItem()
+        wx.showToast({ title: this.data.editMode ? '已保存' : '添加成功', icon: 'success' })
+        this.hideModal()
         this.loadItems()
       }
     } catch (err) {
       wx.hideLoading()
-      wx.showToast({ title: '添加失败', icon: 'none' })
+      wx.showToast({ title: '操作失败', icon: 'none' })
     }
   },
 
   async toggleItem(e) {
-    const { id } = e.currentTarget.dataset
+    const id = e.currentTarget.dataset.id
     
     try {
       await wx.cloud.callFunction({
@@ -129,7 +214,7 @@ Page({
   },
 
   async deleteItem(e) {
-    const { id } = e.currentTarget.dataset
+    const id = e.currentTarget.dataset.id
     
     wx.showModal({
       title: '确认删除',
@@ -149,6 +234,34 @@ Page({
             this.loadItems()
           } catch (err) {
             wx.showToast({ title: '删除失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  },
+
+  async clearDone() {
+    wx.showModal({
+      title: '确认清空',
+      content: '确定要清空所有已购物品吗？',
+      success: async (res) => {
+        if (res.confirm) {
+          const doneItems = this.data.items.filter(i => i.status === 'done')
+          wx.showLoading({ title: '清空中' })
+          
+          try {
+            for (const item of doneItems) {
+              await wx.cloud.callFunction({
+                name: 'shopping',
+                data: { action: 'delete', data: { _id: item._id } }
+              })
+            }
+            wx.hideLoading()
+            wx.showToast({ title: '已清空', icon: 'success' })
+            this.loadItems()
+          } catch (err) {
+            wx.hideLoading()
+            wx.showToast({ title: '清空失败', icon: 'none' })
           }
         }
       }

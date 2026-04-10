@@ -23,13 +23,19 @@ Page({
   },
 
   async loadFamilyInfo() {
+    // 先从 globalData 获取
+    this.setData({ familyInfo: app.globalData.familyInfo })
+    
+    // 如果有家庭，加载成员
     if (app.globalData.familyInfo) {
       this.setData({ familyInfo: app.globalData.familyInfo })
-      this.loadMembers()
+      await this.loadMembers()
     }
   },
 
   async loadMembers() {
+    if (!this.data.familyInfo) return
+    
     try {
       const res = await wx.cloud.callFunction({
         name: 'family',
@@ -47,22 +53,18 @@ Page({
     }
   },
 
-  // 显示创建家庭弹窗
   showCreateModal() {
     this.setData({ showCreate: true, familyName: '' })
   },
 
-  // 隐藏创建家庭弹窗
   hideCreateModal() {
     this.setData({ showCreate: false, familyName: '' })
   },
 
-  // 显示加入家庭弹窗
   showJoinModal() {
     this.setData({ showJoin: true, inputCode: '' })
   },
 
-  // 隐藏加入家庭弹窗
   hideJoinModal() {
     this.setData({ showJoin: false, inputCode: '' })
   },
@@ -75,7 +77,6 @@ Page({
     this.setData({ inputCode: e.detail.value.toUpperCase() })
   },
 
-  // 创建家庭
   async createFamily() {
     if (!this.data.familyName.trim()) {
       return wx.showToast({ title: '请输入家庭名称', icon: 'none' })
@@ -97,8 +98,15 @@ Page({
       if (res.result.success) {
         wx.showToast({ title: '创建成功', icon: 'success' })
         this.hideCreateModal()
+        
+        // 更新 globalData
         await app.getFamilyInfo()
-        this.loadFamilyInfo()
+        
+        // 立即更新当前页面数据
+        this.setData({ familyInfo: app.globalData.familyInfo })
+        
+        // 加载成员（应该包含自己）
+        await this.loadMembers()
       } else {
         wx.showToast({ title: res.result.message || '创建失败', icon: 'none' })
       }
@@ -109,7 +117,6 @@ Page({
     }
   },
 
-  // 加入家庭
   async joinFamily() {
     if (!this.data.inputCode.trim()) {
       return wx.showToast({ title: '请输入邀请码', icon: 'none' })
@@ -132,7 +139,8 @@ Page({
         wx.showToast({ title: '加入成功', icon: 'success' })
         this.hideJoinModal()
         await app.getFamilyInfo()
-        this.loadFamilyInfo()
+        this.setData({ familyInfo: app.globalData.familyInfo })
+        await this.loadMembers()
       } else {
         wx.showToast({ title: res.result.message || '加入失败', icon: 'none' })
       }
@@ -143,7 +151,6 @@ Page({
     }
   },
 
-  // 生成邀请码
   async generateInviteCode() {
     if (!this.data.familyInfo) return
     
@@ -175,7 +182,6 @@ Page({
     }
   },
 
-  // 复制邀请码
   copyInviteCode() {
     const code = this.data.familyInfo?.inviteCode
     if (!code) {
@@ -190,17 +196,14 @@ Page({
     })
   },
 
-  // 分享邀请码
   shareInvite() {
     const code = this.data.familyInfo?.inviteCode
     if (!code) {
       this.generateInviteCode()
       return
     }
-    // 微信小程序会自动触发 onShareAppMessage
   },
 
-  // 退出家庭
   async leaveFamily() {
     const res = await wx.showModal({
       title: '确认退出',
@@ -212,8 +215,7 @@ Page({
     wx.showLoading({ title: '退出中' })
     
     try {
-      // TODO: 需要在云函数中添加 leave action
-      // 暂时直接清除本地数据
+      // 清除本地数据
       app.globalData.familyInfo = null
       this.setData({ familyInfo: null, members: [] })
       wx.hideLoading()
@@ -223,5 +225,7 @@ Page({
       console.error('退出家庭失败:', err)
       wx.showToast({ title: '退出失败', icon: 'none' })
     }
-  }
+  },
+
+  stopPropagation() {}
 })

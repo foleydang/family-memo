@@ -4,9 +4,22 @@ const app = getApp()
 Page({
   data: {
     todos: [],
+    filteredList: [],
     familyInfo: null,
-    showAdd: false,
-    newTodo: { title: '', description: '', priority: 0, dueDate: '' }
+    showModal: false,
+    editMode: false,
+    currentTab: 'all',
+    formData: {
+      _id: '',
+      title: '',
+      description: '',
+      priority: 0,
+      assigneeId: ''
+    },
+    members: [],
+    memberNames: ['不指派'],
+    assigneeIndex: 0,
+    stats: { pending: 0, doing: 0, done: 0 }
   },
 
   onLoad() {
@@ -15,6 +28,7 @@ Page({
 
   onShow() {
     this.loadTodos()
+    this.loadMembers()
   },
 
   checkFamily() {
@@ -24,13 +38,43 @@ Page({
         content: '请先创建或加入家庭',
         showCancel: false,
         success: () => {
-          wx.switchTab({ url: '/pages/user/index' })
+          wx.switchTab({ url: '/pages/index/index' })
         }
       })
       return false
     }
     this.setData({ familyInfo: app.globalData.familyInfo })
     return true
+  },
+
+  async loadMembers() {
+    if (!this.data.familyInfo) return
+    
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'family',
+        data: {
+          action: 'getMembers',
+          data: { familyId: this.data.familyInfo._id }
+        }
+      })
+      
+      if (res.result.success) {
+        const members = res.result.data
+        const memberNames = ['不指派', ...members.map(m => m.nickName || '成员')]
+        this.setData({ members, memberNames })
+      }
+    } catch (err) {
+      console.error('加载成员失败', err)
+    }
+  },
+
+  updateFilteredList() {
+    let list = this.data.todos
+    if (this.data.currentTab !== 'all') {
+      list = list.filter(i => i.status === this.data.currentTab)
+    }
+    this.setData({ filteredList: list })
   },
 
   async loadTodos() {
@@ -46,48 +90,95 @@ Page({
       })
       
       if (res.result.success) {
-        this.setData({ todos: res.result.data })
+        const todos = res.result.data
+        const pending = todos.filter(i => i.status === 'pending').length
+        const doing = todos.filter(i => i.status === 'doing').length
+        const done = todos.filter(i => i.status === 'done').length
+        this.setData({ todos, stats: { pending, doing, done } })
+        this.updateFilteredList()
       }
     } catch (err) {
       console.error('加载待办失败', err)
     }
   },
 
-  showAddTodo() {
-    this.setData({ showAdd: true, newTodo: { title: '', description: '', priority: 0, dueDate: '' } })
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab || 'all'
+    this.setData({ currentTab: tab })
+    this.updateFilteredList()
   },
 
-  hideAddTodo() {
-    this.setData({ showAdd: false })
+  showAddModal() {
+    this.setData({
+      showModal: true,
+      editMode: false,
+      formData: { _id: '', title: '', description: '', priority: 0, assigneeId: '' },
+      assigneeIndex: 0
+    })
   },
 
-  onTitleInput(e) {
-    this.setData({ 'newTodo.title': e.detail.value })
+  hideModal() {
+    this.setData({ showModal: false })
   },
 
-  onDescInput(e) {
-    this.setData({ 'newTodo.description': e.detail.value })
+  inputTitle(e) {
+    this.setData({ 'formData.title': e.detail.value })
   },
 
-  onDateChange(e) {
-    this.setData({ 'newTodo.dueDate': e.detail.value })
+  inputDescription(e) {
+    this.setData({ 'formData.description': e.detail.value })
   },
 
-  async addTodo() {
-    if (!this.data.newTodo.title.trim()) {
-      return wx.showToast({ title: '请输入待办事项', icon: 'none' })
+  togglePriority(e) {
+    const level = e.currentTarget.dataset.level || 0
+    this.setData({ 'formData.priority': level })
+  },
+
+  pickAssignee(e) {
+    const index = e.detail.value
+    const assigneeId = index === 0 ? '' : this.data.members[index - 1]?._id || ''
+    this.setData({ assigneeIndex: index, 'formData.assigneeId': assigneeId })
+  },
+
+  editItem(e) {
+    const item = e.currentTarget.dataset.item
+    const assigneeIndex = item.assigneeId 
+      ? this.data.members.findIndex(m => m._id === item.assigneeId) + 1 
+      : 0
+    this.setData({
+      showModal: true,
+      editMode: true,
+      formData: {
+        _id: item._id,
+        title: item.title,
+        description: item.description || '',
+        priority: item.priority || 0,
+        assigneeId: item.assigneeId || ''
+      },
+      assigneeIndex
+    })
+  },
+
+  async submitForm() {
+    if (!this.data.formData.title.trim()) {
+      return wx.showToast({ title: '请输入待办内容', icon: 'none' })
     }
     
-    wx.showLoading({ title: '添加中' })
+    wx.showLoading({ title: this.data.editMode ? '保存中' : '添加中' })
     
     try {
+      const action = this.data.editMode ? 'update' : 'add'
       const res = await wx.cloud.callFunction({
         name: 'todo',
         data: {
-          action: 'add',
+          action,
           data: {
+            _id: this.data.formData._id,
             familyId: this.data.familyInfo._id,
-            ...this.data.newTodo
+            title: this.data.formData.title.trim(),
+            description: this.data.formData.description,
+            priority: this.data.formData.priority,
+            assigneeId: this.data.formData.assigneeId
           }
         }
       })
@@ -95,25 +186,26 @@ Page({
       wx.hideLoading()
       
       if (res.result.success) {
-        wx.showToast({ title: '添加成功', icon: 'success' })
-        this.hideAddTodo()
+        wx.showToast({ title: this.data.editMode ? '已保存' : '添加成功', icon: 'success' })
+        this.hideModal()
         this.loadTodos()
       }
     } catch (err) {
       wx.hideLoading()
-      wx.showToast({ title: '添加失败', icon: 'none' })
+      wx.showToast({ title: '操作失败', icon: 'none' })
     }
   },
 
-  async toggleTodo(e) {
-    const { id } = e.currentTarget.dataset
+  async toggleItem(e) {
+    const item = e.currentTarget.dataset.item
+    const newStatus = item.status === 'done' ? 'pending' : 'done'
     
     try {
       await wx.cloud.callFunction({
         name: 'todo',
         data: {
           action: 'toggle',
-          data: { _id: id }
+          data: { _id: item._id }
         }
       })
       
@@ -123,8 +215,8 @@ Page({
     }
   },
 
-  async deleteTodo(e) {
-    const { id } = e.currentTarget.dataset
+  async deleteItem(e) {
+    const id = e.currentTarget.dataset.id
     
     wx.showModal({
       title: '确认删除',
@@ -148,5 +240,35 @@ Page({
         }
       }
     })
-  }
+  },
+
+  async clearDone() {
+    wx.showModal({
+      title: '确认清空',
+      content: '确定要清空所有已完成待办吗？',
+      success: async (res) => {
+        if (res.confirm) {
+          const doneItems = this.data.todos.filter(i => i.status === 'done')
+          wx.showLoading({ title: '清空中' })
+          
+          try {
+            for (const item of doneItems) {
+              await wx.cloud.callFunction({
+                name: 'todo',
+                data: { action: 'delete', data: { _id: item._id } }
+              })
+            }
+            wx.hideLoading()
+            wx.showToast({ title: '已清空', icon: 'success' })
+            this.loadTodos()
+          } catch (err) {
+            wx.hideLoading()
+            wx.showToast({ title: '清空失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  },
+
+  stopPropagation() {}
 })

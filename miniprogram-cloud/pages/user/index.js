@@ -28,12 +28,10 @@ Page({
   },
 
   loadUserInfo() {
-    if (app.globalData.userInfo) {
-      this.setData({
-        userInfo: app.globalData.userInfo,
-        familyInfo: app.globalData.familyInfo
-      })
-    }
+    this.setData({
+      userInfo: app.globalData.userInfo,
+      familyInfo: app.globalData.familyInfo
+    })
   },
 
   async loadStats() {
@@ -58,12 +56,10 @@ Page({
     }
   },
 
-  // 点击头像跳转编辑页
   handleAvatarClick() {
     wx.navigateTo({ url: '/pages/profile-edit/index' })
   },
 
-  // 编辑资料
   goToEditProfile() {
     wx.navigateTo({ url: '/pages/profile-edit/index' })
   },
@@ -87,19 +83,7 @@ Page({
   },
 
   goToFamily() {
-    wx.navigateTo({ url: '/pages/family/index' })
-  },
-
-  goToShopping() {
-    wx.switchTab({ url: '/pages/shopping/index' })
-  },
-
-  goToTodo() {
-    wx.switchTab({ url: '/pages/todo/index' })
-  },
-
-  goToSchedule() {
-    wx.switchTab({ url: '/pages/schedule/index' })
+    wx.switchTab({ url: '/pages/family/index' })
   },
 
   handleLogout() {
@@ -108,13 +92,15 @@ Page({
       content: '退出登录后需要重新登录',
       success: (res) => {
         if (res.confirm) {
+          // 清除登录状态
           app.logout()
           this.setData({
             userInfo: null,
             familyInfo: null,
             stats: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
           })
-          app.login()
+          // 跳转到首页重新登录
+          wx.switchTab({ url: '/pages/index/index' })
         }
       }
     })
