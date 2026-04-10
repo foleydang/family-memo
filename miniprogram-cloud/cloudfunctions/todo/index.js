@@ -87,9 +87,8 @@ async function deleteItem(data) {
 
 async function toggleItem(data) {
   try {
-    // 获取当前状态并切换
-    const item = await db.collection('todos').doc(data._id).get()
-    const newStatus = item.data.status === 'done' ? 'pending' : 'done'
+    // 支持传入目标状态（三态切换）
+    const newStatus = data.status || 'done'
     
     await db.collection('todos').doc(data._id).update({
       data: {

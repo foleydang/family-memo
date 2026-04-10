@@ -23,14 +23,20 @@
     </view>
   </view>
 
-  <!-- 未加入家庭提示 -->
-  <view class="card" wx:if="{{userInfo && !familyInfo}}">
-    <view class="empty-state">
-      <text class="empty-icon">👨👩👧👦</text>
-      <text class="empty-text">还没有加入家庭哦</text>
-      <view class="flex mt-24">
-        <button class="btn-secondary mr-16" bindtap="handleJoinFamily">加入家庭</button>
-        <button class="btn-primary" bindtap="handleCreateFamily">创建家庭</button>
+  <!-- 未加入家庭提示 - 优化版 -->
+  <view class="no-family-card card" wx:if="{{userInfo && !familyInfo}}">
+    <view class="no-family-content">
+      <text class="no-family-icon">🏡</text>
+      <text class="no-family-title">开始你的家庭之旅</text>
+      <text class="no-family-desc">创建一个家庭，邀请家人一起记录生活点滴</text>
+      <view class="no-family-actions">
+        <view class="create-family-btn" bindtap="handleCreateFamily">
+          <text class="btn-icon">✨</text>
+          <text class="btn-text">创建家庭</text>
+        </view>
+        <view class="join-family-btn" bindtap="handleJoinFamily">
+          <text class="btn-text">已有邀请码？加入家庭</text>
+        </view>
       </view>
     </view>
   </view>

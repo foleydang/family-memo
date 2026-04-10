@@ -21,7 +21,6 @@ Page({
       endTime: '',
       type: 'birthday',
       recurring: 'none',
-      recurringStart: '',
       recurringEnd: ''
     },
     types: [
@@ -144,11 +143,8 @@ Page({
       const scheduleDate = new Date(s.scheduleDate)
       const checkDate = new Date(dateStr)
       
-      // 检查是否在周期范围内
-      if (s.recurringStart) {
-        const startDate = new Date(s.recurringStart)
-        if (checkDate < startDate) return false
-      }
+      // 检查是否在周期范围内（日程日期为开始）
+      if (checkDate < scheduleDate) return false
       if (s.recurringEnd) {
         const endDate = new Date(s.recurringEnd)
         if (checkDate > endDate) return false
@@ -236,7 +232,6 @@ Page({
         endTime: '',
         type: 'birthday',
         recurring: 'none',
-        recurringStart: '',
         recurringEnd: ''
       },
       typeIndex: 0,
@@ -267,10 +262,6 @@ Page({
 
   onEndTimeChange(e) {
     this.setData({ 'formData.endTime': e.detail.value })
-  },
-
-  onRecurringStartChange(e) {
-    this.setData({ 'formData.recurringStart': e.detail.value })
   },
 
   onRecurringEndChange(e) {
@@ -310,7 +301,6 @@ Page({
         endTime: item.endTime || '',
         type: item.type || 'other',
         recurring: item.recurring || 'none',
-        recurringStart: item.recurringStart || '',
         recurringEnd: item.recurringEnd || ''
       },
       typeIndex: typeIndex >= 0 ? typeIndex : this.data.types.length - 1,
@@ -345,7 +335,6 @@ Page({
             endTime: this.data.formData.endTime,
             type: this.data.formData.type,
             recurring: this.data.formData.recurring,
-            recurringStart: this.data.formData.recurringStart,
             recurringEnd: this.data.formData.recurringEnd
           }
         }

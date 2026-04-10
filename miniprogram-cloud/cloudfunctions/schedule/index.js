@@ -54,7 +54,6 @@ async function addItem(openid, data) {
         endTime: data.endTime || null,
         type: data.type || 'other',
         recurring: data.recurring || 'none',
-        recurringStart: data.recurringStart || null,
         recurringEnd: data.recurringEnd || null,
         createdBy: userId,
         createTime: db.serverDate()
@@ -78,7 +77,6 @@ async function updateItem(data) {
         endTime: data.endTime,
         type: data.type,
         recurring: data.recurring || 'none',
-        recurringStart: data.recurringStart,
         recurringEnd: data.recurringEnd
       }
     })
