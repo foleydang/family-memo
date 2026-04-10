@@ -1,6 +1,9 @@
 // pages/schedule/index.js - 云开发版本
 const app = getApp()
 
+// 订阅消息模板ID
+const SCHEDULE_REMIND_TEMPLATE_ID = 'bDHCtdW_8crvYVMvD1p0fo_u1vIR0zuKTSPGr8BW1dU'
+
 Page({
   data: {
     schedules: [],
@@ -21,7 +24,8 @@ Page({
       endTime: '',
       type: 'birthday',
       recurring: 'none',
-      recurringEnd: ''
+      recurringEnd: '',
+      remind: 0
     },
     types: [
       { value: 'birthday', name: '生日' },
@@ -58,7 +62,6 @@ Page({
   },
 
   checkStatus() {
-    // 先检查是否登录
     if (!app.globalData.userInfo) {
       wx.showModal({
         title: '提示',
@@ -71,7 +74,6 @@ Page({
       return false
     }
     
-    // 再检查是否有家庭
     if (!app.globalData.familyInfo) {
       wx.showModal({
         title: '提示',
@@ -254,7 +256,8 @@ Page({
         endTime: '',
         type: 'birthday',
         recurring: 'none',
-        recurringEnd: ''
+        recurringEnd: '',
+        remind: 0
       },
       typeIndex: 0,
       recurringIndex: 0,
@@ -302,7 +305,8 @@ Page({
   },
 
   pickRemind(e) {
-    this.setData({ remindIndex: e.detail.value })
+    const index = parseInt(e.detail.value)
+    this.setData({ remindIndex: index, 'formData.remind': index })
   },
 
   editItem(e) {
@@ -323,10 +327,34 @@ Page({
         endTime: item.endTime || '',
         type: item.type || 'other',
         recurring: item.recurring || 'none',
-        recurringEnd: item.recurringEnd || ''
+        recurringEnd: item.recurringEnd || '',
+        remind: item.remind || 0
       },
       typeIndex: typeIndex >= 0 ? typeIndex : this.data.types.length - 1,
-      recurringIndex: recurringIndex >= 0 ? recurringIndex : 0
+      recurringIndex: recurringIndex >= 0 ? recurringIndex : 0,
+      remindIndex: item.remind || 0
+    })
+  },
+
+  // 请求订阅消息
+  async requestSubscribe() {
+    return new Promise((resolve) => {
+      wx.requestSubscribeMessage({
+        tmplIds: [SCHEDULE_REMIND_TEMPLATE_ID],
+        success: (res) => {
+          if (res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept') {
+            console.log('用户同意订阅消息')
+            resolve(true)
+          } else {
+            console.log('用户拒绝订阅消息')
+            resolve(false)
+          }
+        },
+        fail: (err) => {
+          console.error('请求订阅失败', err)
+          resolve(false)
+        }
+      })
     })
   },
 
@@ -337,6 +365,14 @@ Page({
     
     if (!this.data.formData.date) {
       return wx.showToast({ title: '请选择日期', icon: 'none' })
+    }
+    
+    // 如果设置了提醒，请求订阅消息
+    if (this.data.formData.remind > 0) {
+      const subscribed = await this.requestSubscribe()
+      if (!subscribed) {
+        wx.showToast({ title: '未授权提醒功能', icon: 'none' })
+      }
     }
     
     wx.showLoading({ title: this.data.editMode ? '保存中' : '添加中' })
@@ -357,7 +393,8 @@ Page({
             endTime: this.data.formData.endTime,
             type: this.data.formData.type,
             recurring: this.data.formData.recurring,
-            recurringEnd: this.data.formData.recurringEnd
+            recurringEnd: this.data.formData.recurringEnd,
+            remind: this.data.formData.remind
           }
         }
       })

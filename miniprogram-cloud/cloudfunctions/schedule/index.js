@@ -16,6 +16,8 @@ exports.main = async (event, context) => {
       return await updateItem(data)
     case 'delete':
       return await deleteItem(data)
+    case 'getTodayRemind':
+      return await getTodayRemind(openid)
     default:
       return { success: false, message: '未知操作' }
   }
@@ -55,6 +57,7 @@ async function addItem(openid, data) {
         type: data.type || 'other',
         recurring: data.recurring || 'none',
         recurringEnd: data.recurringEnd || null,
+        remind: data.remind || 0,
         createdBy: userId,
         createTime: db.serverDate()
       }
@@ -77,7 +80,8 @@ async function updateItem(data) {
         endTime: data.endTime,
         type: data.type,
         recurring: data.recurring || 'none',
-        recurringEnd: data.recurringEnd
+        recurringEnd: data.recurringEnd,
+        remind: data.remind || 0
       }
     })
     return { success: true }
@@ -93,4 +97,34 @@ async function deleteItem(data) {
   } catch (err) {
     return { success: false, message: err.message }
   }
+}
+
+// 获取今日需要提醒的日程
+async function getTodayRemind(openid) {
+  try {
+    const userRes = await db.collection('users').where({ openid }).get()
+    const userId = userRes.data[0]?._id
+    
+    const today = new Date()
+    const todayStr = formatDate(today)
+    
+    const res = await db.collection('schedules')
+      .where({
+        createdBy: userId,
+        scheduleDate: todayStr,
+        remind: db.command.gt(0)
+      })
+      .get()
+    
+    return { success: true, data: res.data }
+  } catch (err) {
+    return { success: false, message: err.message }
+  }
+}
+
+function formatDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }

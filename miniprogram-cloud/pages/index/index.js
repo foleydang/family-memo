@@ -1,6 +1,9 @@
 // pages/index/index.js - 云开发版本
 const app = getApp()
 
+// 订阅消息模板ID
+const SCHEDULE_REMIND_TEMPLATE_ID = 'bDHCtdW_8crvYVMvD1p0fo_u1vIR0zuKTSPGr8BW1dU'
+
 Page({
   data: {
     userInfo: null,
@@ -16,8 +19,9 @@ Page({
   },
 
   onShow() {
-    // 每次显示时刷新数据
     this.refreshData()
+    // 检查今日日程提醒
+    this.checkTodayRemind()
   },
 
   onPullDownRefresh() {
@@ -27,7 +31,6 @@ Page({
   },
 
   async initPage() {
-    // 设置问候语
     const hour = new Date().getHours()
     let greeting = '你好'
     if (hour < 6) greeting = '夜深了'
@@ -46,12 +49,11 @@ Page({
       todayStr: `${today.getMonth() + 1}月${today.getDate()}日 星期${weekDays[today.getDay()]}`
     })
 
-    // 如果还没登录完成，等待
     if (!app.globalData.userInfo) {
-      // 注册回调，等待登录完成
       app.onLoginReady = () => {
         this.setData({ loading: false })
         this.refreshData()
+        this.checkTodayRemind()
       }
     } else {
       this.setData({ loading: false })
@@ -60,7 +62,6 @@ Page({
   },
 
   async refreshData() {
-    // 从 globalData 获取用户信息
     const userInfo = app.globalData.userInfo
     const familyInfo = app.globalData.familyInfo
     
@@ -88,6 +89,46 @@ Page({
       }
     } catch (err) {
       console.error('加载成员失败', err)
+    }
+  },
+
+  // 检查今日日程提醒
+  async checkTodayRemind() {
+    if (!app.globalData.userInfo || !app.globalData.familyInfo) return
+    
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'schedule',
+        data: {
+          action: 'getTodayRemind'
+        }
+      })
+      
+      if (res.result.success && res.result.data.length > 0) {
+        // 有日程需要提醒，请求订阅并发送
+        const schedules = res.result.data
+        
+        // 请求订阅消息
+        const subscribeRes = await new Promise((resolve) => {
+          wx.requestSubscribeMessage({
+            tmplIds: [SCHEDULE_REMIND_TEMPLATE_ID],
+            success: (res) => {
+              resolve(res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept')
+            },
+            fail: () => resolve(false)
+          })
+        })
+        
+        if (subscribeRes) {
+          // 发送提醒
+          await wx.cloud.callFunction({
+            name: 'sendRemind',
+            data: { action: 'checkToday' }
+          })
+        }
+      }
+    } catch (err) {
+      console.error('检查提醒失败', err)
     }
   },
 
