@@ -38,12 +38,8 @@
       <text class="no-family-title">开始你的家庭之旅</text>
       <text class="no-family-desc">创建一个家庭，邀请家人一起记录生活点滴</text>
       <view class="no-family-actions">
-        <button class="create-btn" bindtap="handleCreateFamily">
-          ✨ 创建家庭
-        </button>
-        <button class="join-btn" bindtap="handleJoinFamily">
-          已有邀请码？加入家庭
-        </button>
+        <button class="create-btn" bindtap="handleCreateFamily">✨ 创建家庭</button>
+        <button class="join-btn" bindtap="handleJoinFamily">加入家庭</button>
       </view>
     </view>
   </view>

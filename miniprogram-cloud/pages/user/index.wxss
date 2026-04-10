@@ -25,13 +25,17 @@
   border-radius: 50%;
   border: 4rpx solid #fff;
   margin-right: 24rpx;
+  background: #f5f5f5;
 }
 
 .edit-btn {
-  padding: 8rpx 20rpx;
+  padding: 12rpx 24rpx;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 8rpx;
   font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-detail {
@@ -60,6 +64,7 @@
 
 .user-empty {
   text-align: center;
+  padding: 40rpx 0;
 }
 
 .user-avatar-default {
@@ -74,8 +79,10 @@
 }
 
 .btn-login {
-  display: inline-block;
-  padding: 16rpx 48rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 48rpx;
   background: #fff;
   color: #FF85A2;
   border-radius: 12rpx;
@@ -166,12 +173,14 @@
 }
 
 .btn-logout {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #999;
-  padding: 16rpx 32rpx;
+  padding: 20rpx 48rpx;
   background: #fff;
   border-radius: 12rpx;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 版本信息 */

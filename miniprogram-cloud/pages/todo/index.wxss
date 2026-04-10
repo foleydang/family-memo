@@ -49,6 +49,9 @@
   font-size: 26rpx;
   color: #666;
   border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab.active {
@@ -65,10 +68,9 @@
 
 .todo-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   padding: 20rpx;
   border-bottom: 1rpx solid #eee;
-  transition: background 0.2s;
 }
 
 .todo-item:last-child {
@@ -84,12 +86,13 @@
 }
 
 .todo-checkbox {
-  width: 40rpx;
-  height: 40rpx;
+  width: 44rpx;
+  height: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16rpx;
+  flex-shrink: 0;
 }
 
 .checkbox-empty {
@@ -101,6 +104,7 @@
 
 .todo-content {
   flex: 1;
+  min-width: 0;
 }
 
 .todo-title {
@@ -154,12 +158,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .action-btn {
   font-size: 24rpx;
   color: #1890ff;
   padding: 8rpx 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .action-btn.delete {
@@ -188,19 +196,25 @@
 }
 
 .btn-clear {
-  padding: 16rpx 32rpx;
+  padding: 20rpx 32rpx;
   background: #f5f5f5;
   color: #666;
   border-radius: 12rpx;
   font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-add {
-  padding: 16rpx 32rpx;
+  padding: 20rpx 32rpx;
   background: #FF85A2;
   color: #fff;
   border-radius: 12rpx;
   font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 弹窗 */
@@ -259,7 +273,8 @@
   padding: 16rpx;
   border: 1rpx solid #ddd;
   border-radius: 8rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
 }
 
 .form-textarea {
@@ -267,8 +282,9 @@
   padding: 16rpx;
   border: 1rpx solid #ddd;
   border-radius: 8rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
   min-height: 100rpx;
+  box-sizing: border-box;
 }
 
 .priority-btns {
@@ -279,11 +295,13 @@
 .priority-btn {
   flex: 1;
   padding: 16rpx;
-  text-align: center;
   background: #f5f5f5;
   border-radius: 8rpx;
   font-size: 26rpx;
   color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .priority-btn.active {
@@ -303,7 +321,7 @@
   padding: 16rpx;
   border: 1rpx solid #ddd;
   border-radius: 8rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #333;
 }
 
@@ -315,20 +333,24 @@
 
 .btn-cancel {
   flex: 1;
-  padding: 16rpx;
-  text-align: center;
+  padding: 20rpx;
   background: #f5f5f5;
   color: #666;
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-confirm {
   flex: 1;
-  padding: 16rpx;
-  text-align: center;
+  padding: 20rpx;
   background: #FF85A2;
   color: #fff;
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

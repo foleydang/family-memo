@@ -277,12 +277,14 @@
   width: 100%;
   background: linear-gradient(135deg, #FF4D6A 0%, #FF85A2 100%);
   color: #fff;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 600;
   height: 88rpx;
-  line-height: 88rpx;
   border-radius: 44rpx;
   border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .create-btn::after {
@@ -293,11 +295,13 @@
   width: 100%;
   background: transparent;
   color: #FF4D6A;
-  font-size: 28rpx;
+  font-size: 26rpx;
   height: 80rpx;
-  line-height: 80rpx;
   border: 2rpx solid #FF85A2;
   border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .join-btn::after {
@@ -330,13 +334,15 @@
 .login-btn {
   background: linear-gradient(135deg, #FF4D6A 0%, #FF85A2 100%);
   color: #fff;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 600;
   width: 400rpx;
   height: 88rpx;
-  line-height: 88rpx;
   border-radius: 44rpx;
   border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-btn::after {

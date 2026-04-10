@@ -44,6 +44,9 @@
   color: #fff;
   border-radius: 12rpx;
   font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-secondary {
@@ -53,6 +56,9 @@
   border: 2rpx solid #FF85A2;
   border-radius: 12rpx;
   font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 家庭信息 */
@@ -123,6 +129,7 @@
   height: 64rpx;
   border-radius: 50%;
   margin-right: 16rpx;
+  background: #f5f5f5;
 }
 
 .member-info {
@@ -140,30 +147,8 @@
   margin-top: 4rpx;
 }
 
-.member-role.owner {
-  color: #FF85A2;
-}
-
 .member-role.admin {
-  color: #1890ff;
-}
-
-.member-actions {
-  display: flex;
-  gap: 12rpx;
-}
-
-.action-btn {
-  font-size: 22rpx;
-  color: #1890ff;
-  padding: 8rpx 16rpx;
-  background: #e6f7ff;
-  border-radius: 8rpx;
-}
-
-.action-btn.danger {
-  color: #f5222d;
-  background: #fff1f0;
+  color: #FF85A2;
 }
 
 /* 邀请成员 */
@@ -183,12 +168,14 @@
 }
 
 .btn-generate {
-  padding: 16rpx 32rpx;
+  padding: 20rpx 40rpx;
   background: #FF85A2;
   color: #fff;
   border-radius: 12rpx;
-  font-size: 26rpx;
-  display: inline-block;
+  font-size: 28rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .invite-code-box {
@@ -198,7 +185,7 @@
 }
 
 .invite-code {
-  font-size: 32rpx;
+  font-size: 36rpx;
   color: #333;
   font-weight: bold;
   letter-spacing: 4rpx;
@@ -210,9 +197,12 @@
 }
 
 .btn-copy, .btn-share {
-  padding: 12rpx 24rpx;
-  font-size: 24rpx;
+  padding: 16rpx 28rpx;
+  font-size: 26rpx;
   border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-copy {
@@ -225,34 +215,6 @@
   color: #fff;
 }
 
-/* 快捷入口 */
-.quick-actions {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  margin-bottom: 20rpx;
-}
-
-.action-grid {
-  display: flex;
-  justify-content: space-around;
-  padding: 20rpx 0;
-}
-
-.action-item {
-  text-align: center;
-}
-
-.action-icon {
-  font-size: 48rpx;
-  margin-bottom: 8rpx;
-}
-
-.action-text {
-  font-size: 24rpx;
-  color: #666;
-}
-
 /* 退出家庭 */
 .leave-section {
   text-align: center;
@@ -260,13 +222,15 @@
 }
 
 .btn-leave {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #f5222d;
-  padding: 16rpx 32rpx;
+  padding: 20rpx 48rpx;
   background: #fff;
   border-radius: 12rpx;
-  border: 1rpx solid #f5222d;
-  display: inline-block;
+  border: 2rpx solid #f5222d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 弹窗 */
@@ -325,7 +289,8 @@
   padding: 16rpx;
   border: 1rpx solid #ddd;
   border-radius: 8rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
 }
 
 .form-tip {
@@ -342,20 +307,24 @@
 
 .btn-cancel {
   flex: 1;
-  padding: 16rpx;
-  text-align: center;
+  padding: 20rpx;
   background: #f5f5f5;
   color: #666;
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-confirm {
   flex: 1;
-  padding: 16rpx;
-  text-align: center;
+  padding: 20rpx;
   background: #FF85A2;
   color: #fff;
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
