@@ -19,7 +19,7 @@
         <view class="family-name">{{familyInfo.name}}</view>
         <view class="family-meta">
           <text>{{members.length}} 位成员</text>
-          <text>创建于 {{familyInfo.created_at}}</text>
+          <text>创建于 {{familyInfo.createTime || familyInfo.created_at}}</text>
         </view>
       </view>
     </view>
@@ -28,19 +28,12 @@
     <view class="members-section">
       <view class="section-title">家庭成员</view>
       <view class="members-list">
-        <block wx:for="{{members}}" wx:key="id">
+        <block wx:for="{{members}}" wx:key="_id">
           <view class="member-item">
             <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
             <view class="member-info">
               <view class="member-name">{{item.name || item.nickname}}</view>
-              <view class="member-role {{item.role}}">{{item.role === 'owner' ? '👑 创建者' : item.role === 'admin' ? '⭐ 管理员' : '成员'}}</view>
-            </view>
-            <!-- 权限管理按钮（仅创建者可见） -->
-            <view wx:if="{{familyInfo.created_by === currentUserId && item.id !== currentUserId}}" class="member-actions">
-              <view class="action-btn" catchtap="toggleAdmin" data-id="{{item.id}}">
-                {{item.role === 'admin' ? '取消管理员' : '设为管理员'}}
-              </view>
-              <view class="action-btn danger" catchtap="removeMember" data-id="{{item.id}}">移除</view>
+              <view class="member-role {{item.role}}">{{item.role === 'admin' ? '⭐ 管理员' : '成员'}}</view>
             </view>
           </view>
         </block>
@@ -51,34 +44,15 @@
     <view class="invite-section">
       <view class="section-title">邀请成员</view>
       <view class="invite-card">
-        <view wx:if="{{!inviteCode}}" class="invite-empty">
+        <view wx:if="{{!familyInfo.inviteCode}}" class="invite-empty">
           <view class="btn-generate" bindtap="generateInviteCode">生成邀请码</view>
         </view>
         <view wx:else class="invite-code-box">
-          <view class="invite-code">{{inviteCode}}</view>
+          <view class="invite-code">{{familyInfo.inviteCode}}</view>
           <view class="invite-actions">
             <view class="btn-copy" bindtap="copyInviteCode">复制</view>
             <view class="btn-share" bindtap="shareInvite">分享</view>
           </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 快捷入口 -->
-    <view class="quick-actions">
-      <view class="section-title">快捷入口</view>
-      <view class="action-grid">
-        <view class="action-item" bindtap="goToShopping">
-          <view class="action-icon">🛒</view>
-          <view class="action-text">购物清单</view>
-        </view>
-        <view class="action-item" bindtap="goToTodo">
-          <view class="action-icon">📋</view>
-          <view class="action-text">家庭待办</view>
-        </view>
-        <view class="action-item" bindtap="goToSchedule">
-          <view class="action-icon">📅</view>
-          <view class="action-text">日程安排</view>
         </view>
       </view>
     </view>
@@ -90,43 +64,43 @@
   </view>
 
   <!-- 创建家庭弹窗 -->
-  <view wx:if="{{showModal && action === 'create'}}" class="modal-mask" bindtap="hideModal">
+  <view wx:if="{{showCreate}}" class="modal-mask" bindtap="hideCreateModal">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text>创建家庭</text>
-        <view class="modal-close" bindtap="hideModal">×</view>
+        <view class="modal-close" bindtap="hideCreateModal">×</view>
       </view>
       <view class="modal-body">
         <view class="form-item">
           <text class="form-label">家庭名称 *</text>
-          <input class="form-input" placeholder="例如：温馨小家" value="{{createForm.name}}" bindinput="inputFamilyName" />
+          <input class="form-input" placeholder="例如：温馨小家" value="{{familyName}}" bindinput="onFamilyNameInput" />
         </view>
       </view>
       <view class="modal-footer">
-        <view class="btn-cancel" bindtap="hideModal">取消</view>
+        <view class="btn-cancel" bindtap="hideCreateModal">取消</view>
         <view class="btn-confirm" bindtap="createFamily">创建</view>
       </view>
     </view>
   </view>
 
   <!-- 加入家庭弹窗 -->
-  <view wx:if="{{showModal && action === 'join'}}" class="modal-mask" bindtap="hideModal">
+  <view wx:if="{{showJoin}}" class="modal-mask" bindtap="hideJoinModal">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text>加入家庭</text>
-        <view class="modal-close" bindtap="hideModal">×</view>
+        <view class="modal-close" bindtap="hideJoinModal">×</view>
       </view>
       <view class="modal-body">
         <view class="form-item">
           <text class="form-label">邀请码 *</text>
-          <input class="form-input" placeholder="请输入家庭邀请码" value="{{joinForm.code}}" bindinput="inputJoinCode" />
+          <input class="form-input" placeholder="请输入家庭邀请码" value="{{inputCode}}" bindinput="onCodeInput" />
         </view>
         <view class="form-tip">
           <text>邀请码由家庭创建者提供</text>
         </view>
       </view>
       <view class="modal-footer">
-        <view class="btn-cancel" bindtap="hideModal">取消</view>
+        <view class="btn-cancel" bindtap="hideJoinModal">取消</view>
         <view class="btn-confirm" bindtap="joinFamily">加入</view>
       </view>
     </view>
