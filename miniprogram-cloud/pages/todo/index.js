@@ -23,19 +23,23 @@ Page({
   },
 
   onLoad() {
-    this.checkFamily()
+    this.checkStatus()
   },
 
   onShow() {
-    this.loadTodos()
-    this.loadMembers()
+    this.checkStatus()
+    if (app.globalData.familyInfo) {
+      this.loadTodos()
+      this.loadMembers()
+    }
   },
 
-  checkFamily() {
-    if (!app.globalData.familyInfo) {
+  checkStatus() {
+    // 先检查是否登录
+    if (!app.globalData.userInfo) {
       wx.showModal({
         title: '提示',
-        content: '请先创建或加入家庭',
+        content: '请先登录',
         showCancel: false,
         success: () => {
           wx.switchTab({ url: '/pages/index/index' })
@@ -43,6 +47,20 @@ Page({
       })
       return false
     }
+    
+    // 再检查是否有家庭
+    if (!app.globalData.familyInfo) {
+      wx.showModal({
+        title: '提示',
+        content: '请先创建或加入家庭',
+        showCancel: false,
+        success: () => {
+          wx.switchTab({ url: '/pages/family/index' })
+        }
+      })
+      return false
+    }
+    
     this.setData({ familyInfo: app.globalData.familyInfo })
     return true
   },
@@ -87,7 +105,7 @@ Page({
   },
 
   async loadTodos() {
-    if (!this.checkFamily()) return
+    if (!this.data.familyInfo) return
     
     try {
       const res = await wx.cloud.callFunction({

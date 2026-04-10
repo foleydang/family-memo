@@ -58,6 +58,12 @@
       }
     ]
   },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于获取位置信息"
+    }
+  },
+  "requiredPrivateInfos": [],
   "style": "v2",
   "sitemapLocation": "sitemap.json"
 }

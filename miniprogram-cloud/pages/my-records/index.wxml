@@ -31,7 +31,7 @@
         <view class="record-action" catchtap="deleteShopping" data-id="{{item._id}}">删除</view>
       </view>
     </block>
-    <view wx:if="{{shoppingList.length === 0}}" class="empty-tip">
+    <view wx:if="{{shoppingList.length === 0 && !loading}}" class="empty-tip">
       暂无购物记录
     </view>
   </view>
@@ -57,7 +57,7 @@
         <view class="record-action" catchtap="deleteTodo" data-id="{{item._id}}">删除</view>
       </view>
     </block>
-    <view wx:if="{{todoList.length === 0}}" class="empty-tip">
+    <view wx:if="{{todoList.length === 0 && !loading}}" class="empty-tip">
       暂无待办记录
     </view>
   </view>
@@ -66,20 +66,21 @@
   <view wx:if="{{currentTab === 'schedule'}}" class="record-list">
     <block wx:for="{{scheduleList}}" wx:key="_id">
       <view class="record-item schedule-item">
-        <view class="schedule-date">
-          <view class="date-day">{{item.scheduleDate}}</view>
+        <view class="schedule-date-box">
+          <text class="date-day">{{item.displayDate.day}}</text>
+          <text class="date-week">{{item.displayDate.week}}</text>
         </view>
         <view class="record-content">
           <view class="record-title">{{item.title}}</view>
           <view class="record-meta">
             <text class="type-tag">{{item.type}}</text>
-            <text wx:if="{{item.startTime}}">🕐 {{item.startTime}}{{item.endTime ? '-' + item.endTime : ''}}</text>
+            <text wx:if="{{item.startTime}}" class="time-text">{{item.startTime}}{{item.endTime ? '-' + item.endTime : ''}}</text>
           </view>
         </view>
         <view class="record-action" catchtap="deleteSchedule" data-id="{{item._id}}">删除</view>
       </view>
     </block>
-    <view wx:if="{{scheduleList.length === 0}}" class="empty-tip">
+    <view wx:if="{{scheduleList.length === 0 && !loading}}" class="empty-tip">
       暂无日程记录
     </view>
   </view>
@@ -87,5 +88,10 @@
   <!-- 加载中 -->
   <view wx:if="{{loading}}" class="loading">
     <text>加载中...</text>
+  </view>
+
+  <!-- 未加入家庭 -->
+  <view wx:if="{{!familyId && ready && !loading}}" class="no-family-tip">
+    <text>请先创建或加入家庭</text>
   </view>
 </view>

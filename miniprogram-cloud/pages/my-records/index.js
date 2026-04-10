@@ -8,22 +8,50 @@ Page({
     shoppingList: [],
     todoList: [],
     scheduleList: [],
-    loading: false
+    loading: false,
+    ready: false
   },
 
   onLoad() {
-    if (app.globalData.familyInfo) {
-      this.setData({ familyId: app.globalData.familyInfo._id })
+    this.initPage()
+  },
+
+  onShow() {
+    if (this.data.ready) {
       this.loadData()
     }
   },
 
-  onShow() {
-    if (this.data.familyId) {
+  async initPage() {
+    // 等待登录和家庭信息加载完成
+    if (!app.globalData.userInfo) {
+      // 等待登录完成
+      const checkReady = () => {
+        return new Promise((resolve) => {
+          const timer = setInterval(() => {
+            if (app.globalData.userInfo) {
+              clearInterval(timer)
+              resolve()
+            }
+          }, 100)
+          // 超时保护
+          setTimeout(() => {
+            clearInterval(timer)
+            resolve()
+          }, 3000)
+        })
+      }
+      await checkReady()
+    }
+
+    if (app.globalData.familyInfo) {
+      this.setData({ 
+        familyId: app.globalData.familyInfo._id,
+        ready: true 
+      })
       this.loadData()
-    } else if (app.globalData.familyInfo) {
-      this.setData({ familyId: app.globalData.familyInfo._id })
-      this.loadData()
+    } else {
+      this.setData({ ready: true })
     }
   },
 
@@ -39,7 +67,13 @@ Page({
   },
 
   async loadData() {
-    if (!this.data.familyId) return
+    if (!this.data.familyId) {
+      if (app.globalData.familyInfo) {
+        this.setData({ familyId: app.globalData.familyInfo._id })
+      } else {
+        return
+      }
+    }
 
     this.setData({ loading: true })
 
@@ -73,7 +107,6 @@ Page({
       })
       
       if (res.result.success) {
-        // 只返回自己创建的
         const userId = app.globalData.userId
         return (res.result.data || []).filter(item => item.createdBy === userId)
       }
@@ -117,12 +150,28 @@ Page({
       
       if (res.result.success) {
         const userId = app.globalData.userId
-        return (res.result.data || []).filter(item => item.createdBy === userId)
+        // 格式化日期显示
+        return (res.result.data || []).filter(item => item.createdBy === userId).map(item => ({
+          ...item,
+          displayDate: this.formatDisplayDate(item.scheduleDate)
+        }))
       }
       return []
     } catch (err) {
       console.error('加载日程失败', err)
       return []
+    }
+  },
+
+  formatDisplayDate(dateStr) {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    const month = d.getMonth() + 1
+    const day = d.getDate()
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+    return {
+      day: `${month}/${day}`,
+      week: `周${weekDays[d.getDay()]}`
     }
   },
 
@@ -168,13 +217,15 @@ Page({
 
   async toggleTodo(e) {
     const item = e.currentTarget.dataset.item
+    const statusFlow = { pending: 'doing', doing: 'done', done: 'pending' }
+    const newStatus = statusFlow[item.status]
     
     try {
       await wx.cloud.callFunction({
         name: 'todo',
         data: {
           action: 'toggle',
-          data: { _id: item._id }
+          data: { _id: item._id, status: newStatus }
         }
       })
       this.loadData()
@@ -229,11 +280,5 @@ Page({
         wx.showToast({ title: '删除失败', icon: 'none' })
       }
     }
-  },
-
-  formatDate(dateStr) {
-    if (!dateStr) return ''
-    const d = new Date(dateStr)
-    return `${d.getMonth() + 1}月${d.getDate()}日`
   }
 })

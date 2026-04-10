@@ -41,19 +41,28 @@ Page({
   },
 
   onLoad() {
-    this.checkFamily()
-    this.initCalendar()
+    this.initPage()
+  },
+
+  async initPage() {
+    if (this.checkStatus()) {
+      this.initCalendar()
+      await this.loadSchedules()
+    }
   },
 
   onShow() {
-    this.loadSchedules()
+    if (this.checkStatus() && app.globalData.familyInfo) {
+      this.loadSchedules()
+    }
   },
 
-  checkFamily() {
-    if (!app.globalData.familyInfo) {
+  checkStatus() {
+    // 先检查是否登录
+    if (!app.globalData.userInfo) {
       wx.showModal({
         title: '提示',
-        content: '请先创建或加入家庭',
+        content: '请先登录',
         showCancel: false,
         success: () => {
           wx.switchTab({ url: '/pages/index/index' })
@@ -61,6 +70,20 @@ Page({
       })
       return false
     }
+    
+    // 再检查是否有家庭
+    if (!app.globalData.familyInfo) {
+      wx.showModal({
+        title: '提示',
+        content: '请先创建或加入家庭',
+        showCancel: false,
+        success: () => {
+          wx.switchTab({ url: '/pages/family/index' })
+        }
+      })
+      return false
+    }
+    
     this.setData({ familyInfo: app.globalData.familyInfo })
     return true
   },
@@ -143,7 +166,6 @@ Page({
       const scheduleDate = new Date(s.scheduleDate)
       const checkDate = new Date(dateStr)
       
-      // 检查是否在周期范围内（日程日期为开始）
       if (checkDate < scheduleDate) return false
       if (s.recurringEnd) {
         const endDate = new Date(s.recurringEnd)
@@ -161,7 +183,7 @@ Page({
   },
 
   async loadSchedules() {
-    if (!this.checkFamily()) return
+    if (!this.data.familyInfo) return
     
     try {
       const res = await wx.cloud.callFunction({
