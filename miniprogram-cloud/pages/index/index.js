@@ -1,7 +1,6 @@
 // pages/index/index.js - 云开发版本
 const app = getApp()
 
-// 订阅消息模板ID
 const SCHEDULE_REMIND_TEMPLATE_ID = 'bDHCtdW_8crvYVMvD1p0fo_u1vIR0zuKTSPGr8BW1dU'
 
 Page({
@@ -11,7 +10,8 @@ Page({
     members: [],
     greeting: '',
     todayStr: '',
-    loading: true
+    loading: true,  // 初始为加载中
+    dataReady: false // 数据是否准备完成
   },
 
   onLoad() {
@@ -19,9 +19,11 @@ Page({
   },
 
   onShow() {
-    this.refreshData()
-    // 检查今日日程提醒
-    this.checkTodayRemind()
+    // 只有数据准备好了才刷新
+    if (this.data.dataReady) {
+      this.refreshData()
+      this.checkTodayRemind()
+    }
   },
 
   onPullDownRefresh() {
@@ -31,6 +33,7 @@ Page({
   },
 
   async initPage() {
+    // 设置问候语
     const hour = new Date().getHours()
     let greeting = '你好'
     if (hour < 6) greeting = '夜深了'
@@ -49,16 +52,44 @@ Page({
       todayStr: `${today.getMonth() + 1}月${today.getDate()}日 星期${weekDays[today.getDay()]}`
     })
 
-    if (!app.globalData.userInfo) {
-      app.onLoginReady = () => {
-        this.setData({ loading: false })
-        this.refreshData()
-        this.checkTodayRemind()
+    // 等待登录和家庭信息都加载完成
+    await this.waitForDataReady()
+    
+    this.setData({ 
+      loading: false,
+      dataReady: true 
+    })
+    
+    this.refreshData()
+  },
+
+  // 等待数据准备完成
+  async waitForDataReady() {
+    return new Promise((resolve) => {
+      const checkReady = () => {
+        // 检查是否登录完成
+        if (app.globalData.userInfo) {
+          // 检查家庭信息是否加载完成（可能为null，但也算完成）
+          resolve()
+        } else {
+          // 等待登录完成
+          const timer = setInterval(() => {
+            if (app.globalData.userInfo) {
+              clearInterval(timer)
+              // 再等待家庭信息
+              setTimeout(() => resolve(), 500)
+            }
+          }, 100)
+          
+          // 超时保护
+          setTimeout(() => {
+            clearInterval(timer)
+            resolve()
+          }, 5000)
+        }
       }
-    } else {
-      this.setData({ loading: false })
-      this.refreshData()
-    }
+      checkReady()
+    })
   },
 
   async refreshData() {
@@ -92,40 +123,28 @@ Page({
     }
   },
 
-  // 检查今日日程提醒
   async checkTodayRemind() {
     if (!app.globalData.userInfo || !app.globalData.familyInfo) return
     
     try {
       const res = await wx.cloud.callFunction({
         name: 'schedule',
-        data: {
-          action: 'getTodayRemind'
-        }
+        data: { action: 'getTodayRemind' }
       })
       
       if (res.result.success && res.result.data.length > 0) {
-        // 有日程需要提醒，请求订阅并发送
-        const schedules = res.result.data
-        
-        // 请求订阅消息
-        const subscribeRes = await new Promise((resolve) => {
+        await new Promise((resolve) => {
           wx.requestSubscribeMessage({
             tmplIds: [SCHEDULE_REMIND_TEMPLATE_ID],
-            success: (res) => {
-              resolve(res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept')
-            },
+            success: (res) => resolve(res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept'),
             fail: () => resolve(false)
           })
         })
         
-        if (subscribeRes) {
-          // 发送提醒
-          await wx.cloud.callFunction({
-            name: 'sendRemind',
-            data: { action: 'checkToday' }
-          })
-        }
+        await wx.cloud.callFunction({
+          name: 'sendRemind',
+          data: { action: 'checkToday' }
+        })
       }
     } catch (err) {
       console.error('检查提醒失败', err)
@@ -134,10 +153,16 @@ Page({
 
   handleLogin() {
     wx.showLoading({ title: '登录中' })
-    app.login().then(() => {
+    app.login().then(async () => {
+      // 等待家庭信息加载
+      await new Promise(resolve => setTimeout(resolve, 1000))
       wx.hideLoading()
-      this.setData({ userInfo: app.globalData.userInfo, loading: false })
-      this.refreshData()
+      this.setData({ 
+        userInfo: app.globalData.userInfo,
+        familyInfo: app.globalData.familyInfo,
+        loading: false,
+        dataReady: true
+      })
     }).catch(err => {
       wx.hideLoading()
       wx.showToast({ title: '登录失败', icon: 'none' })

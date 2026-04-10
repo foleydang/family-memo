@@ -1,5 +1,35 @@
 /* pages/index/index.wxss */
 
+/* 加载中 */
+.loading-card {
+  background: linear-gradient(135deg, #FF85A2 0%, #FFB6C1 100%);
+  color: white;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 0;
+}
+
+.loading-icon {
+  font-size: 60rpx;
+  margin-bottom: 20rpx;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.loading-text {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+/* 欢迎卡片 */
 .welcome-card {
   background: linear-gradient(135deg, #FF85A2 0%, #FFB6C1 100%);
   color: white;
@@ -204,7 +234,7 @@
   margin-top: 6rpx;
 }
 
-/* 无家庭卡片 - 优化版 */
+/* 无家庭卡片 */
 .no-family-card {
   margin-top: 32rpx;
   background: linear-gradient(135deg, #FFF5F7 0%, #FFE4EC 100%);
@@ -243,36 +273,35 @@
   gap: 16rpx;
 }
 
-.create-family-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #FF85A2 0%, #FF6B8A 100%);
-  color: white;
-  padding: 24rpx 40rpx;
-  border-radius: 12rpx;
+.create-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #FF4D6A 0%, #FF85A2 100%);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  border: none;
 }
 
-.create-family-btn .btn-icon {
-  margin-right: 8rpx;
+.create-btn::after {
+  display: none;
+}
+
+.join-btn {
+  width: 100%;
+  background: transparent;
+  color: #FF4D6A;
   font-size: 28rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border: 2rpx solid #FF85A2;
+  border-radius: 40rpx;
 }
 
-.create-family-btn .btn-text {
-  font-size: 30rpx;
-  font-weight: 500;
-}
-
-.join-family-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20rpx 40rpx;
-}
-
-.join-family-btn .btn-text {
-  font-size: 26rpx;
-  color: #FF85A2;
+.join-btn::after {
+  display: none;
 }
 
 /* 登录提示 */
@@ -298,15 +327,18 @@
   margin-bottom: 32rpx;
 }
 
-.mt-24 {
-  margin-top: 24rpx;
+.login-btn {
+  background: linear-gradient(135deg, #FF4D6A 0%, #FF85A2 100%);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  width: 400rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  border: none;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #FF85A2 0%, #FFB6C1 100%);
-  color: white;
-  border: none;
-  padding: 24rpx 48rpx;
-  border-radius: 12rpx;
-  font-size: 28rpx;
+.login-btn::after {
+  display: none;
 }

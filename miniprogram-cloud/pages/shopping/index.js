@@ -11,12 +11,12 @@ Page({
     currentTab: 'pending',
     currentCategory: 'all',
     categories: [
-      { id: 'food', name: '食品' },
-      { id: 'daily', name: '日用品' },
-      { id: 'fruit', name: '蔬果' },
-      { id: 'meat', name: '肉类' },
+      { id: 'vegetable', name: '蔬菜水果' },
+      { id: 'meat', name: '肉蛋海鲜' },
+      { id: 'grain', name: '粮油调味' },
       { id: 'dairy', name: '乳制品' },
       { id: 'snack', name: '零食饮料' },
+      { id: 'daily', name: '日用百货' },
       { id: 'cleaning', name: '清洁用品' },
       { id: 'other', name: '其他' }
     ],
@@ -24,7 +24,7 @@ Page({
     formData: {
       _id: '',
       title: '',
-      category: 'food',
+      category: 'vegetable',
       quantity: 1,
       unit: '个',
       priority: 0
@@ -44,7 +44,6 @@ Page({
   },
 
   checkStatus() {
-    // 先检查是否登录
     if (!app.globalData.userInfo) {
       wx.showModal({
         title: '提示',
@@ -57,7 +56,6 @@ Page({
       return false
     }
     
-    // 再检查是否有家庭
     if (!app.globalData.familyInfo) {
       wx.showModal({
         title: '提示',
@@ -135,7 +133,7 @@ Page({
     this.setData({
       showModal: true,
       editMode: false,
-      formData: { _id: '', title: '', category: 'food', quantity: 1, unit: '个', priority: 0 },
+      formData: { _id: '', title: '', category: 'vegetable', quantity: 1, unit: '个', priority: 0 },
       categoryIndex: 0
     })
   },
@@ -177,7 +175,7 @@ Page({
       formData: {
         _id: item._id,
         title: item.title,
-        category: item.category || 'other',
+        category: item.category || 'vegetable',
         quantity: item.quantity || 1,
         unit: item.unit || '个',
         priority: item.priority || 0

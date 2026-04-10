@@ -1,7 +1,6 @@
 // pages/schedule/index.js - 云开发版本
 const app = getApp()
 
-// 订阅消息模板ID
 const SCHEDULE_REMIND_TEMPLATE_ID = 'bDHCtdW_8crvYVMvD1p0fo_u1vIR0zuKTSPGr8BW1dU'
 
 Page({
@@ -22,18 +21,18 @@ Page({
       date: '',
       startTime: '',
       endTime: '',
-      type: 'birthday',
+      type: 'work',
       recurring: 'none',
       recurringEnd: '',
       remind: 0
     },
     types: [
-      { value: 'birthday', name: '生日' },
-      { value: 'anniversary', name: '纪念日' },
-      { value: 'meeting', name: '会议' },
-      { value: 'appointment', name: '预约' },
-      { value: 'trip', name: '出行' },
+      { value: 'work', name: '工作/会议' },
       { value: 'event', name: '活动' },
+      { value: 'appointment', name: '预约' },
+      { value: 'anniversary', name: '纪念日' },
+      { value: 'birthday', name: '生日' },
+      { value: 'trip', name: '出行' },
       { value: 'holiday', name: '假期' },
       { value: 'other', name: '其他' }
     ],
@@ -254,7 +253,7 @@ Page({
         date: this.data.selectedDateStr,
         startTime: '',
         endTime: '',
-        type: 'birthday',
+        type: 'work',
         recurring: 'none',
         recurringEnd: '',
         remind: 0
@@ -325,7 +324,7 @@ Page({
         date: item.scheduleDate,
         startTime: item.startTime || '',
         endTime: item.endTime || '',
-        type: item.type || 'other',
+        type: item.type || 'work',
         recurring: item.recurring || 'none',
         recurringEnd: item.recurringEnd || '',
         remind: item.remind || 0
@@ -336,24 +335,14 @@ Page({
     })
   },
 
-  // 请求订阅消息
   async requestSubscribe() {
     return new Promise((resolve) => {
       wx.requestSubscribeMessage({
         tmplIds: [SCHEDULE_REMIND_TEMPLATE_ID],
         success: (res) => {
-          if (res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept') {
-            console.log('用户同意订阅消息')
-            resolve(true)
-          } else {
-            console.log('用户拒绝订阅消息')
-            resolve(false)
-          }
+          resolve(res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept')
         },
-        fail: (err) => {
-          console.error('请求订阅失败', err)
-          resolve(false)
-        }
+        fail: () => resolve(false)
       })
     })
   },
@@ -367,7 +356,6 @@ Page({
       return wx.showToast({ title: '请选择日期', icon: 'none' })
     }
     
-    // 如果设置了提醒，请求订阅消息
     if (this.data.formData.remind > 0) {
       const subscribed = await this.requestSubscribe()
       if (!subscribed) {
@@ -423,12 +411,8 @@ Page({
           try {
             await wx.cloud.callFunction({
               name: 'schedule',
-              data: {
-                action: 'delete',
-                data: { _id: id }
-              }
+              data: { action: 'delete', data: { _id: id } }
             })
-            
             wx.showToast({ title: '已删除', icon: 'success' })
             this.loadSchedules()
           } catch (err) {

@@ -1,7 +1,15 @@
 <!--pages/index/index.wxml-->
 <view class="container">
+  <!-- 加载中 -->
+  <view class="loading-card card" wx:if="{{loading}}">
+    <view class="loading-content">
+      <text class="loading-icon">💕</text>
+      <text class="loading-text">加载中...</text>
+    </view>
+  </view>
+
   <!-- 欢迎卡片 -->
-  <view class="welcome-card card fade-in" wx:if="{{userInfo}}">
+  <view class="welcome-card card fade-in" wx:elif="{{userInfo}}">
     <view class="welcome-header">
       <image class="avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
       <view class="welcome-text">
@@ -15,28 +23,27 @@
   </view>
 
   <!-- 未登录提示 -->
-  <view class="login-prompt card" wx:else>
+  <view class="login-prompt card" wx:elif="{{!userInfo}}">
     <view class="empty-state">
       <text class="empty-icon">🏠</text>
       <text class="empty-text">欢迎使用家庭备忘录</text>
-      <button class="btn-primary mt-24" bindtap="handleLogin">立即登录</button>
+      <button class="login-btn" bindtap="handleLogin">微信登录</button>
     </view>
   </view>
 
-  <!-- 未加入家庭提示 - 优化版 -->
-  <view class="no-family-card card" wx:if="{{userInfo && !familyInfo}}">
+  <!-- 未加入家庭提示 -->
+  <view class="no-family-card card" wx:if="{{!loading && userInfo && !familyInfo}}">
     <view class="no-family-content">
       <text class="no-family-icon">🏡</text>
       <text class="no-family-title">开始你的家庭之旅</text>
       <text class="no-family-desc">创建一个家庭，邀请家人一起记录生活点滴</text>
       <view class="no-family-actions">
-        <view class="create-family-btn" bindtap="handleCreateFamily">
-          <text class="btn-icon">✨</text>
-          <text class="btn-text">创建家庭</text>
-        </view>
-        <view class="join-family-btn" bindtap="handleJoinFamily">
-          <text class="btn-text">已有邀请码？加入家庭</text>
-        </view>
+        <button class="create-btn" bindtap="handleCreateFamily">
+          ✨ 创建家庭
+        </button>
+        <button class="join-btn" bindtap="handleJoinFamily">
+          已有邀请码？加入家庭
+        </button>
       </view>
     </view>
   </view>
