@@ -7,7 +7,8 @@ Page({
     familyInfo: null,
     members: [],
     greeting: '',
-    todayStr: ''
+    todayStr: '',
+    loading: true
   },
 
   onLoad() {
@@ -15,6 +16,7 @@ Page({
   },
 
   onShow() {
+    // 每次显示时刷新数据
     this.refreshData()
   },
 
@@ -44,12 +46,17 @@ Page({
       todayStr: `${today.getMonth() + 1}月${today.getDate()}日 星期${weekDays[today.getDay()]}`
     })
 
-    // 等待登录完成
+    // 如果还没登录完成，等待
     if (!app.globalData.userInfo) {
-      await app.login()
+      // 注册回调，等待登录完成
+      app.onLoginReady = () => {
+        this.setData({ loading: false })
+        this.refreshData()
+      }
+    } else {
+      this.setData({ loading: false })
+      this.refreshData()
     }
-
-    this.refreshData()
   },
 
   async refreshData() {
@@ -88,7 +95,7 @@ Page({
     wx.showLoading({ title: '登录中' })
     app.login().then(() => {
       wx.hideLoading()
-      this.setData({ userInfo: app.globalData.userInfo })
+      this.setData({ userInfo: app.globalData.userInfo, loading: false })
       this.refreshData()
     }).catch(err => {
       wx.hideLoading()

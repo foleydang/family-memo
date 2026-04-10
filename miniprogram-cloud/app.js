@@ -12,13 +12,12 @@ App({
       console.error('请使用 2.2.3 或以上的基础库以使用云能力')
     } else {
       wx.cloud.init({
-        // TODO: 改成你的云开发环境ID
         env: 'cloud1-8guv4kyl1b68e254',
         traceUser: true
       })
     }
     
-    // 自动登录
+    // 自动登录并等待完成
     this.login()
   },
 
@@ -34,8 +33,13 @@ App({
         this.globalData.userId = res.result.data.userId
         console.log('登录成功:', res.result.data)
         
-        // 获取家庭信息
-        this.getFamilyInfo()
+        // 等待获取家庭信息完成
+        await this.getFamilyInfo()
+        
+        // 通知首页刷新
+        if (this.onLoginReady) {
+          this.onLoginReady()
+        }
       } else {
         console.error('登录失败:', res.result.message)
       }
@@ -56,9 +60,13 @@ App({
       
       if (res.result.success && res.result.data) {
         this.globalData.familyInfo = res.result.data
+        console.log('获取家庭信息成功:', res.result.data)
+      } else {
+        this.globalData.familyInfo = null
       }
     } catch (err) {
       console.error('获取家庭信息失败:', err)
+      this.globalData.familyInfo = null
     }
   },
 

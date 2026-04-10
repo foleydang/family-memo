@@ -19,7 +19,7 @@ Page({
     members: [],
     memberNames: ['不指派'],
     assigneeIndex: 0,
-    stats: { pending: 0, doing: 0, done: 0 }
+    stats: { pending: 0, done: 0 }
   },
 
   onLoad() {
@@ -101,9 +101,8 @@ Page({
       if (res.result.success) {
         const todos = res.result.data
         const pending = todos.filter(i => i.status === 'pending').length
-        const doing = todos.filter(i => i.status === 'doing').length
         const done = todos.filter(i => i.status === 'done').length
-        this.setData({ todos, stats: { pending, doing, done } })
+        this.setData({ todos, stats: { pending, done } })
         this.updateFilteredList()
       }
     } catch (err) {
@@ -208,16 +207,15 @@ Page({
   async toggleItem(e) {
     const item = e.currentTarget.dataset.item
     
-    // 三态切换: pending -> doing -> done -> pending
-    const statusMap = { pending: 'doing', doing: 'done', done: 'pending' }
-    const newStatus = statusMap[item.status] || 'pending'
+    // 两态切换: pending <-> done
+    const newStatus = item.status === 'done' ? 'pending' : 'done'
     
     try {
       await wx.cloud.callFunction({
         name: 'todo',
         data: {
           action: 'toggle',
-          data: { _id: item._id, status: newStatus }
+          data: { _id: item._id }
         }
       })
       

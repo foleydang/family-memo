@@ -4,11 +4,7 @@
   <view class="stats-card">
     <view class="stat-item" bindtap="switchTab" data-tab="pending">
       <view class="stat-num">{{stats.pending}}</view>
-      <view class="stat-label">待处理</view>
-    </view>
-    <view class="stat-item" bindtap="switchTab" data-tab="doing">
-      <view class="stat-num">{{stats.doing}}</view>
-      <view class="stat-label">进行中</view>
+      <view class="stat-label">待办</view>
     </view>
     <view class="stat-item" bindtap="switchTab" data-tab="done">
       <view class="stat-num">{{stats.done}}</view>
@@ -19,8 +15,7 @@
   <!-- Tab切换 -->
   <view class="tabs">
     <view class="tab {{currentTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
-    <view class="tab {{currentTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">待处理</view>
-    <view class="tab {{currentTab === 'doing' ? 'active' : ''}}" bindtap="switchTab" data-tab="doing">进行中</view>
+    <view class="tab {{currentTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">待办</view>
     <view class="tab {{currentTab === 'done' ? 'active' : ''}}" bindtap="switchTab" data-tab="done">已完成</view>
   </view>
 
@@ -29,8 +24,7 @@
     <block wx:for="{{filteredList}}" wx:key="_id">
       <view class="todo-item {{item.priority === 1 ? 'important' : ''}} {{item.priority === 2 ? 'urgent' : ''}}">
         <view class="todo-checkbox {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
-          <icon wx:if="{{item.status === 'done'}}" type="success" size="20" color="#52c41a"/>
-          <icon wx:elif="{{item.status === 'doing'}}" type="waiting" size="20" color="#1890ff"/>
+          <icon wx:if="{{item.status === 'done'}}" type="success" size="22" color="#52c41a"/>
           <view wx:else class="checkbox-empty"></view>
         </view>
         <view class="todo-content">

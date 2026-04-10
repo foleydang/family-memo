@@ -17,9 +17,12 @@ Page({
       title: '',
       description: '',
       date: '',
-      time: '',
+      startTime: '',
+      endTime: '',
       type: 'birthday',
-      recurring: 'none'
+      recurring: 'none',
+      recurringStart: '',
+      recurringEnd: ''
     },
     types: [
       { value: 'birthday', name: '生日' },
@@ -31,7 +34,7 @@ Page({
       { value: 'holiday', name: '假期' },
       { value: 'other', name: '其他' }
     ],
-    typeIndex: 0, // 默认生日
+    typeIndex: 0,
     recurringOptions: ['不重复', '每天', '每周', '每月', '每年'],
     recurringIndex: 0,
     remindOptions: ['不提醒', '当天提醒', '提前1天', '提前3天', '提前7天'],
@@ -86,6 +89,12 @@ Page({
     return texts[recurring] || ''
   },
 
+  getTimeRange(startTime, endTime) {
+    if (!startTime && !endTime) return ''
+    if (startTime && endTime) return `${startTime} - ${endTime}`
+    return startTime || endTime
+  },
+
   generateCalendar(date) {
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -125,22 +134,34 @@ Page({
   },
 
   checkHasSchedule(dateStr) {
-    return this.data.schedules.some(s => {
-      if (s.scheduleDate === dateStr) return true
-      // 检查周期日程
-      if (s.recurring && s.recurring !== 'none') {
-        const scheduleDate = new Date(s.scheduleDate)
-        const checkDate = new Date(dateStr)
-        
-        if (s.recurring === 'daily') return true
-        if (s.recurring === 'weekly' && scheduleDate.getDay() === checkDate.getDay()) return true
-        if (s.recurring === 'monthly' && scheduleDate.getDate() === checkDate.getDate()) return true
-        if (s.recurring === 'yearly' && 
-            scheduleDate.getMonth() === checkDate.getMonth() && 
-            scheduleDate.getDate() === checkDate.getDate()) return true
+    return this.data.schedules.some(s => this.matchSchedule(s, dateStr))
+  },
+
+  matchSchedule(s, dateStr) {
+    if (s.scheduleDate === dateStr) return true
+    
+    if (s.recurring && s.recurring !== 'none') {
+      const scheduleDate = new Date(s.scheduleDate)
+      const checkDate = new Date(dateStr)
+      
+      // 检查是否在周期范围内
+      if (s.recurringStart) {
+        const startDate = new Date(s.recurringStart)
+        if (checkDate < startDate) return false
       }
-      return false
-    })
+      if (s.recurringEnd) {
+        const endDate = new Date(s.recurringEnd)
+        if (checkDate > endDate) return false
+      }
+      
+      if (s.recurring === 'daily') return true
+      if (s.recurring === 'weekly' && scheduleDate.getDay() === checkDate.getDay()) return true
+      if (s.recurring === 'monthly' && scheduleDate.getDate() === checkDate.getDate()) return true
+      if (s.recurring === 'yearly' && 
+          scheduleDate.getMonth() === checkDate.getMonth() && 
+          scheduleDate.getDate() === checkDate.getDate()) return true
+    }
+    return false
   },
 
   async loadSchedules() {
@@ -168,26 +189,10 @@ Page({
   loadDaySchedules() {
     const dateStr = this.data.selectedDateStr
     
-    // 匹配当天日程（包括周期日程）
-    const daySchedules = this.data.schedules.filter(s => {
-      if (s.scheduleDate === dateStr) return true
-      
-      if (s.recurring && s.recurring !== 'none') {
-        const scheduleDate = new Date(s.scheduleDate)
-        const checkDate = new Date(dateStr)
-        
-        if (s.recurring === 'daily') return true
-        if (s.recurring === 'weekly' && scheduleDate.getDay() === checkDate.getDay()) return true
-        if (s.recurring === 'monthly' && scheduleDate.getDate() === checkDate.getDate()) return true
-        if (s.recurring === 'yearly' && 
-            scheduleDate.getMonth() === checkDate.getMonth() && 
-            scheduleDate.getDate() === checkDate.getDate()) return true
-      }
-      return false
-    }).map(s => ({
+    const daySchedules = this.data.schedules.filter(s => this.matchSchedule(s, dateStr)).map(s => ({
       ...s,
       typeName: this.getTypeName(s.type),
-      time: s.scheduleTime || '',
+      timeRange: this.getTimeRange(s.startTime, s.endTime),
       isRecurring: s.recurring && s.recurring !== 'none',
       recurringText: this.getRecurringText(s.recurring)
     }))
@@ -227,9 +232,12 @@ Page({
         title: '',
         description: '',
         date: this.data.selectedDateStr,
-        time: '',
+        startTime: '',
+        endTime: '',
         type: 'birthday',
-        recurring: 'none'
+        recurring: 'none',
+        recurringStart: '',
+        recurringEnd: ''
       },
       typeIndex: 0,
       recurringIndex: 0,
@@ -249,12 +257,24 @@ Page({
     this.setData({ 'formData.description': e.detail.value })
   },
 
-  inputTime(e) {
-    this.setData({ 'formData.time': e.detail.value })
-  },
-
   onDateChange(e) {
     this.setData({ 'formData.date': e.detail.value })
+  },
+
+  onStartTimeChange(e) {
+    this.setData({ 'formData.startTime': e.detail.value })
+  },
+
+  onEndTimeChange(e) {
+    this.setData({ 'formData.endTime': e.detail.value })
+  },
+
+  onRecurringStartChange(e) {
+    this.setData({ 'formData.recurringStart': e.detail.value })
+  },
+
+  onRecurringEndChange(e) {
+    this.setData({ 'formData.recurringEnd': e.detail.value })
   },
 
   pickType(e) {
@@ -286,9 +306,12 @@ Page({
         title: item.title,
         description: item.description || '',
         date: item.scheduleDate,
-        time: item.scheduleTime || '',
+        startTime: item.startTime || '',
+        endTime: item.endTime || '',
         type: item.type || 'other',
-        recurring: item.recurring || 'none'
+        recurring: item.recurring || 'none',
+        recurringStart: item.recurringStart || '',
+        recurringEnd: item.recurringEnd || ''
       },
       typeIndex: typeIndex >= 0 ? typeIndex : this.data.types.length - 1,
       recurringIndex: recurringIndex >= 0 ? recurringIndex : 0
@@ -318,9 +341,12 @@ Page({
             title: this.data.formData.title.trim(),
             description: this.data.formData.description,
             scheduleDate: this.data.formData.date,
-            scheduleTime: this.data.formData.time,
+            startTime: this.data.formData.startTime,
+            endTime: this.data.formData.endTime,
             type: this.data.formData.type,
-            recurring: this.data.formData.recurring
+            recurring: this.data.formData.recurring,
+            recurringStart: this.data.formData.recurringStart,
+            recurringEnd: this.data.formData.recurringEnd
           }
         }
       })

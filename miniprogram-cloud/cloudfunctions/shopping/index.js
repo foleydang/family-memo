@@ -38,15 +38,16 @@ async function getList(familyId) {
 async function addItem(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
-    const userId = userRes.data[0]._id
+    const userId = userRes.data[0]?._id
     
     const res = await db.collection('shopping').add({
       data: {
         familyId: data.familyId,
         title: data.title,
-        category: data.category || '其他',
+        category: data.category || 'food',
         quantity: data.quantity || 1,
         unit: data.unit || '个',
+        priority: data.priority || 0,
         status: 'pending',
         createdBy: userId,
         createTime: db.serverDate()
@@ -65,7 +66,8 @@ async function updateItem(data) {
         title: data.title,
         category: data.category,
         quantity: data.quantity,
-        unit: data.unit
+        unit: data.unit,
+        priority: data.priority || 0
       }
     })
     return { success: true }
@@ -86,7 +88,7 @@ async function deleteItem(data) {
 async function toggleItem(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
-    const userId = userRes.data[0]._id
+    const userId = userRes.data[0]?._id
     
     const item = await db.collection('shopping').doc(data._id).get()
     const newStatus = item.data.status === 'done' ? 'pending' : 'done'

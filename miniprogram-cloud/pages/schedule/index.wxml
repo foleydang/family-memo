@@ -42,7 +42,7 @@
           <view class="schedule-type">{{item.typeName}}</view>
           <view class="schedule-content">
             <view class="schedule-title">{{item.title}}</view>
-            <view wx:if="{{item.time}}" class="schedule-time">🕐 {{item.time}}</view>
+            <view wx:if="{{item.timeRange}}" class="schedule-time">🕐 {{item.timeRange}}</view>
             <view wx:if="{{item.description}}" class="schedule-desc">{{item.description}}</view>
             <view wx:if="{{item.isRecurring}}" class="schedule-recurring">🔄 {{item.recurringText}}</view>
           </view>
@@ -67,7 +67,7 @@
         <view class="modal-close" bindtap="hideModal">×</view>
       </view>
 
-      <view class="modal-body">
+      <scroll-view scroll-y class="modal-body">
         <view class="form-item">
           <text class="form-label">日程标题 *</text>
           <input class="form-input" placeholder="请输入日程标题" value="{{formData.title}}" bindinput="inputTitle" />
@@ -87,11 +87,19 @@
           </picker>
         </view>
 
-        <view class="form-item">
-          <text class="form-label">时间</text>
-          <picker mode="time" value="{{formData.time}}" bindchange="inputTime">
-            <view class="picker-value">{{formData.time || '请选择时间（可选）'}}</view>
-          </picker>
+        <view class="form-row">
+          <view class="form-item half">
+            <text class="form-label">开始时间</text>
+            <picker mode="time" value="{{formData.startTime}}" bindchange="onStartTimeChange">
+              <view class="picker-value">{{formData.startTime || '选择'}}</view>
+            </picker>
+          </view>
+          <view class="form-item half">
+            <text class="form-label">结束时间</text>
+            <picker mode="time" value="{{formData.endTime}}" bindchange="onEndTimeChange">
+              <view class="picker-value">{{formData.endTime || '选择'}}</view>
+            </picker>
+          </view>
         </view>
 
         <view class="form-item">
@@ -99,6 +107,21 @@
           <picker mode="selector" range="{{recurringOptions}}" value="{{recurringIndex}}" bindchange="pickRecurring">
             <view class="picker-value">{{recurringOptions[recurringIndex]}}</view>
           </picker>
+        </view>
+
+        <view wx:if="{{formData.recurring !== 'none'}}" class="form-row">
+          <view class="form-item half">
+            <text class="form-label">开始日期</text>
+            <picker mode="date" value="{{formData.recurringStart}}" start="2020-01-01" end="2030-12-31" bindchange="onRecurringStartChange">
+              <view class="picker-value">{{formData.recurringStart || '选择'}}</view>
+            </picker>
+          </view>
+          <view class="form-item half">
+            <text class="form-label">结束日期</text>
+            <picker mode="date" value="{{formData.recurringEnd}}" start="2020-01-01" end="2030-12-31" bindchange="onRecurringEndChange">
+              <view class="picker-value">{{formData.recurringEnd || '不限'}}</view>
+            </picker>
+          </view>
         </view>
 
         <view class="form-item">
@@ -112,7 +135,7 @@
             <view class="picker-value">{{remindOptions[remindIndex]}}</view>
           </picker>
         </view>
-      </view>
+      </scroll-view>
 
       <view class="modal-footer">
         <view class="btn-cancel" bindtap="hideModal">取消</view>
