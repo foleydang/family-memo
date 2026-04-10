@@ -8,7 +8,8 @@ Page({
     showCreate: false,
     showJoin: false,
     familyName: '',
-    inputCode: ''
+    inputCode: '',
+    isAdmin: false
   },
 
   onLoad(options) {
@@ -23,10 +24,13 @@ Page({
   },
 
   async loadFamilyInfo() {
-    // 先从 globalData 获取
+    // 等待数据加载
+    if (!app.globalData.userInfo) {
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+    
     this.setData({ familyInfo: app.globalData.familyInfo })
     
-    // 如果有家庭，加载成员
     if (app.globalData.familyInfo) {
       this.setData({ familyInfo: app.globalData.familyInfo })
       await this.loadMembers()
@@ -46,7 +50,13 @@ Page({
       })
       
       if (res.result.success) {
-        this.setData({ members: res.result.data })
+        const members = res.result.data
+        // 检查当前用户是否是管理员
+        const currentUserId = app.globalData.userId
+        const adminMember = members.find(m => m.role === 'admin')
+        const isAdmin = adminMember && adminMember._id === currentUserId
+        
+        this.setData({ members, isAdmin })
       }
     } catch (err) {
       console.error('加载成员失败', err)
@@ -98,14 +108,8 @@ Page({
       if (res.result.success) {
         wx.showToast({ title: '创建成功', icon: 'success' })
         this.hideCreateModal()
-        
-        // 更新 globalData
         await app.getFamilyInfo()
-        
-        // 立即更新当前页面数据
         this.setData({ familyInfo: app.globalData.familyInfo })
-        
-        // 加载成员（应该包含自己）
         await this.loadMembers()
       } else {
         wx.showToast({ title: res.result.message || '创建失败', icon: 'none' })
@@ -151,6 +155,7 @@ Page({
     }
   },
 
+  // 生成邀请码
   async generateInviteCode() {
     if (!this.data.familyInfo) return
     
@@ -159,9 +164,7 @@ Page({
     try {
       const res = await wx.cloud.callFunction({
         name: 'family',
-        data: {
-          action: 'getInviteCode'
-        }
+        data: { action: 'getInviteCode' }
       })
       
       wx.hideLoading()
@@ -182,6 +185,7 @@ Page({
     }
   },
 
+  // 复制邀请码
   copyInviteCode() {
     const code = this.data.familyInfo?.inviteCode
     if (!code) {
@@ -196,35 +200,46 @@ Page({
     })
   },
 
+  // 分享邀请码
   shareInvite() {
     const code = this.data.familyInfo?.inviteCode
     if (!code) {
       this.generateInviteCode()
-      return
     }
   },
 
+  // 退出家庭
   async leaveFamily() {
-    const res = await wx.showModal({
-      title: '确认退出',
-      content: '确定要退出家庭吗？退出后数据将无法访问'
+    const isAdmin = this.data.isAdmin
+    
+    wx.showModal({
+      title: isAdmin ? '解散家庭' : '退出家庭',
+      content: isAdmin ? '解散后所有成员将被移除，数据无法恢复，确定解散吗？' : '确定要退出家庭吗？退出后数据将无法访问',
+      success: async (res) => {
+        if (res.confirm) {
+          wx.showLoading({ title: isAdmin ? '解散中' : '退出中' })
+          
+          try {
+            if (isAdmin) {
+              // 管理员解散家庭
+              await wx.cloud.callFunction({
+                name: 'family',
+                data: { action: 'dissolve' }
+              })
+            }
+            
+            app.globalData.familyInfo = null
+            this.setData({ familyInfo: null, members: [] })
+            wx.hideLoading()
+            wx.showToast({ title: isAdmin ? '已解散' : '已退出', icon: 'success' })
+          } catch (err) {
+            wx.hideLoading()
+            console.error('操作失败:', err)
+            wx.showToast({ title: '操作失败', icon: 'none' })
+          }
+        }
+      }
     })
-    
-    if (!res.confirm) return
-    
-    wx.showLoading({ title: '退出中' })
-    
-    try {
-      // 清除本地数据
-      app.globalData.familyInfo = null
-      this.setData({ familyInfo: null, members: [] })
-      wx.hideLoading()
-      wx.showToast({ title: '已退出', icon: 'success' })
-    } catch (err) {
-      wx.hideLoading()
-      console.error('退出家庭失败:', err)
-      wx.showToast({ title: '退出失败', icon: 'none' })
-    }
   },
 
   stopPropagation() {}

@@ -29,7 +29,8 @@ Page({
       unit: '个',
       priority: 0
     },
-    stats: { pending: 0, done: 0 }
+    stats: { pending: 0, done: 0 },
+    togglingId: '' // 正在切换的ID
   },
 
   onLoad() {
@@ -49,9 +50,7 @@ Page({
         title: '提示',
         content: '请先登录',
         showCancel: false,
-        success: () => {
-          wx.switchTab({ url: '/pages/index/index' })
-        }
+        success: () => { wx.switchTab({ url: '/pages/index/index' }) }
       })
       return false
     }
@@ -61,9 +60,7 @@ Page({
         title: '提示',
         content: '请先创建或加入家庭',
         showCancel: false,
-        success: () => {
-          wx.switchTab({ url: '/pages/family/index' })
-        }
+        success: () => { wx.switchTab({ url: '/pages/family/index' }) }
       })
       return false
     }
@@ -99,10 +96,7 @@ Page({
     try {
       const res = await wx.cloud.callFunction({
         name: 'shopping',
-        data: {
-          action: 'list',
-          data: { familyId: this.data.familyInfo._id }
-        }
+        data: { action: 'list', data: { familyId: this.data.familyInfo._id } }
       })
       
       if (res.result.success) {
@@ -225,14 +219,30 @@ Page({
   async toggleItem(e) {
     const id = e.currentTarget.dataset.id
     
+    // 防止重复点击
+    if (this.data.togglingId === id) return
+    
+    // 立即更新UI反馈
+    const items = this.data.items.map(item => {
+      if (item._id === id) {
+        return { ...item, status: item.status === 'done' ? 'pending' : 'done' }
+      }
+      return item
+    })
+    
+    this.setData({ togglingId: id, items })
+    this.updateFilteredList()
+    
     try {
       await wx.cloud.callFunction({
         name: 'shopping',
         data: { action: 'toggle', data: { _id: id } }
       })
-      this.loadItems()
     } catch (err) {
-      console.error('切换状态失败', err)
+      // 失败时恢复
+      await this.loadItems()
+    } finally {
+      this.setData({ togglingId: '' })
     }
   },
 

@@ -1,6 +1,7 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const _ = db.command
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
@@ -18,12 +19,13 @@ exports.main = async (event, context) => {
       return await getMembers(data)
     case 'getInviteCode':
       return await getInviteCode(openid)
+    case 'dissolve':
+      return await dissolveFamily(openid)
     default:
       return { success: false, message: '未知操作' }
   }
 }
 
-// 获取我的家庭
 async function getMyFamily(openid) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
@@ -32,9 +34,7 @@ async function getMyFamily(openid) {
     }
     const userId = userRes.data[0]._id
     
-    const memberRes = await db.collection('family_members')
-      .where({ userId })
-      .get()
+    const memberRes = await db.collection('family_members').where({ userId }).get()
     
     if (memberRes.data.length === 0) {
       return { success: true, data: null }
@@ -49,7 +49,6 @@ async function getMyFamily(openid) {
   }
 }
 
-// 创建家庭
 async function createFamily(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
@@ -58,10 +57,8 @@ async function createFamily(openid, data) {
     }
     const userId = userRes.data[0]._id
     
-    // 生成邀请码
     const inviteCode = generateInviteCode()
     
-    // 创建家庭
     const familyRes = await db.collection('families').add({
       data: {
         name: data.name,
@@ -71,7 +68,6 @@ async function createFamily(openid, data) {
       }
     })
     
-    // 添加创建者为成员
     await db.collection('family_members').add({
       data: {
         familyId: familyRes._id,
@@ -88,7 +84,6 @@ async function createFamily(openid, data) {
   }
 }
 
-// 加入家庭
 async function joinFamily(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
@@ -97,9 +92,7 @@ async function joinFamily(openid, data) {
     }
     const userId = userRes.data[0]._id
     
-    const familyRes = await db.collection('families')
-      .where({ inviteCode: data.inviteCode })
-      .get()
+    const familyRes = await db.collection('families').where({ inviteCode: data.inviteCode }).get()
     
     if (familyRes.data.length === 0) {
       return { success: false, message: '邀请码无效' }
@@ -107,16 +100,12 @@ async function joinFamily(openid, data) {
     
     const family = familyRes.data[0]
     
-    // 检查是否已是成员
-    const memberRes = await db.collection('family_members')
-      .where({ familyId: family._id, userId })
-      .get()
+    const memberRes = await db.collection('family_members').where({ familyId: family._id, userId }).get()
     
     if (memberRes.data.length > 0) {
       return { success: false, message: '你已经是家庭成员了' }
     }
     
-    // 添加成员
     await db.collection('family_members').add({
       data: {
         familyId: family._id,
@@ -133,23 +122,19 @@ async function joinFamily(openid, data) {
   }
 }
 
-// 获取家庭成员
 async function getMembers(data) {
   try {
     const { familyId } = data
     
-    // 获取成员列表
-    const memberRes = await db.collection('family_members')
-      .where({ familyId })
-      .get()
+    const memberRes = await db.collection('family_members').where({ familyId }).get()
     
-    // 获取成员用户信息
     const members = []
     for (const member of memberRes.data) {
       const userRes = await db.collection('users').doc(member.userId).get()
       if (userRes.data) {
         members.push({
           ...userRes.data,
+          _id: userRes.data._id,
           role: member.role,
           joinTime: member.joinTime
         })
@@ -163,7 +148,6 @@ async function getMembers(data) {
   }
 }
 
-// 获取邀请码
 async function getInviteCode(openid) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
@@ -172,9 +156,7 @@ async function getInviteCode(openid) {
     }
     const userId = userRes.data[0]._id
     
-    const memberRes = await db.collection('family_members')
-      .where({ userId })
-      .get()
+    const memberRes = await db.collection('family_members').where({ userId }).get()
     
     if (memberRes.data.length === 0) {
       return { success: false, message: '你还没有加入家庭' }
@@ -190,7 +172,43 @@ async function getInviteCode(openid) {
   }
 }
 
-// 生成邀请码
+// 解散家庭
+async function dissolveFamily(openid) {
+  try {
+    const userRes = await db.collection('users').where({ openid }).get()
+    if (userRes.data.length === 0) {
+      return { success: false, message: '用户不存在' }
+    }
+    const userId = userRes.data[0]._id
+    
+    // 获取用户的家庭成员信息
+    const memberRes = await db.collection('family_members').where({ userId }).get()
+    if (memberRes.data.length === 0) {
+      return { success: false, message: '你还没有加入家庭' }
+    }
+    
+    const member = memberRes.data[0]
+    
+    // 检查是否是管理员
+    if (member.role !== 'admin') {
+      return { success: false, message: '只有管理员才能解散家庭' }
+    }
+    
+    const familyId = member.familyId
+    
+    // 删除所有成员
+    await db.collection('family_members').where({ familyId }).remove()
+    
+    // 删除家庭
+    await db.collection('families').doc(familyId).remove()
+    
+    return { success: true, message: '家庭已解散' }
+  } catch (err) {
+    console.error('解散家庭失败:', err)
+    return { success: false, message: err.message }
+  }
+}
+
 function generateInviteCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   let code = ''

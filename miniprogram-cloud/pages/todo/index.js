@@ -19,7 +19,8 @@ Page({
     members: [],
     memberNames: ['不指派'],
     assigneeIndex: 0,
-    stats: { pending: 0, doing: 0, done: 0 }
+    stats: { pending: 0, doing: 0, done: 0 },
+    togglingId: ''
   },
 
   onLoad() {
@@ -35,28 +36,22 @@ Page({
   },
 
   checkStatus() {
-    // 先检查是否登录
     if (!app.globalData.userInfo) {
       wx.showModal({
         title: '提示',
         content: '请先登录',
         showCancel: false,
-        success: () => {
-          wx.switchTab({ url: '/pages/index/index' })
-        }
+        success: () => { wx.switchTab({ url: '/pages/index/index' }) }
       })
       return false
     }
     
-    // 再检查是否有家庭
     if (!app.globalData.familyInfo) {
       wx.showModal({
         title: '提示',
         content: '请先创建或加入家庭',
         showCancel: false,
-        success: () => {
-          wx.switchTab({ url: '/pages/family/index' })
-        }
+        success: () => { wx.switchTab({ url: '/pages/family/index' }) }
       })
       return false
     }
@@ -71,10 +66,7 @@ Page({
     try {
       const res = await wx.cloud.callFunction({
         name: 'family',
-        data: {
-          action: 'getMembers',
-          data: { familyId: this.data.familyInfo._id }
-        }
+        data: { action: 'getMembers', data: { familyId: this.data.familyInfo._id } }
       })
       
       if (res.result.success) {
@@ -110,10 +102,7 @@ Page({
     try {
       const res = await wx.cloud.callFunction({
         name: 'todo',
-        data: {
-          action: 'list',
-          data: { familyId: this.data.familyInfo._id }
-        }
+        data: { action: 'list', data: { familyId: this.data.familyInfo._id } }
       })
       
       if (res.result.success) {
@@ -226,22 +215,34 @@ Page({
   async toggleItem(e) {
     const item = e.currentTarget.dataset.item
     
+    // 防止重复点击
+    if (this.data.togglingId === item._id) return
+    
     // 三态切换: pending -> doing -> done -> pending
     const statusFlow = { pending: 'doing', doing: 'done', done: 'pending' }
     const newStatus = statusFlow[item.status]
     
+    // 立即更新UI
+    const todos = this.data.todos.map(t => {
+      if (t._id === item._id) {
+        return { ...t, status: newStatus }
+      }
+      return t
+    })
+    
+    this.setData({ togglingId: item._id, todos })
+    this.updateFilteredList()
+    
     try {
       await wx.cloud.callFunction({
         name: 'todo',
-        data: {
-          action: 'toggle',
-          data: { _id: item._id, status: newStatus }
-        }
+        data: { action: 'toggle', data: { _id: item._id, status: newStatus } }
       })
-      
-      this.loadTodos()
     } catch (err) {
-      console.error('切换状态失败', err)
+      // 失败时恢复
+      await this.loadTodos()
+    } finally {
+      this.setData({ togglingId: '' })
     }
   },
 
@@ -256,12 +257,8 @@ Page({
           try {
             await wx.cloud.callFunction({
               name: 'todo',
-              data: {
-                action: 'delete',
-                data: { _id: id }
-              }
+              data: { action: 'delete', data: { _id: id } }
             })
-            
             wx.showToast({ title: '已删除', icon: 'success' })
             this.loadTodos()
           } catch (err) {
