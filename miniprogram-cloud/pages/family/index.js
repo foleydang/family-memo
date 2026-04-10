@@ -9,30 +9,69 @@ Page({
     showJoin: false,
     familyName: '',
     inputCode: '',
-    isAdmin: false
+    isAdmin: false,
+    loading: true
   },
 
   onLoad(options) {
     if (options.action === 'join') {
       this.setData({ showJoin: true })
     }
-    this.loadFamilyInfo()
+    this.initPage()
   },
 
   onShow() {
-    this.loadFamilyInfo()
+    // 每次显示时重新加载
+    if (!this.data.loading) {
+      this.loadFamilyInfo()
+    }
+  },
+
+  async initPage() {
+    // 等待登录完成
+    if (!app.globalData.userInfo) {
+      await new Promise(resolve => {
+        const checkTimer = setInterval(() => {
+          if (app.globalData.userInfo) {
+            clearInterval(checkTimer)
+            resolve()
+          }
+        }, 100)
+        setTimeout(() => {
+          clearInterval(checkTimer)
+          resolve()
+        }, 3000)
+      })
+    }
+    
+    this.setData({ loading: false })
+    await this.loadFamilyInfo()
   },
 
   async loadFamilyInfo() {
-    // 等待数据加载
-    if (!app.globalData.userInfo) {
-      await new Promise(resolve => setTimeout(resolve, 500))
+    // 从 globalData 获取
+    let familyInfo = app.globalData.familyInfo
+    
+    // 如果 globalData 没有，尝试从云端获取
+    if (!familyInfo && app.globalData.userInfo) {
+      try {
+        const res = await wx.cloud.callFunction({
+          name: 'family',
+          data: { action: 'getMyFamily' }
+        })
+        
+        if (res.result.success && res.result.data) {
+          familyInfo = res.result.data
+          app.globalData.familyInfo = familyInfo
+        }
+      } catch (err) {
+        console.error('获取家庭信息失败:', err)
+      }
     }
     
-    this.setData({ familyInfo: app.globalData.familyInfo })
+    this.setData({ familyInfo })
     
-    if (app.globalData.familyInfo) {
-      this.setData({ familyInfo: app.globalData.familyInfo })
+    if (familyInfo) {
       await this.loadMembers()
     }
   },
@@ -108,6 +147,8 @@ Page({
       if (res.result.success) {
         wx.showToast({ title: '创建成功', icon: 'success' })
         this.hideCreateModal()
+        
+        // 重新获取家庭信息
         await app.getFamilyInfo()
         this.setData({ familyInfo: app.globalData.familyInfo })
         await this.loadMembers()
@@ -142,6 +183,8 @@ Page({
       if (res.result.success) {
         wx.showToast({ title: '加入成功', icon: 'success' })
         this.hideJoinModal()
+        
+        // 重新获取家庭信息
         await app.getFamilyInfo()
         this.setData({ familyInfo: app.globalData.familyInfo })
         await this.loadMembers()
@@ -221,7 +264,6 @@ Page({
           
           try {
             if (isAdmin) {
-              // 管理员解散家庭
               await wx.cloud.callFunction({
                 name: 'family',
                 data: { action: 'dissolve' }

@@ -3,6 +3,17 @@
   padding: 20rpx;
   background: #f5f5f5;
   min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx;
+  color: #999;
+  font-size: 28rpx;
 }
 
 /* 无家庭状态 */
@@ -16,6 +27,7 @@
 
 .no-family-icon {
   font-size: 80rpx;
+  display: block;
   margin-bottom: 24rpx;
 }
 
@@ -23,42 +35,57 @@
   font-size: 32rpx;
   color: #333;
   font-weight: bold;
+  display: block;
   margin-bottom: 16rpx;
 }
 
 .no-family-desc {
   font-size: 26rpx;
   color: #666;
+  display: block;
   margin-bottom: 40rpx;
 }
 
 .action-btns {
   display: flex;
-  gap: 24rpx;
-  justify-content: center;
+  flex-direction: column;
+  gap: 20rpx;
 }
 
 .btn-primary {
-  padding: 20rpx 40rpx;
-  background: #FF85A2;
+  width: 100%;
+  background: linear-gradient(135deg, #FF4D6A 0%, #FF85A2 100%);
   color: #fff;
-  border-radius: 12rpx;
-  font-size: 28rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  height: 88rpx;
+  border-radius: 44rpx;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.btn-primary::after {
+  display: none;
+}
+
 .btn-secondary {
-  padding: 20rpx 40rpx;
+  width: 100%;
   background: #fff;
-  color: #FF85A2;
+  color: #FF4D6A;
+  font-size: 30rpx;
+  font-weight: 500;
+  height: 88rpx;
   border: 2rpx solid #FF85A2;
-  border-radius: 12rpx;
-  font-size: 28rpx;
+  border-radius: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.btn-secondary::after {
+  display: none;
 }
 
 /* 家庭信息 */
@@ -176,6 +203,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: none;
+}
+
+.btn-generate::after {
+  display: none;
 }
 
 .invite-code-box {
@@ -196,23 +228,20 @@
   gap: 16rpx;
 }
 
-.btn-copy, .btn-share {
+.btn-copy {
   padding: 16rpx 28rpx;
   font-size: 26rpx;
   border-radius: 8rpx;
+  background: #f5f5f5;
+  color: #666;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
 }
 
-.btn-copy {
-  background: #f5f5f5;
-  color: #666;
-}
-
-.btn-share {
-  background: #FF85A2;
-  color: #fff;
+.btn-copy::after {
+  display: none;
 }
 
 /* 退出家庭 */
@@ -231,6 +260,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.btn-leave::after {
+  display: none;
 }
 
 /* 弹窗 */
@@ -315,6 +348,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+}
+
+.btn-cancel::after {
+  display: none;
 }
 
 .btn-confirm {
@@ -327,4 +365,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+}
+
+.btn-confirm::after {
+  display: none;
 }
