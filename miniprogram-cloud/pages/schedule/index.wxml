@@ -2,9 +2,13 @@
 <view class="container">
   <!-- 月份导航 -->
   <view class="month-nav">
+    <view class="nav-btn" bindtap="prevYear">«</view>
     <view class="nav-btn" bindtap="prevMonth">‹</view>
-    <view class="month-title">{{currentMonth}}</view>
+    <picker mode="date" fields="month" value="{{pickerValue}}" start="2020-01" end="2030-12" bindchange="onPickerChange">
+      <view class="month-title">{{currentMonth}} ▼</view>
+    </picker>
     <view class="nav-btn" bindtap="nextMonth">›</view>
+    <view class="nav-btn" bindtap="nextYear">»</view>
   </view>
 
   <!-- 日历 -->

@@ -8,27 +8,28 @@
 /* 月份导航 */
 .month-nav {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   background: #fff;
   border-radius: 16rpx;
-  padding: 20rpx 40rpx;
+  padding: 16rpx 20rpx;
   margin-bottom: 20rpx;
 }
 
 .nav-btn {
-  font-size: 40rpx;
+  font-size: 32rpx;
   color: #FF85A2;
-  padding: 8rpx 20rpx;
+  padding: 8rpx 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .month-title {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: bold;
   color: #333;
+  padding: 0 12rpx;
 }
 
 /* 日历 */

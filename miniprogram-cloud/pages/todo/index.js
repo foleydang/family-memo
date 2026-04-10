@@ -79,6 +79,14 @@ Page({
     }
   },
 
+  updateStats() {
+    const todos = this.data.todos
+    const pending = todos.filter(i => i.status === 'pending').length
+    const doing = todos.filter(i => i.status === 'doing').length
+    const done = todos.filter(i => i.status === 'done').length
+    this.setData({ stats: { pending, doing, done } })
+  },
+
   updateFilteredList() {
     let list = this.data.todos.map(item => ({
       ...item,
@@ -106,11 +114,8 @@ Page({
       })
       
       if (res.result.success) {
-        const todos = res.result.data
-        const pending = todos.filter(i => i.status === 'pending').length
-        const doing = todos.filter(i => i.status === 'doing').length
-        const done = todos.filter(i => i.status === 'done').length
-        this.setData({ todos, stats: { pending, doing, done } })
+        this.setData({ todos: res.result.data })
+        this.updateStats()
         this.updateFilteredList()
       }
     } catch (err) {
@@ -215,14 +220,11 @@ Page({
   async toggleItem(e) {
     const item = e.currentTarget.dataset.item
     
-    // 防止重复点击
     if (this.data.togglingId === item._id) return
     
-    // 三态切换: pending -> doing -> done -> pending
     const statusFlow = { pending: 'doing', doing: 'done', done: 'pending' }
     const newStatus = statusFlow[item.status]
     
-    // 立即更新UI
     const todos = this.data.todos.map(t => {
       if (t._id === item._id) {
         return { ...t, status: newStatus }
@@ -231,6 +233,7 @@ Page({
     })
     
     this.setData({ togglingId: item._id, todos })
+    this.updateStats()  // 立即更新统计
     this.updateFilteredList()
     
     try {
@@ -239,7 +242,6 @@ Page({
         data: { action: 'toggle', data: { _id: item._id, status: newStatus } }
       })
     } catch (err) {
-      // 失败时恢复
       await this.loadTodos()
     } finally {
       this.setData({ togglingId: '' })

@@ -121,6 +121,11 @@
   flex: 1;
 }
 
+.family-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+}
+
 .family-members {
   display: flex;
   flex-wrap: wrap;
@@ -293,12 +298,13 @@
 
 .join-btn {
   width: 100%;
-  background: transparent;
+  background: #fff;
   color: #FF4D6A;
-  font-size: 26rpx;
-  height: 80rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  height: 88rpx;
   border: 2rpx solid #FF85A2;
-  border-radius: 40rpx;
+  border-radius: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -9,7 +9,10 @@ Page({
     familyInfo: null,
     showModal: false,
     editMode: false,
+    currentYear: 2026,
     currentMonth: '',
+    currentMonthIndex: 0,
+    pickerValue: '2026-04',
     calendarDays: [],
     selectedDate: '',
     selectedDateStr: '',
@@ -49,7 +52,15 @@ Page({
 
   async initPage() {
     if (this.checkStatus()) {
-      this.initCalendar()
+      const today = new Date()
+      this.setData({
+        currentYear: today.getFullYear(),
+        currentMonthIndex: today.getMonth(),
+        selectedDateStr: this.formatDate(today),
+        pickerValue: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+      })
+      this.updateMonthDisplay()
+      this.generateCalendar(today)
       await this.loadSchedules()
     }
   },
@@ -85,10 +96,12 @@ Page({
     return true
   },
 
-  initCalendar() {
-    const today = new Date()
-    this.setData({ selectedDateStr: this.formatDate(today) })
-    this.generateCalendar(today)
+  updateMonthDisplay() {
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
+                        '七月', '八月', '九月', '十月', '十一月', '十二月']
+    this.setData({
+      currentMonth: `${this.data.currentYear}年 ${monthNames[this.data.currentMonthIndex]}`
+    })
   },
 
   formatDate(date) {
@@ -118,9 +131,6 @@ Page({
     const year = date.getFullYear()
     const month = date.getMonth()
     
-    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
-                        '七月', '八月', '九月', '十月', '十一月', '十二月']
-    
     const firstDay = new Date(year, month, 1)
     const firstDayWeek = firstDay.getDay()
     const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -146,10 +156,7 @@ Page({
       })
     }
     
-    this.setData({
-      currentMonth: `${year}年 ${monthNames[month]}`,
-      calendarDays
-    })
+    this.setData({ calendarDays })
   },
 
   checkHasSchedule(dateStr) {
@@ -190,7 +197,7 @@ Page({
       
       if (res.result.success) {
         this.setData({ schedules: res.result.data })
-        this.generateCalendar(new Date(this.data.selectedDateStr))
+        this.generateCalendar(new Date(this.data.currentYear, this.data.currentMonthIndex, 1))
         this.loadDaySchedules()
       }
     } catch (err) {
@@ -216,22 +223,78 @@ Page({
     this.setData({ daySchedules, selectedDate })
   },
 
+  prevYear() {
+    let year = this.data.currentYear - 1
+    if (year < 2020) year = 2020
+    this.setData({ 
+      currentYear: year,
+      pickerValue: `${year}-${String(this.data.currentMonthIndex + 1).padStart(2, '0')}`
+    })
+    this.updateMonthDisplay()
+    this.generateCalendar(new Date(year, this.data.currentMonthIndex, 1))
+  },
+
+  nextYear() {
+    let year = this.data.currentYear + 1
+    if (year > 2030) year = 2030
+    this.setData({ 
+      currentYear: year,
+      pickerValue: `${year}-${String(this.data.currentMonthIndex + 1).padStart(2, '0')}`
+    })
+    this.updateMonthDisplay()
+    this.generateCalendar(new Date(year, this.data.currentMonthIndex, 1))
+  },
+
   prevMonth() {
-    const current = new Date(this.data.selectedDateStr)
-    const prev = new Date(current.getFullYear(), current.getMonth() - 1, 1)
-    this.generateCalendar(prev)
+    let year = this.data.currentYear
+    let month = this.data.currentMonthIndex - 1
+    if (month < 0) {
+      month = 11
+      year--
+    }
+    if (year < 2020) return
+    this.setData({ 
+      currentYear: year, 
+      currentMonthIndex: month,
+      pickerValue: `${year}-${String(month + 1).padStart(2, '0')}`
+    })
+    this.updateMonthDisplay()
+    this.generateCalendar(new Date(year, month, 1))
   },
 
   nextMonth() {
-    const current = new Date(this.data.selectedDateStr)
-    const next = new Date(current.getFullYear(), current.getMonth() + 1, 1)
-    this.generateCalendar(next)
+    let year = this.data.currentYear
+    let month = this.data.currentMonthIndex + 1
+    if (month > 11) {
+      month = 0
+      year++
+    }
+    if (year > 2030) return
+    this.setData({ 
+      currentYear: year, 
+      currentMonthIndex: month,
+      pickerValue: `${year}-${String(month + 1).padStart(2, '0')}`
+    })
+    this.updateMonthDisplay()
+    this.generateCalendar(new Date(year, month, 1))
+  },
+
+  onPickerChange(e) {
+    const value = e.detail.value // "2026-04"
+    const [year, month] = value.split('-').map(Number)
+    this.setData({ 
+      currentYear: year, 
+      currentMonthIndex: month - 1,
+      pickerValue: value
+    })
+    this.updateMonthDisplay()
+    this.generateCalendar(new Date(year, month - 1, 1))
   },
 
   selectDay(e) {
     const dateStr = e.currentTarget.dataset.date
     this.setData({ selectedDateStr: dateStr })
-    this.generateCalendar(new Date(dateStr))
+    this.generateCalendar(new Date(this.data.currentYear, this.data.currentMonthIndex, 1))
     this.loadDaySchedules()
   },
 

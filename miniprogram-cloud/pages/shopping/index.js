@@ -30,7 +30,7 @@ Page({
       priority: 0
     },
     stats: { pending: 0, done: 0 },
-    togglingId: '' // 正在切换的ID
+    togglingId: ''
   },
 
   onLoad() {
@@ -74,6 +74,13 @@ Page({
     return cat ? cat.name : '其他'
   },
 
+  updateStats() {
+    const items = this.data.items
+    const pending = items.filter(i => i.status === 'pending').length
+    const done = items.filter(i => i.status === 'done').length
+    this.setData({ stats: { pending, done } })
+  },
+
   updateFilteredList() {
     let list = this.data.items.map(item => ({
       ...item,
@@ -100,10 +107,8 @@ Page({
       })
       
       if (res.result.success) {
-        const items = res.result.data
-        const pending = items.filter(i => i.status === 'pending').length
-        const done = items.filter(i => i.status === 'done').length
-        this.setData({ items, stats: { pending, done } })
+        this.setData({ items: res.result.data })
+        this.updateStats()
         this.updateFilteredList()
       }
     } catch (err) {
@@ -231,6 +236,7 @@ Page({
     })
     
     this.setData({ togglingId: id, items })
+    this.updateStats()  // 立即更新统计
     this.updateFilteredList()
     
     try {
