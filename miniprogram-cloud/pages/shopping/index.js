@@ -11,13 +11,13 @@ Page({
     currentTab: 'pending',
     currentCategory: 'all',
     categories: [
-      { id: 'vegetable', name: '蔬菜水果' },
-      { id: 'meat', name: '肉蛋海鲜' },
-      { id: 'grain', name: '粮油调味' },
-      { id: 'dairy', name: '乳制品' },
-      { id: 'snack', name: '零食饮料' },
-      { id: 'daily', name: '日用百货' },
-      { id: 'cleaning', name: '清洁用品' },
+      { id: 'vegetable', name: '蔬果' },
+      { id: 'meat', name: '肉蛋' },
+      { id: 'grain', name: '粮油' },
+      { id: 'dairy', name: '乳品' },
+      { id: 'snack', name: '零食' },
+      { id: 'daily', name: '日用' },
+      { id: 'cleaning', name: '清洁' },
       { id: 'other', name: '其他' }
     ],
     categoryIndex: 0,
@@ -228,12 +228,8 @@ Page({
     try {
       await wx.cloud.callFunction({
         name: 'shopping',
-        data: {
-          action: 'toggle',
-          data: { _id: id }
-        }
+        data: { action: 'toggle', data: { _id: id } }
       })
-      
       this.loadItems()
     } catch (err) {
       console.error('切换状态失败', err)
@@ -251,12 +247,8 @@ Page({
           try {
             await wx.cloud.callFunction({
               name: 'shopping',
-              data: {
-                action: 'delete',
-                data: { _id: id }
-              }
+              data: { action: 'delete', data: { _id: id } }
             })
-            
             wx.showToast({ title: '已删除', icon: 'success' })
             this.loadItems()
           } catch (err) {

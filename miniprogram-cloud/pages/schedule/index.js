@@ -21,16 +21,16 @@ Page({
       date: '',
       startTime: '',
       endTime: '',
-      type: 'work',
+      type: 'event',
       recurring: 'none',
       recurringEnd: '',
       remind: 0
     },
     types: [
-      { value: 'work', name: '工作/会议' },
       { value: 'event', name: '活动' },
       { value: 'appointment', name: '预约' },
-      { value: 'anniversary', name: '纪念日' },
+      { value: 'meeting', name: '会议' },
+      { value: 'anniversary', name: '纪念' },
       { value: 'birthday', name: '生日' },
       { value: 'trip', name: '出行' },
       { value: 'holiday', name: '假期' },
@@ -66,9 +66,7 @@ Page({
         title: '提示',
         content: '请先登录',
         showCancel: false,
-        success: () => {
-          wx.switchTab({ url: '/pages/index/index' })
-        }
+        success: () => { wx.switchTab({ url: '/pages/index/index' }) }
       })
       return false
     }
@@ -78,9 +76,7 @@ Page({
         title: '提示',
         content: '请先创建或加入家庭',
         showCancel: false,
-        success: () => {
-          wx.switchTab({ url: '/pages/family/index' })
-        }
+        success: () => { wx.switchTab({ url: '/pages/family/index' }) }
       })
       return false
     }
@@ -189,10 +185,7 @@ Page({
     try {
       const res = await wx.cloud.callFunction({
         name: 'schedule',
-        data: {
-          action: 'list',
-          data: { familyId: this.data.familyInfo._id }
-        }
+        data: { action: 'list', data: { familyId: this.data.familyInfo._id } }
       })
       
       if (res.result.success) {
@@ -253,7 +246,7 @@ Page({
         date: this.data.selectedDateStr,
         startTime: '',
         endTime: '',
-        type: 'work',
+        type: 'event',
         recurring: 'none',
         recurringEnd: '',
         remind: 0
@@ -324,7 +317,7 @@ Page({
         date: item.scheduleDate,
         startTime: item.startTime || '',
         endTime: item.endTime || '',
-        type: item.type || 'work',
+        type: item.type || 'event',
         recurring: item.recurring || 'none',
         recurringEnd: item.recurringEnd || '',
         remind: item.remind || 0
@@ -339,9 +332,7 @@ Page({
     return new Promise((resolve) => {
       wx.requestSubscribeMessage({
         tmplIds: [SCHEDULE_REMIND_TEMPLATE_ID],
-        success: (res) => {
-          resolve(res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept')
-        },
+        success: (res) => resolve(res[SCHEDULE_REMIND_TEMPLATE_ID] === 'accept'),
         fail: () => resolve(false)
       })
     })
@@ -357,10 +348,7 @@ Page({
     }
     
     if (this.data.formData.remind > 0) {
-      const subscribed = await this.requestSubscribe()
-      if (!subscribed) {
-        wx.showToast({ title: '未授权提醒功能', icon: 'none' })
-      }
+      await this.requestSubscribe()
     }
     
     wx.showLoading({ title: this.data.editMode ? '保存中' : '添加中' })
