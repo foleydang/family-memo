@@ -11,7 +11,7 @@
         bindtap="handleAvatarClick"
       ></image>
       <view class="user-detail">
-        <view class="user-name">{{userInfo.name || '微信用户'}}</view>
+        <view class="user-name">{{userInfo.nickname || '微信用户'}}</view>
         <view class="user-family" wx:if="{{familyInfo}}">🏠 {{familyInfo.name}}</view>
         <view wx:else class="user-family-empty" bindtap="goToFamily">点击创建或加入家庭</view>
       </view>

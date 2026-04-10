@@ -26,7 +26,7 @@
 
   <!-- 待办列表 -->
   <view class="todo-list">
-    <block wx:for="{{filteredList}}" wx:key="id">
+    <block wx:for="{{filteredList}}" wx:key="_id">
       <view class="todo-item {{item.priority === 1 ? 'important' : ''}} {{item.priority === 2 ? 'urgent' : ''}}">
         <view class="todo-checkbox {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
           <icon wx:if="{{item.status === 'done'}}" type="success" size="20" color="#52c41a"/>
@@ -40,13 +40,12 @@
             <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
               {{item.priority === 2 ? '紧急' : '重要'}}
             </text>
-            <text wx:if="{{item.assignee_name}}" class="assignee">👤 {{item.assignee_name}}</text>
-            <text class="create-time">{{item.created_at}}</text>
+            <text wx:if="{{item.assigneeName}}" class="assignee">👤 {{item.assigneeName}}</text>
           </view>
         </view>
         <view class="todo-actions">
           <view class="action-btn" catchtap="editItem" data-item="{{item}}">编辑</view>
-          <view class="action-btn delete" catchtap="deleteItem" data-id="{{item.id}}">删除</view>
+          <view class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">删除</view>
         </view>
       </view>
     </block>
@@ -84,9 +83,9 @@
         <view class="form-item">
           <text class="form-label">优先级</text>
           <view class="priority-btns">
-            <view class="priority-btn {{formData.priority === 0 ? 'active' : ''}}" bindtap="togglePriority">普通</view>
-            <view class="priority-btn important {{formData.priority === 1 ? 'active' : ''}}" bindtap="togglePriority">重要</view>
-            <view class="priority-btn urgent {{formData.priority === 2 ? 'active' : ''}}" bindtap="togglePriority">紧急</view>
+            <view class="priority-btn {{formData.priority === 0 ? 'active' : ''}}" bindtap="togglePriority" data-level="0">普通</view>
+            <view class="priority-btn important {{formData.priority === 1 ? 'active' : ''}}" bindtap="togglePriority" data-level="1">重要</view>
+            <view class="priority-btn urgent {{formData.priority === 2 ? 'active' : ''}}" bindtap="togglePriority" data-level="2">紧急</view>
           </view>
         </view>
 

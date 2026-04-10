@@ -61,7 +61,7 @@ Page({
       
       if (res.result.success) {
         const members = res.result.data
-        const memberNames = ['不指派', ...members.map(m => m.nickName || '成员')]
+        const memberNames = ['不指派', ...members.map(m => m.nickname || '成员')]
         this.setData({ members, memberNames })
       }
     } catch (err) {
@@ -70,11 +70,20 @@ Page({
   },
 
   updateFilteredList() {
-    let list = this.data.todos
+    let list = this.data.todos.map(item => ({
+      ...item,
+      assigneeName: this.getAssigneeName(item.assigneeId)
+    }))
     if (this.data.currentTab !== 'all') {
       list = list.filter(i => i.status === this.data.currentTab)
     }
     this.setData({ filteredList: list })
+  },
+
+  getAssigneeName(assigneeId) {
+    if (!assigneeId) return ''
+    const member = this.data.members.find(m => m._id === assigneeId)
+    return member ? (member.nickname || '成员') : ''
   },
 
   async loadTodos() {
@@ -130,13 +139,13 @@ Page({
   },
 
   togglePriority(e) {
-    const level = e.currentTarget.dataset.level || 0
+    const level = parseInt(e.currentTarget.dataset.level) || 0
     this.setData({ 'formData.priority': level })
   },
 
   pickAssignee(e) {
-    const index = e.detail.value
-    const assigneeId = index === 0 ? '' : this.data.members[index - 1]?._id || ''
+    const index = parseInt(e.detail.value)
+    const assigneeId = index === 0 ? '' : (this.data.members[index - 1]?._id || '')
     this.setData({ assigneeIndex: index, 'formData.assigneeId': assigneeId })
   },
 
@@ -155,7 +164,7 @@ Page({
         priority: item.priority || 0,
         assigneeId: item.assigneeId || ''
       },
-      assigneeIndex
+      assigneeIndex: assigneeIndex >= 0 ? assigneeIndex : 0
     })
   },
 
@@ -198,14 +207,17 @@ Page({
 
   async toggleItem(e) {
     const item = e.currentTarget.dataset.item
-    const newStatus = item.status === 'done' ? 'pending' : 'done'
+    
+    // 三态切换: pending -> doing -> done -> pending
+    const statusMap = { pending: 'doing', doing: 'done', done: 'pending' }
+    const newStatus = statusMap[item.status] || 'pending'
     
     try {
       await wx.cloud.callFunction({
         name: 'todo',
         data: {
           action: 'toggle',
-          data: { _id: item._id }
+          data: { _id: item._id, status: newStatus }
         }
       })
       

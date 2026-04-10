@@ -41,7 +41,7 @@ async function getList(familyId, startDate, endDate) {
 async function addItem(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
-    const userId = userRes.data[0]._id
+    const userId = userRes.data[0]?._id
     
     const res = await db.collection('schedules').add({
       data: {
@@ -51,6 +51,7 @@ async function addItem(openid, data) {
         scheduleDate: data.scheduleDate,
         scheduleTime: data.scheduleTime || null,
         type: data.type || 'other',
+        recurring: data.recurring || 'none',
         createdBy: userId,
         createTime: db.serverDate()
       }
@@ -69,7 +70,8 @@ async function updateItem(data) {
         description: data.description,
         scheduleDate: data.scheduleDate,
         scheduleTime: data.scheduleTime,
-        type: data.type
+        type: data.type,
+        recurring: data.recurring || 'none'
       }
     })
     return { success: true }

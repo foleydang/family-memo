@@ -15,13 +15,16 @@ Page({
       { id: 'daily', name: '日用品' },
       { id: 'fruit', name: '蔬果' },
       { id: 'meat', name: '肉类' },
+      { id: 'dairy', name: '乳制品' },
+      { id: 'snack', name: '零食饮料' },
+      { id: 'cleaning', name: '清洁用品' },
       { id: 'other', name: '其他' }
     ],
-    categoryIndex: 4,
+    categoryIndex: 0, // 默认选中第一个（食品）
     formData: {
       _id: '',
       title: '',
-      category: 'other',
+      category: 'food',
       quantity: 1,
       unit: '个',
       priority: 0
@@ -53,8 +56,16 @@ Page({
     return true
   },
 
+  getCategoryName(categoryId) {
+    const cat = this.data.categories.find(c => c.id === categoryId)
+    return cat ? cat.name : '其他'
+  },
+
   updateFilteredList() {
-    let list = this.data.items
+    let list = this.data.items.map(item => ({
+      ...item,
+      categoryName: this.getCategoryName(item.category)
+    }))
     if (this.data.currentTab === 'pending') {
       list = list.filter(i => i.status === 'pending')
     } else if (this.data.currentTab === 'done') {
@@ -106,8 +117,8 @@ Page({
     this.setData({
       showModal: true,
       editMode: false,
-      formData: { _id: '', title: '', category: 'other', quantity: 1, unit: '个', priority: 0 },
-      categoryIndex: 4
+      formData: { _id: '', title: '', category: 'food', quantity: 1, unit: '个', priority: 0 },
+      categoryIndex: 0 // 默认食品
     })
   },
 
@@ -128,7 +139,7 @@ Page({
   },
 
   pickCategory(e) {
-    const index = e.detail.value
+    const index = parseInt(e.detail.value)
     this.setData({
       categoryIndex: index,
       'formData.category': this.data.categories[index].id
@@ -141,7 +152,7 @@ Page({
 
   editItem(e) {
     const item = e.currentTarget.dataset.item
-    const catIndex = this.data.categories.findIndex(c => c.id === item.category) || 4
+    const catIndex = this.data.categories.findIndex(c => c.id === item.category)
     this.setData({
       showModal: true,
       editMode: true,
@@ -153,7 +164,7 @@ Page({
         unit: item.unit || '个',
         priority: item.priority || 0
       },
-      categoryIndex: catIndex
+      categoryIndex: catIndex >= 0 ? catIndex : this.data.categories.length - 1
     })
   },
 
@@ -266,5 +277,7 @@ Page({
         }
       }
     })
-  }
+  },
+
+  stopPropagation() {}
 })

@@ -53,12 +53,13 @@ Page({
   },
 
   async refreshData() {
-    this.setData({
-      userInfo: app.globalData.userInfo,
-      familyInfo: app.globalData.familyInfo
-    })
+    // 从 globalData 获取用户信息
+    const userInfo = app.globalData.userInfo
+    const familyInfo = app.globalData.familyInfo
+    
+    this.setData({ userInfo, familyInfo })
 
-    if (app.globalData.familyInfo) {
+    if (familyInfo) {
       await this.loadFamilyMembers()
     }
   },
@@ -117,9 +118,5 @@ Page({
 
   goToFamily() {
     wx.switchTab({ url: '/pages/family/index' })
-  },
-
-  goToAnnouncement() {
-    wx.navigateTo({ url: '/pages/announcement/index' })
   }
 })

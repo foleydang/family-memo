@@ -37,17 +37,18 @@
     </view>
 
     <view class="schedule-list">
-      <block wx:for="{{daySchedules}}" wx:key="id">
+      <block wx:for="{{daySchedules}}" wx:key="_id">
         <view class="schedule-item type-{{item.type}}">
-          <view class="schedule-type">{{item.typeName || '其他'}}</view>
+          <view class="schedule-type">{{item.typeName}}</view>
           <view class="schedule-content">
             <view class="schedule-title">{{item.title}}</view>
             <view wx:if="{{item.time}}" class="schedule-time">🕐 {{item.time}}</view>
             <view wx:if="{{item.description}}" class="schedule-desc">{{item.description}}</view>
+            <view wx:if="{{item.isRecurring}}" class="schedule-recurring">🔄 {{item.recurringText}}</view>
           </view>
           <view class="schedule-actions">
             <view class="action-btn" catchtap="editItem" data-item="{{item}}">编辑</view>
-            <view class="action-btn delete" catchtap="deleteItem" data-id="{{item.id}}">删除</view>
+            <view class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">删除</view>
           </view>
         </view>
       </block>
@@ -90,6 +91,13 @@
           <text class="form-label">时间</text>
           <picker mode="time" value="{{formData.time}}" bindchange="inputTime">
             <view class="picker-value">{{formData.time || '请选择时间（可选）'}}</view>
+          </picker>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">周期重复</text>
+          <picker mode="selector" range="{{recurringOptions}}" value="{{recurringIndex}}" bindchange="pickRecurring">
+            <view class="picker-value">{{recurringOptions[recurringIndex]}}</view>
           </picker>
         </view>
 

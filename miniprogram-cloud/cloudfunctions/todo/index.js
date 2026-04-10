@@ -17,7 +17,7 @@ exports.main = async (event, context) => {
     case 'delete':
       return await deleteItem(data)
     case 'toggle':
-      return await toggleItem(openid, data)
+      return await toggleItem(data)
     default:
       return { success: false, message: '未知操作' }
   }
@@ -38,7 +38,7 @@ async function getList(familyId) {
 async function addItem(openid, data) {
   try {
     const userRes = await db.collection('users').where({ openid }).get()
-    const userId = userRes.data[0]._id
+    const userId = userRes.data[0]?._id
     
     const res = await db.collection('todos').add({
       data: {
@@ -85,10 +85,10 @@ async function deleteItem(data) {
   }
 }
 
-async function toggleItem(openid, data) {
+async function toggleItem(data) {
   try {
-    const item = await db.collection('todos').doc(data._id).get()
-    const newStatus = item.data.status === 'done' ? 'pending' : 'done'
+    // 支持传入目标状态
+    const newStatus = data.status || 'done'
     
     await db.collection('todos').doc(data._id).update({
       data: {
