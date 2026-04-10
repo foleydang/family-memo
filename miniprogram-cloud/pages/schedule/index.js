@@ -24,19 +24,15 @@ Page({
       date: '',
       startTime: '',
       endTime: '',
-      type: 'event',
+      type: 'schedule',
       recurring: 'none',
       recurringEnd: '',
       remind: 0
     },
     types: [
-      { value: 'event', name: '活动' },
+      { value: 'schedule', name: '日程' },
       { value: 'appointment', name: '预约' },
-      { value: 'meeting', name: '会议' },
       { value: 'anniversary', name: '纪念' },
-      { value: 'birthday', name: '生日' },
-      { value: 'trip', name: '出行' },
-      { value: 'holiday', name: '假期' },
       { value: 'other', name: '其他' }
     ],
     typeIndex: 0,
@@ -280,7 +276,7 @@ Page({
   },
 
   onPickerChange(e) {
-    const value = e.detail.value // "2026-04"
+    const value = e.detail.value
     const [year, month] = value.split('-').map(Number)
     this.setData({ 
       currentYear: year, 
@@ -309,7 +305,7 @@ Page({
         date: this.data.selectedDateStr,
         startTime: '',
         endTime: '',
-        type: 'event',
+        type: 'schedule',
         recurring: 'none',
         recurringEnd: '',
         remind: 0
@@ -380,7 +376,7 @@ Page({
         date: item.scheduleDate,
         startTime: item.startTime || '',
         endTime: item.endTime || '',
-        type: item.type || 'event',
+        type: item.type || 'schedule',
         recurring: item.recurring || 'none',
         recurringEnd: item.recurringEnd || '',
         remind: item.remind || 0

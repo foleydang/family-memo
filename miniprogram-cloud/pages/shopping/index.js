@@ -11,20 +11,16 @@ Page({
     currentTab: 'pending',
     currentCategory: 'all',
     categories: [
-      { id: 'vegetable', name: '蔬果' },
-      { id: 'meat', name: '肉蛋' },
-      { id: 'grain', name: '粮油' },
-      { id: 'dairy', name: '乳品' },
-      { id: 'snack', name: '零食' },
+      { id: 'fresh', name: '生鲜' },
+      { id: 'food', name: '食品' },
       { id: 'daily', name: '日用' },
-      { id: 'cleaning', name: '清洁' },
       { id: 'other', name: '其他' }
     ],
     categoryIndex: 0,
     formData: {
       _id: '',
       title: '',
-      category: 'vegetable',
+      category: 'fresh',
       quantity: 1,
       unit: '个',
       priority: 0
@@ -132,7 +128,7 @@ Page({
     this.setData({
       showModal: true,
       editMode: false,
-      formData: { _id: '', title: '', category: 'vegetable', quantity: 1, unit: '个', priority: 0 },
+      formData: { _id: '', title: '', category: 'fresh', quantity: 1, unit: '个', priority: 0 },
       categoryIndex: 0
     })
   },
@@ -174,7 +170,7 @@ Page({
       formData: {
         _id: item._id,
         title: item.title,
-        category: item.category || 'vegetable',
+        category: item.category || 'fresh',
         quantity: item.quantity || 1,
         unit: item.unit || '个',
         priority: item.priority || 0
@@ -223,11 +219,8 @@ Page({
 
   async toggleItem(e) {
     const id = e.currentTarget.dataset.id
-    
-    // 防止重复点击
     if (this.data.togglingId === id) return
     
-    // 立即更新UI反馈
     const items = this.data.items.map(item => {
       if (item._id === id) {
         return { ...item, status: item.status === 'done' ? 'pending' : 'done' }
@@ -236,7 +229,7 @@ Page({
     })
     
     this.setData({ togglingId: id, items })
-    this.updateStats()  // 立即更新统计
+    this.updateStats()
     this.updateFilteredList()
     
     try {
@@ -245,7 +238,6 @@ Page({
         data: { action: 'toggle', data: { _id: id } }
       })
     } catch (err) {
-      // 失败时恢复
       await this.loadItems()
     } finally {
       this.setData({ togglingId: '' })
