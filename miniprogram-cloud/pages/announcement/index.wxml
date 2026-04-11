@@ -1,21 +1,28 @@
 <!--pages/announcement/index.wxml-->
 <view class="container">
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
   <!-- 公告列表 -->
-  <view class="announcement-list">
-    <block wx:for="{{announcements}}" wx:key="id">
+  <view class="announcement-list" wx:else>
+    <block wx:for="{{announcements}}" wx:key="_id">
       <view class="announcement-item">
         <view class="announcement-header">
-          <text class="author">{{item.created_by_name || '匿名'}}</text>
-          <text class="time">{{item.created_at}}</text>
+          <image class="author-avatar" src="{{item.authorAvatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+          <text class="author">{{item.authorName || '成员'}}</text>
+          <text class="time">{{item.displayTime}}</text>
         </view>
         <view class="announcement-content">{{item.content}}</view>
         <view class="announcement-actions">
-          <text class="action-btn" catchtap="deleteAnnouncement" data-id="{{item.id}}">删除</text>
+          <text class="action-btn" catchtap="deleteAnnouncement" data-id="{{item._id}}">删除</text>
         </view>
       </view>
     </block>
 
     <view wx:if="{{announcements.length === 0}}" class="empty-tip">
+      <text class="empty-icon">📢</text>
       <text>暂无公告</text>
       <text class="empty-desc">点击下方按钮发布家庭公告</text>
     </view>
@@ -36,8 +43,8 @@
       <view class="modal-body">
         <view class="form-item">
           <text class="form-label">公告内容 *</text>
-          <textarea class="form-textarea" placeholder="请输入公告内容" value="{{formData.content}}" bindinput="inputContent" maxlength="200" />
-          <text class="char-count">{{formData.content.length}}/200</text>
+          <textarea class="form-textarea" placeholder="请输入公告内容，如：今晚7点家庭会议" value="{{formData.content}}" bindinput="inputContent" maxlength="200" auto-height />
+          <text class="char-count">{{formData.content.length || 0}}/200</text>
         </view>
       </view>
       <view class="modal-footer">

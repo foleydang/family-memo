@@ -6,6 +6,14 @@
   min-height: 100vh;
 }
 
+/* 加载状态 */
+.loading-state {
+  text-align: center;
+  padding: 80rpx;
+  color: #999;
+  font-size: 26rpx;
+}
+
 /* 公告列表 */
 .announcement-list {
   margin-bottom: 20rpx;
@@ -20,15 +28,23 @@
 
 .announcement-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 16rpx;
+}
+
+.author-avatar {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  margin-right: 12rpx;
+  background: #f5f5f5;
 }
 
 .author {
   font-size: 26rpx;
   color: #FF85A2;
   font-weight: bold;
+  flex: 1;
 }
 
 .time {
@@ -59,10 +75,15 @@
   padding: 80rpx 0;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  align-items: center;
+  gap: 12rpx;
 }
 
-.empty-tip text:first-child {
+.empty-icon {
+  font-size: 60rpx;
+}
+
+.empty-tip text:not(.empty-icon):not(.empty-desc) {
   font-size: 28rpx;
   color: #999;
 }
@@ -78,12 +99,13 @@
   bottom: 40rpx;
   left: 40rpx;
   right: 40rpx;
-  background: #FF85A2;
+  background: linear-gradient(135deg, #FF4D6A 0%, #FF85A2 100%);
   color: #fff;
   text-align: center;
   padding: 24rpx;
   border-radius: 16rpx;
   font-size: 30rpx;
+  font-weight: 500;
   box-shadow: 0 4rpx 12rpx rgba(255, 133, 162, 0.3);
 }
 
@@ -121,6 +143,7 @@
 .modal-close {
   font-size: 36rpx;
   padding: 8rpx;
+  line-height: 1;
 }
 
 .modal-body {
@@ -145,6 +168,7 @@
   border-radius: 8rpx;
   font-size: 26rpx;
   min-height: 150rpx;
+  box-sizing: border-box;
 }
 
 .char-count {
