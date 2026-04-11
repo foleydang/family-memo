@@ -1,9 +1,8 @@
-// pages/announcement/index.js
+// pages/announcement/index.js - 云开发版本（本地存储）
 const app = getApp();
 
 Page({
   data: {
-    familyId: null,
     announcements: [],
     showModal: false,
     editId: null,
@@ -13,38 +12,23 @@ Page({
   },
 
   onLoad() {
-    if (app.globalData.familyInfo) {
-      this.setData({ familyId: app.globalData.familyInfo.id });
-      this.loadAnnouncements();
-    }
+    this.loadAnnouncements();
   },
 
   onShow() {
-    if (this.data.familyId) {
-      this.loadAnnouncements();
-    }
+    this.loadAnnouncements();
   },
 
   onPullDownRefresh() {
-    this.loadAnnouncements().then(() => {
-      wx.stopPullDownRefresh();
-    });
+    this.loadAnnouncements();
+    wx.stopPullDownRefresh();
   },
 
-  async loadAnnouncements() {
-    if (!this.data.familyId) return;
-
-    try {
-      const res = await app.request({
-        url: '/announcement/list',
-        data: { familyId: this.data.familyId }
-      });
-      this.setData({ announcements: res.data || [] });
-    } catch (err) {
-      console.error('加载公告失败', err);
-      // 如果 API 不存在，显示空列表
-      this.setData({ announcements: [] });
-    }
+  loadAnnouncements() {
+    // 使用本地存储（云函数暂未实现）
+    const key = 'announcements_' + (app.globalData.familyInfo?._id || 'default');
+    const announcements = wx.getStorageSync(key) || [];
+    this.setData({ announcements });
   },
 
   showAddModal() {
@@ -63,7 +47,7 @@ Page({
     this.setData({ 'formData.content': e.detail.value });
   },
 
-  async submitForm() {
+  submitForm() {
     const { content } = this.data.formData;
 
     if (!content.trim()) {
@@ -71,63 +55,43 @@ Page({
       return;
     }
 
-    wx.showLoading({ title: '提交中' });
+    const newAnnouncement = {
+      id: Date.now(),
+      content: content.trim(),
+      authorName: app.globalData.userInfo?.nickname || '我',
+      createTime: new Date().toLocaleString('zh-CN')
+    };
 
-    try {
-      await app.request({
-        url: '/announcement/add',
-        method: 'POST',
-        data: {
-          familyId: this.data.familyId,
-          content: content.trim()
-        }
-      });
-
-      wx.hideLoading();
-      wx.showToast({ title: '已发布', icon: 'success' });
-      this.hideModal();
-      this.loadAnnouncements();
-    } catch (err) {
-      wx.hideLoading();
-      // API 不存在时，模拟成功
-      const newAnnouncement = {
-        id: Date.now(),
-        content: content.trim(),
-        created_by_name: app.globalData.userInfo?.nickname || '我',
-        created_at: new Date().toLocaleString('zh-CN')
-      };
-      this.setData({
-        announcements: [newAnnouncement, ...this.data.announcements],
-        showModal: false
-      });
-      wx.showToast({ title: '已发布', icon: 'success' });
-    }
+    const key = 'announcements_' + (app.globalData.familyInfo?._id || 'default');
+    const announcements = [newAnnouncement, ...this.data.announcements];
+    
+    wx.setStorageSync(key, announcements);
+    
+    this.setData({
+      announcements,
+      showModal: false,
+      formData: { content: '' }
+    });
+    
+    wx.showToast({ title: '已发布', icon: 'success' });
   },
 
-  async deleteAnnouncement(e) {
+  deleteAnnouncement(e) {
     const id = e.currentTarget.dataset.id;
 
-    const res = await wx.showModal({
+    wx.showModal({
       title: '确认删除',
-      content: '确定要删除这条公告吗？'
-    });
-
-    if (res.confirm) {
-      try {
-        await app.request({
-          url: `/announcement/${id}`,
-          method: 'DELETE'
-        });
-        wx.showToast({ title: '已删除', icon: 'success' });
-        this.loadAnnouncements();
-      } catch (err) {
-        // 本地删除
-        this.setData({
-          announcements: this.data.announcements.filter(a => a.id !== id)
-        });
-        wx.showToast({ title: '已删除', icon: 'success' });
+      content: '确定要删除这条公告吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const key = 'announcements_' + (app.globalData.familyInfo?._id || 'default');
+          const announcements = this.data.announcements.filter(a => a.id !== id);
+          wx.setStorageSync(key, announcements);
+          this.setData({ announcements });
+          wx.showToast({ title: '已删除', icon: 'success' });
+        }
       }
-    }
+    });
   },
 
   formatTime(timeStr) {

@@ -1,4 +1,4 @@
-// pages/export/index.js
+// pages/export/index.js - 云开发版本
 const app = getApp();
 
 Page({
@@ -14,7 +14,7 @@ Page({
 
   onLoad() {
     if (app.globalData.familyInfo) {
-      this.setData({ familyId: app.globalData.familyInfo.id });
+      this.setData({ familyId: app.globalData.familyInfo._id });
       this.loadCounts();
     }
   },
@@ -50,11 +50,14 @@ Page({
 
   async getCount(type) {
     try {
-      const res = await app.request({
-        url: `/${type}/list`,
-        data: { familyId: this.data.familyId, status: 'all' }
+      const res = await wx.cloud.callFunction({
+        name: type,
+        data: { 
+          action: 'list', 
+          data: { familyId: this.data.familyId } 
+        }
       });
-      return res.data?.stats?.total || res.data?.all?.length || 0;
+      return res.result?.data?.length || 0;
     } catch (err) {
       return 0;
     }
@@ -77,13 +80,12 @@ Page({
 
       wx.hideLoading();
 
-      // 复制到剪贴板
       wx.setClipboardData({
         data: text,
         success: () => {
           wx.showModal({
             title: '导出成功',
-            content: `${exportType.name}已复制到剪贴板，可粘贴到微信或备忘录`,
+            content: exportType.name + '已复制到剪贴板，可粘贴到微信或备忘录',
             showCancel: false
           });
         }
@@ -95,18 +97,21 @@ Page({
   },
 
   async fetchData(type) {
-    const res = await app.request({
-      url: `/${type}/list`,
-      data: { familyId: this.data.familyId, status: 'all' }
+    const res = await wx.cloud.callFunction({
+      name: type,
+      data: { 
+        action: 'list', 
+        data: { familyId: this.data.familyId } 
+      }
     });
-    return res.data?.all || res.data || [];
+    return res.result?.data || [];
   },
 
   formatData(type, data) {
     const now = new Date().toLocaleString('zh-CN');
-    let text = `📱 家庭备忘录 - ${this.getTypeName(type)}\n`;
-    text += `📅 导出时间: ${now}\n`;
-    text += `━━━━━━━━━━━━━━━\n\n`;
+    let text = '📱 家庭备忘录 - ' + this.getTypeName(type) + '\n';
+    text += '📅 导出时间: ' + now + '\n';
+    text += '━━━━━━━━━━━━━━━\n\n';
 
     if (type === 'shopping') {
       text += this.formatShopping(data);
@@ -125,11 +130,11 @@ Page({
     const done = data.filter(item => item.status === 'done');
 
     if (pending.length > 0) {
-      text += `🛒 待购买 (${pending.length})\n`;
+      text += '🛒 待购买 (' + pending.length + ')\n';
       pending.forEach((item, i) => {
-        text += `${i + 1}. ${item.title} ×${item.quantity}${item.unit}`;
-        if (item.category && item.category !== '其他') {
-          text += ` [${item.category}]`;
+        text += (i + 1) + '. ' + item.title + ' ×' + (item.quantity || 1) + (item.unit || '个');
+        if (item.category && item.category !== 'other') {
+          text += ' [' + this.getCategoryName(item.category) + ']';
         }
         text += '\n';
       });
@@ -137,25 +142,36 @@ Page({
     }
 
     if (done.length > 0) {
-      text += `✅ 已购买 (${done.length})\n`;
+      text += '✅ 已购买 (' + done.length + ')\n';
       done.forEach((item, i) => {
-        text += `${i + 1}. ${item.title}\n`;
+        text += (i + 1) + '. ' + item.title + '\n';
       });
     }
 
     return text;
   },
 
+  getCategoryName(categoryId) {
+    const categories = [
+      { id: 'fresh', name: '生鲜' },
+      { id: 'food', name: '食品' },
+      { id: 'daily', name: '日用' },
+      { id: 'other', name: '其他' }
+    ];
+    const cat = categories.find(c => c.id === categoryId);
+    return cat ? cat.name : '其他';
+  },
+
   formatTodo(data) {
     let text = '';
-    const priorityEmoji = ['', '', '❗'];
+    const priorityEmoji = { 0: '', 1: '⚠️', 2: '❗' };
 
     data.forEach((item, i) => {
       const emoji = item.status === 'done' ? '✅' : item.status === 'doing' ? '🔄' : '⏳';
-      const priority = item.priority > 0 ? priorityEmoji[item.priority] : '';
-      text += `${emoji} ${priority}${item.title}\n`;
+      const priority = priorityEmoji[item.priority] || '';
+      text += emoji + ' ' + priority + item.title + '\n';
       if (item.description) {
-        text += `   ${item.description}\n`;
+        text += '   ' + item.description + '\n';
       }
     });
 
@@ -175,11 +191,11 @@ Page({
 
     data.forEach(item => {
       const emoji = typeEmoji[item.type] || '📌';
-      text += `${emoji} ${item.schedule_date}`;
-      if (item.schedule_time) {
-        text += ` ${item.schedule_time}`;
+      text += emoji + ' ' + item.scheduleDate;
+      if (item.scheduleTime) {
+        text += ' ' + item.scheduleTime;
       }
-      text += ` ${item.title}\n`;
+      text += ' ' + item.title + '\n';
     });
 
     return text;
@@ -195,6 +211,11 @@ Page({
   },
 
   async exportAll() {
+    if (!this.data.familyId) {
+      wx.showToast({ title: '请先加入家庭', icon: 'none' });
+      return;
+    }
+
     wx.showLoading({ title: '生成中...' });
 
     try {
@@ -205,19 +226,19 @@ Page({
       ]);
 
       const now = new Date().toLocaleString('zh-CN');
-      let text = `📱 家庭备忘录 - 完整导出\n`;
-      text += `📅 导出时间: ${now}\n`;
-      text += `━━━━━━━━━━━━━━━\n\n`;
+      let text = '📱 家庭备忘录 - 完整导出\n';
+      text += '📅 导出时间: ' + now + '\n';
+      text += '━━━━━━━━━━━━━━━\n\n';
 
-      text += `🛒 购物清单\n`;
+      text += '🛒 购物清单\n';
       text += this.formatShopping(shopping);
-      text += `\n`;
+      text += '\n';
 
-      text += `📋 待办事项\n`;
+      text += '📋 待办事项\n';
       text += this.formatTodo(todo);
-      text += `\n`;
+      text += '\n';
 
-      text += `📅 日程安排\n`;
+      text += '📅 日程安排\n';
       text += this.formatSchedule(schedule);
 
       wx.hideLoading();
