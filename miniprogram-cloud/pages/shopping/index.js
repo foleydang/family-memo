@@ -56,7 +56,7 @@ Page({
         title: '提示',
         content: '请先创建或加入家庭',
         showCancel: false,
-        success: () => { wx.switchTab({ url: '/pages/family/index' }) }
+        success: () => { wx.navigateTo({ url: '/pages/family/index' }) }
       })
       return false
     }

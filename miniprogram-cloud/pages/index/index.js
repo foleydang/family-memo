@@ -170,11 +170,11 @@ Page({
   },
 
   handleCreateFamily() {
-    wx.switchTab({ url: '/pages/family/index' })
+    wx.navigateTo({ url: '/pages/family/index' })
   },
 
   handleJoinFamily() {
-    wx.switchTab({ url: '/pages/family/index' })
+    wx.navigateTo({ url: '/pages/family/index' })
   },
 
   goToShopping() {
@@ -190,6 +190,6 @@ Page({
   },
 
   goToFamily() {
-    wx.switchTab({ url: '/pages/family/index' })
+    wx.navigateTo({ url: '/pages/family/index' })
   }
 })

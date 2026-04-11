@@ -83,7 +83,7 @@ Page({
   },
 
   goToFamily() {
-    wx.switchTab({ url: '/pages/family/index' })
+    wx.navigateTo({ url: '/pages/family/index' })
   },
 
   handleLogout() {
