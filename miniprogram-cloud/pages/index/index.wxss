@@ -41,7 +41,7 @@
   content: '💕';
   position: absolute;
   top: 20rpx;
-  right: 30rpx;
+  left: 30rpx;
   font-size: 80rpx;
   opacity: 0.3;
 }
@@ -357,6 +357,8 @@
 
 /* 订阅提醒按钮 */
 .subscribe-btn {
+  position: relative;
+  z-index: 10;
   width: 60rpx;
   height: 60rpx;
   border-radius: 50%;
