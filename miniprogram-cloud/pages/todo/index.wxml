@@ -53,9 +53,9 @@
           
           <!-- 第三行：紧急标签 + 指派人 + 时间（和标题左对齐） -->
           <view class="todo-row-3">
-            <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
+            <view wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
               {{item.priority === 2 ? '紧急' : '重要'}}
-            </text>
+            </view>
             <image wx:if="{{item.assigneeAvatar}}" class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}"></image>
             <text wx:if="{{item.assigneeName}}" class="assignee-name">{{item.assigneeName}}</text>
             <text wx:else class="no-assignee">未指派</text>
