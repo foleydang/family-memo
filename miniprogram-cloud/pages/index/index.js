@@ -18,10 +18,12 @@ Page({
   },
 
   onLoad() { this.initPage() },
+  
   onShow() {
     if (this.data.dataReady) this.refreshData()
     this.checkSubscribeStatus()
   },
+
   onPullDownRefresh() {
     this.refreshData().then(() => wx.stopPullDownRefresh())
   },
@@ -80,17 +82,6 @@ Page({
       })
       if (res.result.success) this.setData({ members: res.result.data })
     } catch (err) { console.error('加载成员失败', err) }
-  },
-
-  // 加载本周统计
-    try {
-      const res = await wx.cloud.callFunction({
-        name: 'stats',
-        data: { action: 'getFamilyStats', data: { familyId: this.data.familyInfo._id } }
-      })
-      if (res.result.success) {
-      }
-    } catch (err) { console.error('加载统计失败', err) }
   },
 
   // 加载"与我相关"数据
