@@ -9,11 +9,10 @@
 /* 统计卡片 */
 .stats-card {
   display: flex;
-  background: linear-gradient(135deg, #FF85A2 0%, #FF6B8A 100%);
+  background: linear-gradient(135deg, #FF85A2, #FF6B8A);
   border-radius: 16rpx;
   padding: 24rpx 20rpx;
   margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(255,133,162,0.3);
 }
 
 .stat-item {
@@ -54,7 +53,6 @@
 .tab.active {
   background: #FF85A2;
   color: #fff;
-  font-weight: 500;
 }
 
 /* 待办卡片 */
@@ -69,11 +67,10 @@
   align-items: flex-start;
   background: #fff;
   border-radius: 14rpx;
-  padding: 14rpx 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+  padding: 16rpx 18rpx;
 }
 
-/* 左侧状态方块（和标题字体差不多大） */
+/* 左侧状态方块（32rpx，和标题字体一样大） */
 .todo-checkbox {
   width: 32rpx;
   height: 32rpx;
@@ -83,7 +80,6 @@
   justify-content: center;
   margin-right: 12rpx;
   margin-top: 4rpx;
-  flex-shrink: 0;
 }
 
 .todo-checkbox.pending {
@@ -111,56 +107,35 @@
   height: 16rpx;
   border: 2rpx solid #1890ff;
   border-radius: 50%;
-  position: relative;
-}
-
-.checkbox-half::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 2rpx;
-  right: 2rpx;
-  height: 2rpx;
-  background: #1890ff;
-  transform: translateY(-50%);
 }
 
 .checkbox-done {
-  color: #52c41a;
   font-size: 18rpx;
+  color: #52c41a;
   font-weight: bold;
 }
 
-/* 内容区（无额外padding） */
-.todo-body {
+/* 内容区（无padding，确保左对齐） */
+.todo-content {
   flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 8rpx;
 }
 
-/* 第一行：优先级 + 标题 + 操作 */
-.todo-row-title {
+/* 第一行：标题 + 操作 */
+.todo-row-1 {
   display: flex;
   align-items: center;
-  min-height: 36rpx;
-}
-
-.priority-tag {
-  font-size: 26rpx;
-  margin-right: 8rpx;
-  flex-shrink: 0;
 }
 
 .todo-title {
   font-size: 32rpx;
   color: #333;
-  font-weight: 500;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-right: 12rpx;
 }
 
 .todo-title.done {
@@ -171,7 +146,7 @@
 .todo-actions {
   display: flex;
   gap: 12rpx;
-  flex-shrink: 0;
+  margin-left: 12rpx;
 }
 
 .action-btn {
@@ -183,27 +158,39 @@
   color: #f5222d;
 }
 
-/* 第二行：备注（和标题左对齐） */
-.todo-row-desc {
-  margin-top: 6rpx;
+/* 第二行：备注 */
+.todo-row-2 {
+  display: flex;
+  align-items: center;
 }
 
 .todo-desc {
   font-size: 26rpx;
   color: #666;
-  line-height: 1.4;
+  flex: 1;
 }
 
-/* 第三行：指派人 + 时间（和标题左对齐） */
-.todo-row-meta {
+/* 第三行：紧急标签 + 指派人 + 时间 */
+.todo-row-3 {
   display: flex;
   align-items: center;
-  margin-top: 6rpx;
 }
 
-.assignee-info {
-  display: flex;
-  align-items: center;
+.priority-tag {
+  padding: 2rpx 10rpx;
+  border-radius: 4rpx;
+  font-size: 24rpx;
+  margin-right: 10rpx;
+}
+
+.priority-tag.important {
+  background: #fff7e6;
+  color: #fa8c16;
+}
+
+.priority-tag.urgent {
+  background: #fff1f0;
+  color: #f5222d;
 }
 
 .assignee-avatar {
@@ -216,17 +203,18 @@
 .assignee-name {
   font-size: 26rpx;
   color: #666;
+  margin-right: 10rpx;
 }
 
 .no-assignee {
   font-size: 26rpx;
   color: #999;
+  margin-right: 10rpx;
 }
 
 .todo-time {
   font-size: 26rpx;
   color: #999;
-  margin-left: 12rpx;
 }
 
 /* 空状态 */
@@ -259,7 +247,6 @@
   justify-content: space-between;
   padding: 20rpx;
   background: #fff;
-  box-shadow: 0 -2rpx 8rpx rgba(0,0,0,0.05);
 }
 
 .btn-clear {
@@ -276,13 +263,12 @@
   color: #fff;
   border-radius: 12rpx;
   font-size: 28rpx;
-  font-weight: 500;
 }
 
 /* 弹窗 */
 .modal-mask {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
@@ -304,12 +290,10 @@
   background: #FF85A2;
   color: #fff;
   font-size: 32rpx;
-  font-weight: 500;
 }
 
 .modal-close {
   font-size: 40rpx;
-  padding: 4rpx;
 }
 
 .modal-body {
@@ -325,7 +309,6 @@
   color: #333;
   margin-bottom: 12rpx;
   display: block;
-  font-weight: 500;
 }
 
 .form-input {
@@ -410,7 +393,6 @@
   color: #fff;
   border-radius: 12rpx;
   font-size: 30rpx;
-  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
