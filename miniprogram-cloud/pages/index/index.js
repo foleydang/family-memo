@@ -8,8 +8,9 @@ Page({
     userInfo: null,
     familyInfo: null,
     members: [],
-    stats: null,      // 成员统计
-    weekStats: null,  // 本周统计
+    weekStats: null,
+    myTodos: [],
+    todaySchedules: [],
     greeting: '',
     todayStr: '',
     loading: true,
@@ -18,14 +19,10 @@ Page({
   },
 
   onLoad() { this.initPage() },
-  
   onShow() {
-    if (this.data.dataReady) {
-      this.refreshData()
-    }
+    if (this.data.dataReady) this.refreshData()
     this.checkSubscribeStatus()
   },
-
   onPullDownRefresh() {
     this.refreshData().then(() => wx.stopPullDownRefresh())
   },
@@ -72,7 +69,8 @@ Page({
     this.setData({ userInfo: app.globalData.userInfo, familyInfo: app.globalData.familyInfo })
     if (app.globalData.familyInfo) {
       await this.loadMembers()
-      await this.loadStats()
+      await this.loadWeekStats()
+      await this.loadMyData()
     }
   },
 
@@ -86,20 +84,57 @@ Page({
     } catch (err) { console.error('加载成员失败', err) }
   },
 
-  // 加载统计数据
-  async loadStats() {
+  // 加载本周统计
+  async loadWeekStats() {
     try {
       const res = await wx.cloud.callFunction({
         name: 'stats',
         data: { action: 'getFamilyStats', data: { familyId: this.data.familyInfo._id } }
       })
       if (res.result.success) {
-        this.setData({
-          stats: res.result.data.members,
-          weekStats: res.result.data.weekStats
-        })
+        this.setData({ weekStats: res.result.data.weekStats })
       }
     } catch (err) { console.error('加载统计失败', err) }
+  },
+
+  // 加载"与我相关"数据
+  async loadMyData() {
+    const myUserId = app.globalData.userId
+    if (!myUserId || !this.data.familyInfo) return
+
+    try {
+      // 加载指派给我的待办
+      const todoRes = await wx.cloud.callFunction({
+        name: 'todo',
+        data: { action: 'list', data: { familyId: this.data.familyInfo._id } }
+      })
+      if (todoRes.result.success) {
+        const myTodos = todoRes.result.data
+          .filter(t => t.assigneeId === myUserId && t.status !== 'done')
+          .slice(0, 5)
+        this.setData({ myTodos })
+      }
+
+      // 加载今日日程
+      const todayStr = this.formatDate(new Date())
+      const scheduleRes = await wx.cloud.callFunction({
+        name: 'schedule',
+        data: { action: 'list', data: { familyId: this.data.familyInfo._id } }
+      })
+      if (scheduleRes.result.success) {
+        const todaySchedules = scheduleRes.result.data
+          .filter(s => s.scheduleDate === todayStr)
+          .slice(0, 3)
+        this.setData({ todaySchedules })
+      }
+    } catch (err) { console.error('加载我的数据失败', err) }
+  },
+
+  formatDate(date) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
   },
 
   checkSubscribeStatus() {
@@ -119,14 +154,11 @@ Page({
           wx.showToast({ title: '订阅成功！', icon: 'success' })
           wx.setStorageSync('subscribeTodo', true)
           this.setData({ subscribed: true })
-        } else if (res[TODO_TEMPLATE_ID] === 'reject') {
+        } else {
           wx.showToast({ title: '您拒绝了订阅', icon: 'none' })
         }
       },
-      fail: (err) => {
-        console.error('订阅失败:', err)
-        wx.showToast({ title: '订阅失败', icon: 'none' })
-      }
+      fail: () => { wx.showToast({ title: '订阅失败', icon: 'none' }) }
     })
   },
 
