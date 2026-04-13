@@ -53,7 +53,7 @@ Page({
     this.setData({ subscribed })
   },
 
-  // 订阅提醒（可在多个地方调用）
+  // 订阅提醒（每个人订阅发给自己的消息）
   requestSubscribe(callback) {
     wx.requestSubscribeMessage({
       tmplIds: [TODO_TEMPLATE_ID],
@@ -73,9 +73,12 @@ Page({
     })
   },
 
-  // 点击订阅按钮
   subscribeNotify() {
-    this.requestSubscribe()
+    this.requestSubscribe((success) => {
+      if (success) {
+        wx.showToast({ title: '订阅成功！被指派待办时会收到提醒', icon: 'none', duration: 2000 })
+      }
+    })
   },
 
   async loadMembers() {
@@ -204,17 +207,18 @@ Page({
     })
   },
 
-  // 提交表单：如果指派了人，先弹出订阅请求
+  // 提交表单：指派给自己时弹出订阅框
   async submitForm() {
     if (!this.data.formData.title.trim()) return wx.showToast({ title: '请输入内容', icon: 'none' })
     
-    // 如果指派了成员，先请求订阅
-    if (this.data.formData.assigneeId) {
-      this.requestSubscribe(async (subscribed) => {
-        // 无论订阅与否，都继续保存
+    const myUserId = app.globalData.userId
+    if (this.data.formData.assigneeId === myUserId) {
+      // 指派给自己，弹出订阅框
+      this.requestSubscribe(async () => {
         await this.doSubmit()
       })
     } else {
+      // 指派给别人，直接保存
       await this.doSubmit()
     }
   },
@@ -240,10 +244,33 @@ Page({
       })
       
       wx.hideLoading()
+      
       if (res.result.success) {
-        wx.showToast({ title: this.data.editMode ? '已保存' : '添加成功', icon: 'success' })
         this.hideModal()
         this.loadTodos()
+        
+        // 显示通知结果
+        if (this.data.formData.assigneeId) {
+          const notifySent = res.result.notifySent
+          const notifyMsg = res.result.notifyMessage
+          
+          if (notifySent) {
+            wx.showToast({ title: notifyMsg || '已发送提醒', icon: 'success' })
+          } else if (notifyMsg) {
+            // 未发送，提示原因
+            wx.showModal({
+              title: '提醒未发送',
+              content: notifyMsg,
+              showCancel: false
+            })
+          } else {
+            wx.showToast({ title: '添加成功', icon: 'success' })
+          }
+        } else {
+          wx.showToast({ title: this.data.editMode ? '已保存' : '添加成功', icon: 'success' })
+        }
+      } else {
+        wx.showToast({ title: res.result.message || '操作失败', icon: 'none' })
       }
     } catch (err) {
       wx.hideLoading()

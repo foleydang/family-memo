@@ -2,7 +2,7 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
-const TODO_ASSIGN_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
+const TODO_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
@@ -10,27 +10,18 @@ exports.main = async (event, context) => {
   const { action, data } = event
 
   switch (action) {
-    case 'list':
-      return await getList(data.familyId)
-    case 'add':
-      return await addItem(openid, data)
-    case 'update':
-      return await updateItem(openid, data)
-    case 'delete':
-      return await deleteItem(data)
-    case 'toggle':
-      return await toggleItem(data)
-    default:
-      return { success: false, message: '未知操作' }
+    case 'list': return await getList(data.familyId)
+    case 'add': return await addItem(openid, data)
+    case 'update': return await updateItem(openid, data)
+    case 'delete': return await deleteItem(data)
+    case 'toggle': return await toggleItem(data)
+    default: return { success: false, message: '未知操作' }
   }
 }
 
 async function getList(familyId) {
   try {
-    const res = await db.collection('todos')
-      .where({ familyId })
-      .orderBy('createTime', 'desc')
-      .get()
+    const res = await db.collection('todos').where({ familyId }).orderBy('createTime', 'desc').get()
     return { success: true, data: res.data }
   } catch (err) {
     return { success: false, message: err.message }
@@ -48,7 +39,6 @@ async function addItem(openid, data) {
         familyId: data.familyId,
         title: data.title,
         description: data.description || '',
-        dueDate: data.dueDate || null,
         priority: data.priority || 0,
         assigneeId: data.assigneeId || null,
         status: 'pending',
@@ -58,11 +48,18 @@ async function addItem(openid, data) {
       }
     })
     
+    // 发送通知
+    let notifyResult = null
     if (data.assigneeId && data.sendNotify) {
-      await sendAssignNotify(data.assigneeId, data.title, data.description, creatorName)
+      notifyResult = await sendAssignNotify(data.assigneeId, data.title, data.description, creatorName)
     }
     
-    return { success: true, data: { _id: res._id } }
+    return { 
+      success: true, 
+      data: { _id: res._id },
+      notifySent: notifyResult?.sent || false,
+      notifyMessage: notifyResult?.message || ''
+    }
   } catch (err) {
     return { success: false, message: err.message }
   }
@@ -77,13 +74,13 @@ async function updateItem(openid, data) {
       data: {
         title: data.title,
         description: data.description,
-        dueDate: data.dueDate,
         priority: data.priority,
         assigneeId: data.assigneeId,
         updateTime: db.serverDate()
       }
     })
     
+    // 如果指派人变了，发送通知
     if (data.assigneeId && data.assigneeId !== oldAssigneeId && data.sendNotify) {
       const userRes = await db.collection('users').where({ openid }).get()
       const creatorName = userRes.data[0]?.nickname || '成员'
@@ -108,7 +105,6 @@ async function deleteItem(data) {
 async function toggleItem(data) {
   try {
     const newStatus = data.status || 'done'
-    
     await db.collection('todos').doc(data._id).update({
       data: {
         status: newStatus,
@@ -122,12 +118,17 @@ async function toggleItem(data) {
   }
 }
 
+// 发送待办指派通知
+// 返回 { sent: boolean, message: string }
 async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
   try {
     const assigneeRes = await db.collection('users').doc(assigneeId).get()
-    if (!assigneeRes.data || !assigneeRes.data.openid) return
+    if (!assigneeRes.data || !assigneeRes.data.openid) {
+      return { sent: false, message: '找不到被指派人' }
+    }
     
     const openid = assigneeRes.data.openid
+    const assigneeName = assigneeRes.data.nickname || '成员'
     
     const creator = creatorName.length > 20 ? creatorName.substring(0, 20) : creatorName
     const title = todoTitle.length > 20 ? todoTitle.substring(0, 20) : todoTitle
@@ -144,14 +145,21 @@ async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
           thing1: { value: title },
           thing10: { value: remark }
         },
-        templateId: TODO_ASSIGN_TEMPLATE_ID,
+        templateId: TODO_TEMPLATE_ID,
         miniprogramState: 'developer'
       })
-      console.log('发送待办通知成功:', openid)
+      console.log('发送通知成功:', assigneeName)
+      return { sent: true, message: `已发送给${assigneeName}` }
     } catch (err) {
       console.error('发送订阅消息失败:', err)
+      // 常见错误：用户未订阅
+      if (err.errCode === 43101) {
+        return { sent: false, message: `${assigneeName}未订阅提醒，请提醒TA点击订阅按钮` }
+      }
+      return { sent: false, message: `发送失败: ${err.errMsg || '未知错误'}` }
     }
   } catch (err) {
     console.error('发送指派通知失败:', err)
+    return { sent: false, message: '系统错误' }
   }
 }
