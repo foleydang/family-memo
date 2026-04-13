@@ -177,9 +177,9 @@
 }
 
 .priority-tag {
-  padding: 2rpx 10rpx;
+  padding: 0 8rpx;
   border-radius: 4rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
   margin-right: 10rpx;
 }
 
