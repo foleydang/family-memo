@@ -27,18 +27,26 @@
   <!-- 待办列表 -->
   <view class="todo-list">
     <block wx:for="{{filteredList}}" wx:key="_id">
-      <view class="todo-card {{item.status}}">
-        <!-- 左侧状态方块（纯色，无图标） -->
-        <view class="todo-status {{item.status}}" bindtap="toggleItem" data-item="{{item}}"></view>
+      <view class="todo-card">
+        <!-- 左侧状态方块 -->
+        <view class="todo-checkbox {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
+          <view wx:if="{{item.status === 'pending'}}" class="checkbox-empty"></view>
+          <view wx:elif="{{item.status === 'doing'}}" class="checkbox-half"></view>
+          <view wx:else class="checkbox-done">✓</view>
+        </view>
         
         <!-- 内容区 -->
-        <view class="todo-content">
-          <!-- 第一行：优先级标签 + 标题 -->
+        <view class="todo-body">
+          <!-- 第一行：优先级 + 标题 + 编辑删除 -->
           <view class="todo-row-title">
-            <view wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
-              {{item.priority === 2 ? '🔥紧急' : '⭐重要'}}
-            </view>
+            <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
+              {{item.priority === 2 ? '🔥' : '⭐'}}
+            </text>
             <text class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text>
+            <view class="todo-actions">
+              <text class="action-btn" catchtap="editItem" data-item="{{item}}">编辑</text>
+              <text class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">删除</text>
+            </view>
           </view>
           
           <!-- 第二行：备注 -->
@@ -46,7 +54,7 @@
             <text class="todo-desc">{{item.description}}</text>
           </view>
           
-          <!-- 第三行：指派人 + 时间 + 操作 -->
+          <!-- 第三行：指派人 + 时间（靠左对齐） -->
           <view class="todo-row-meta">
             <view class="assignee-info" wx:if="{{item.assigneeName}}">
               <image class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
@@ -54,10 +62,6 @@
             </view>
             <text wx:else class="no-assignee">未指派</text>
             <text class="todo-time">{{item.timeDisplay}}</text>
-            <view class="todo-actions">
-              <text class="action-btn edit" catchtap="editItem" data-item="{{item}}">编辑</text>
-              <text class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">删除</text>
-            </view>
           </view>
         </view>
       </view>

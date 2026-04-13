@@ -40,7 +40,6 @@
   border-radius: 16rpx;
   padding: 12rpx;
   margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
 }
 
 .tab {
@@ -50,7 +49,6 @@
   font-size: 28rpx;
   color: #666;
   border-radius: 12rpx;
-  transition: all 0.2s;
 }
 
 .tab.active {
@@ -68,78 +66,97 @@
 
 .todo-card {
   display: flex;
+  align-items: flex-start;
   background: #fff;
   border-radius: 14rpx;
   padding: 16rpx 18rpx;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
 }
 
-.todo-card.done {
-  opacity: 0.7;
-}
-
-/* 左侧状态方块（纯色，无图标） */
-.todo-status {
-  width: 6rpx;
-  min-height: 60rpx;
-  border-radius: 3rpx;
+/* 左侧状态方块 */
+.todo-checkbox {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 14rpx;
   flex-shrink: 0;
 }
 
-.todo-status.pending {
-  background: #faad14;
+.todo-checkbox.pending {
+  background: #fff;
+  border: 2rpx solid #ddd;
 }
 
-.todo-status.doing {
+.todo-checkbox.doing {
+  background: #e6f7ff;
+  border: 2rpx solid #1890ff;
+}
+
+.todo-checkbox.done {
+  background: #f6ffed;
+  border: 2rpx solid #52c41a;
+}
+
+.checkbox-empty {
+  width: 20rpx;
+  height: 20rpx;
+}
+
+.checkbox-half {
+  width: 22rpx;
+  height: 22rpx;
+  border: 3rpx solid #1890ff;
+  border-radius: 50%;
+  position: relative;
+}
+
+.checkbox-half::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 3rpx;
+  right: 3rpx;
+  height: 3rpx;
   background: #1890ff;
 }
 
-.todo-status.done {
-  background: #52c41a;
+.checkbox-done {
+  color: #52c41a;
+  font-size: 24rpx;
+  font-weight: bold;
 }
 
 /* 内容区 */
-.todo-content {
+.todo-body {
   flex: 1;
   min-width: 0;
 }
 
-/* 第一行：优先级标签 + 标题 */
+/* 第一行：优先级 + 标题 + 操作 */
 .todo-row-title {
   display: flex;
   align-items: center;
-  line-height: 44rpx;
+  line-height: 1;
 }
 
 .priority-tag {
-  display: inline-flex;
-  align-items: center;
-  height: 32rpx;
-  padding: 0 10rpx;
-  border-radius: 6rpx;
-  font-size: 24rpx;
-  margin-right: 10rpx;
+  font-size: 26rpx;
+  margin-right: 8rpx;
   flex-shrink: 0;
 }
 
-.priority-tag.important {
-  background: #fff7e6;
-  color: #fa8c16;
-}
-
-.priority-tag.urgent {
-  background: #fff1f0;
-  color: #f5222d;
-}
-
 .todo-title {
-  font-size: 30rpx;
+  font-size: 32rpx;
   color: #333;
+  font-weight: 500;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-right: 12rpx;
 }
 
 .todo-title.done {
@@ -147,9 +164,25 @@
   text-decoration: line-through;
 }
 
+.todo-actions {
+  display: flex;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  font-size: 26rpx;
+  color: #1890ff;
+}
+
+.action-btn.delete {
+  color: #f5222d;
+}
+
 /* 第二行：备注 */
 .todo-row-desc {
-  margin-top: 6rpx;
+  margin-top: 8rpx;
+  padding-left: 0;
 }
 
 .todo-desc {
@@ -158,25 +191,24 @@
   line-height: 1.4;
 }
 
-/* 第三行：指派人 + 时间 + 操作 */
+/* 第三行：指派人 + 时间（靠左对齐） */
 .todo-row-meta {
   display: flex;
   align-items: center;
-  margin-top: 8rpx;
-  line-height: 36rpx;
+  margin-top: 10rpx;
+  padding-left: 0;
 }
 
 .assignee-info {
   display: flex;
   align-items: center;
-  margin-right: 12rpx;
 }
 
 .assignee-avatar {
   width: 36rpx;
   height: 36rpx;
   border-radius: 50%;
-  margin-right: 6rpx;
+  margin-right: 8rpx;
 }
 
 .assignee-name {
@@ -187,27 +219,12 @@
 .no-assignee {
   font-size: 26rpx;
   color: #999;
-  margin-right: 12rpx;
 }
 
 .todo-time {
   font-size: 26rpx;
   color: #999;
-  flex: 1;
-}
-
-.todo-actions {
-  display: flex;
-  gap: 16rpx;
-}
-
-.action-btn {
-  font-size: 26rpx;
-  color: #1890ff;
-}
-
-.action-btn.delete {
-  color: #f5222d;
+  margin-left: 16rpx;
 }
 
 /* 空状态 */
@@ -230,7 +247,7 @@
   color: #999;
 }
 
-/* 底部操作栏 */
+/* 底部操作 */
 .bottom-bar {
   position: fixed;
   bottom: 0;
@@ -275,7 +292,6 @@
   width: 85%;
   background: #fff;
   border-radius: 16rpx;
-  overflow: hidden;
 }
 
 .modal-header {
@@ -335,7 +351,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
 }
 
 .priority-btn.active {
