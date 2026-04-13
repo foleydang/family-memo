@@ -124,7 +124,7 @@
 
 /* 紧急标签：高度自适应，和文字一致 */
 .priority-tag {
-  line-height: 26rpx;
+  line-height: 1;
   padding: 0 8rpx;
   border-radius: 4rpx;
   font-size: 24rpx;
