@@ -33,15 +33,13 @@ Page({
 
   checkStatus() {
     if (!app.globalData.userInfo) {
-      wx.showModal({
-        title: '提示', content: '请先登录', showCancel: false,
+      wx.showModal({ title: '提示', content: '请先登录', showCancel: false,
         success: () => { wx.switchTab({ url: '/pages/index/index' }) }
       })
       return false
     }
     if (!app.globalData.familyInfo) {
-      wx.showModal({
-        title: '提示', content: '请先创建或加入家庭', showCancel: false,
+      wx.showModal({ title: '提示', content: '请先创建或加入家庭', showCancel: false,
         success: () => { wx.navigateTo({ url: '/pages/family/index' }) }
       })
       return false
@@ -55,29 +53,29 @@ Page({
     this.setData({ subscribed })
   },
 
-  // 订阅提醒
-  subscribeNotify() {
-    if (this.data.subscribed) {
-      wx.showToast({ title: '已订阅提醒', icon: 'success' })
-      return
-    }
-    
+  // 订阅提醒（可在多个地方调用）
+  requestSubscribe(callback) {
     wx.requestSubscribeMessage({
       tmplIds: [TODO_TEMPLATE_ID],
       success: (res) => {
         if (res[TODO_TEMPLATE_ID] === 'accept') {
-          wx.showToast({ title: '订阅成功！', icon: 'success' })
           wx.setStorageSync('subscribeTodo', true)
           this.setData({ subscribed: true })
-        } else if (res[TODO_TEMPLATE_ID] === 'reject') {
-          wx.showToast({ title: '您拒绝了订阅', icon: 'none' })
+          if (callback) callback(true)
+        } else {
+          if (callback) callback(false)
         }
       },
       fail: (err) => {
         console.error('订阅失败:', err)
-        wx.showToast({ title: '订阅失败，请真机测试', icon: 'none', duration: 2000 })
+        if (callback) callback(false)
       }
     })
+  },
+
+  // 点击订阅按钮
+  subscribeNotify() {
+    this.requestSubscribe()
   },
 
   async loadMembers() {
@@ -206,9 +204,22 @@ Page({
     })
   },
 
+  // 提交表单：如果指派了人，先弹出订阅请求
   async submitForm() {
     if (!this.data.formData.title.trim()) return wx.showToast({ title: '请输入内容', icon: 'none' })
     
+    // 如果指派了成员，先请求订阅
+    if (this.data.formData.assigneeId) {
+      this.requestSubscribe(async (subscribed) => {
+        // 无论订阅与否，都继续保存
+        await this.doSubmit()
+      })
+    } else {
+      await this.doSubmit()
+    }
+  },
+
+  async doSubmit() {
     wx.showLoading({ title: this.data.editMode ? '保存中' : '添加中' })
     
     try {
