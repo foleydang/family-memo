@@ -8,7 +8,6 @@ Page({
     userInfo: null,
     familyInfo: null,
     members: [],
-    weekStats: null,
     myTodos: [],
     todaySchedules: [],
     greeting: '',
@@ -69,7 +68,6 @@ Page({
     this.setData({ userInfo: app.globalData.userInfo, familyInfo: app.globalData.familyInfo })
     if (app.globalData.familyInfo) {
       await this.loadMembers()
-      await this.loadWeekStats()
       await this.loadMyData()
     }
   },
@@ -85,14 +83,12 @@ Page({
   },
 
   // 加载本周统计
-  async loadWeekStats() {
     try {
       const res = await wx.cloud.callFunction({
         name: 'stats',
         data: { action: 'getFamilyStats', data: { familyId: this.data.familyInfo._id } }
       })
       if (res.result.success) {
-        this.setData({ weekStats: res.result.data.weekStats })
       }
     } catch (err) { console.error('加载统计失败', err) }
   },

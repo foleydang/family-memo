@@ -105,13 +105,6 @@
   border-left: 6rpx solid #FF85A2;
 }
 
-/* 本周统计 */
-.week-stats {
-  display: flex;
-  background: #fff;
-  border-radius: 14rpx;
-  padding: 20rpx;
-}
 
 .week-stat-item { flex: 1; text-align: center; }
 .week-stat-num { font-size: 36rpx; font-weight: bold; color: #FF85A2; }
