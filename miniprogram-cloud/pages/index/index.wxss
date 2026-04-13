@@ -354,3 +354,25 @@
 .login-btn::after {
   display: none;
 }
+
+/* 订阅提醒按钮 */
+.subscribe-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 16rpx;
+}
+
+.subscribe-icon {
+  font-size: 28rpx;
+}
+
+.subscribe-tip {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 16rpx;
+}

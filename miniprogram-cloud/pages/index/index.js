@@ -1,7 +1,9 @@
 // pages/index/index.js - 云开发版本
 const app = getApp()
 
+// 订阅消息模板ID（需要在微信小程序后台申请）
 const SCHEDULE_REMIND_TEMPLATE_ID = 'bDHCtdW_8crvYVMvD1p0fo_u1vIR0zuKTSPGr8BW1dU'
+const TODO_ASSIGN_TEMPLATE_ID = 'YOUR_TODO_TEMPLATE_ID'  // 需要替换为实际的模板ID
 
 Page({
   data: {
@@ -10,8 +12,9 @@ Page({
     members: [],
     greeting: '',
     todayStr: '',
-    loading: true,  // 初始为加载中
-    dataReady: false // 数据是否准备完成
+    loading: true,
+    dataReady: false,
+    subscribed: false  // 是否已订阅
   },
 
   onLoad() {
@@ -19,11 +22,12 @@ Page({
   },
 
   onShow() {
-    // 只有数据准备好了才刷新
     if (this.data.dataReady) {
       this.refreshData()
       this.checkTodayRemind()
     }
+    // 检查订阅状态
+    this.checkSubscribeStatus()
   },
 
   onPullDownRefresh() {
@@ -33,7 +37,6 @@ Page({
   },
 
   async initPage() {
-    // 设置问候语
     const hour = new Date().getHours()
     let greeting = '你好'
     if (hour < 6) greeting = '夜深了'
@@ -52,7 +55,6 @@ Page({
       todayStr: `${today.getMonth() + 1}月${today.getDate()}日 星期${weekDays[today.getDay()]}`
     })
 
-    // 等待登录和家庭信息都加载完成
     await this.waitForDataReady()
     
     this.setData({ 
@@ -63,25 +65,18 @@ Page({
     this.refreshData()
   },
 
-  // 等待数据准备完成
   async waitForDataReady() {
     return new Promise((resolve) => {
       const checkReady = () => {
-        // 检查是否登录完成
         if (app.globalData.userInfo) {
-          // 检查家庭信息是否加载完成（可能为null，但也算完成）
           resolve()
         } else {
-          // 等待登录完成
           const timer = setInterval(() => {
             if (app.globalData.userInfo) {
               clearInterval(timer)
-              // 再等待家庭信息
               setTimeout(() => resolve(), 500)
             }
           }, 100)
-          
-          // 超时保护
           setTimeout(() => {
             clearInterval(timer)
             resolve()
@@ -151,10 +146,44 @@ Page({
     }
   },
 
+  // 检查订阅状态（本地存储）
+  checkSubscribeStatus() {
+    const subscribed = wx.getStorageSync('subscribeTodo') || false
+    this.setData({ subscribed })
+  },
+
+  // 订阅待办提醒
+  subscribeNotify() {
+    if (!TODO_ASSIGN_TEMPLATE_ID || TODO_ASSIGN_TEMPLATE_ID === 'YOUR_TODO_TEMPLATE_ID') {
+      wx.showToast({ 
+        title: '请先配置模板ID', 
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
+
+    wx.requestSubscribeMessage({
+      tmplIds: [TODO_ASSIGN_TEMPLATE_ID],
+      success: (res) => {
+        if (res[TODO_ASSIGN_TEMPLATE_ID] === 'accept') {
+          wx.showToast({ title: '订阅成功', icon: 'success' })
+          wx.setStorageSync('subscribeTodo', true)
+          this.setData({ subscribed: true })
+        } else if (res[TODO_ASSIGN_TEMPLATE_ID] === 'reject') {
+          wx.showToast({ title: '您拒绝了订阅', icon: 'none' })
+        }
+      },
+      fail: (err) => {
+        console.error('订阅失败:', err)
+        wx.showToast({ title: '订阅失败', icon: 'none' })
+      }
+    })
+  },
+
   handleLogin() {
     wx.showLoading({ title: '登录中' })
     app.login().then(async () => {
-      // 等待家庭信息加载
       await new Promise(resolve => setTimeout(resolve, 1000))
       wx.hideLoading()
       this.setData({ 

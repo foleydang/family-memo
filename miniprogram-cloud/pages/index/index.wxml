@@ -16,9 +16,14 @@
         <view class="greeting">{{greeting}}，</view>
         <view class="nickname">{{userInfo.nickname || '亲爱的'}} 💕</view>
       </view>
+      <!-- 订阅提醒入口 -->
+      <view class="subscribe-btn" bindtap="subscribeNotify" wx:if="{{familyInfo}}">
+        <text class="subscribe-icon">🔔</text>
+      </view>
     </view>
     <view class="welcome-footer">
       <text class="welcome-tips">{{todayStr}}</text>
+      <text class="subscribe-tip" wx:if="{{!subscribed}}">点击🔔开启提醒</text>
     </view>
   </view>
 

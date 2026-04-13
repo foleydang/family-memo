@@ -88,20 +88,45 @@ Page({
   },
 
   updateFilteredList() {
-    let list = this.data.todos.map(item => ({
-      ...item,
-      assigneeName: this.getAssigneeName(item.assigneeId)
-    }))
+    let list = this.data.todos.map(item => {
+      const assignee = this.data.members.find(m => m._id === item.assigneeId)
+      return {
+        ...item,
+        assigneeName: assignee ? (assignee.nickname || '成员') : '',
+        assigneeAvatar: assignee ? assignee.avatarUrl : '',
+        createTime: this.formatTime(item.createTime)
+      }
+    })
     if (this.data.currentTab !== 'all') {
       list = list.filter(i => i.status === this.data.currentTab)
     }
     this.setData({ filteredList: list })
   },
 
-  getAssigneeName(assigneeId) {
-    if (!assigneeId) return ''
-    const member = this.data.members.find(m => m._id === assigneeId)
-    return member ? (member.nickname || '成员') : ''
+  formatTime(time) {
+    if (!time) return ''
+    const date = new Date(time)
+    const now = new Date()
+    const diff = now - date
+    
+    // 一天内显示"今天 HH:mm"
+    if (diff < 24 * 60 * 60 * 1000) {
+      const h = String(date.getHours()).padStart(2, '0')
+      const m = String(date.getMinutes()).padStart(2, '0')
+      return `今天 ${h}:${m}`
+    }
+    
+    // 一周内显示"X天前"
+    if (diff < 7 * 24 * 60 * 60 * 1000) {
+      const days = Math.floor(diff / (24 * 60 * 60 * 1000))
+      return `${days}天前`
+    }
+    
+    // 其他显示日期
+    const y = date.getFullYear()
+    const mon = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${mon}-${d}`
   },
 
   async loadTodos() {
@@ -199,7 +224,8 @@ Page({
             title: this.data.formData.title.trim(),
             description: this.data.formData.description,
             priority: this.data.formData.priority,
-            assigneeId: this.data.formData.assigneeId
+            assigneeId: this.data.formData.assigneeId,
+            sendNotify: this.data.formData.assigneeId ? true : false  // 有指派人时发送通知
           }
         }
       })
@@ -233,7 +259,7 @@ Page({
     })
     
     this.setData({ togglingId: item._id, todos })
-    this.updateStats()  // 立即更新统计
+    this.updateStats()
     this.updateFilteredList()
     
     try {
