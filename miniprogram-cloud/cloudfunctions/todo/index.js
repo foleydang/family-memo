@@ -123,9 +123,9 @@ async function toggleItem(data) {
 }
 
 // 发送待办指派通知
+// 模板字段：创建人(thing6)、任务名称(thing1)、备注(thing10)
 async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
   try {
-    // 获取被指派人的 openid
     const assigneeRes = await db.collection('users').doc(assigneeId).get()
     if (!assigneeRes.data || !assigneeRes.data.openid) {
       console.log('找不到被指派人')
@@ -135,12 +135,12 @@ async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
     const openid = assigneeRes.data.openid
     
     // 字段处理（订阅消息有字数限制）
-    // 创建人：最多10个字符
-    const creator = creatorName.length > 10 ? creatorName.substring(0, 10) : creatorName
-    // 任务名称：最多20个字符
+    // 创建人(thing6): 最多20个字符
+    const creator = creatorName.length > 20 ? creatorName.substring(0, 20) : creatorName
+    // 任务名称(thing1): 最多20个字符
     const title = todoTitle.length > 20 ? todoTitle.substring(0, 20) : todoTitle
-    // 备注：最多20个字符，如果没有备注则显示"无"
-    const remark = (todoDesc && todoDesc.length > 0) 
+    // 备注(thing10): 最多20个字符
+    const remark = (todoDesc && todoDesc.trim().length > 0) 
       ? (todoDesc.length > 20 ? todoDesc.substring(0, 20) : todoDesc) 
       : '无'
     
@@ -149,14 +149,14 @@ async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
         touser: openid,
         page: 'pages/todo/index',
         data: {
-          name1: { value: creator },      // 创建人
-          thing2: { value: title },       // 任务名称
-          thing3: { value: remark }       // 备注
+          thing6: { value: creator },   // 创建人
+          thing1: { value: title },     // 任务名称
+          thing10: { value: remark }    // 备注
         },
         templateId: TODO_ASSIGN_TEMPLATE_ID,
         miniprogramState: 'developer'
       })
-      console.log('发送通知成功:', openid)
+      console.log('发送待办通知成功:', openid)
     } catch (err) {
       console.error('发送订阅消息失败:', err)
     }
