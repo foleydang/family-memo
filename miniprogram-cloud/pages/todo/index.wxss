@@ -69,19 +69,20 @@
   align-items: flex-start;
   background: #fff;
   border-radius: 14rpx;
-  padding: 16rpx 18rpx;
+  padding: 14rpx 16rpx;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
 }
 
-/* 左侧状态方块 */
+/* 左侧状态方块（和标题字体差不多大） */
 .todo-checkbox {
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 10rpx;
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 6rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 14rpx;
+  margin-right: 12rpx;
+  margin-top: 4rpx;
   flex-shrink: 0;
 }
 
@@ -101,14 +102,14 @@
 }
 
 .checkbox-empty {
-  width: 20rpx;
-  height: 20rpx;
+  width: 14rpx;
+  height: 14rpx;
 }
 
 .checkbox-half {
-  width: 22rpx;
-  height: 22rpx;
-  border: 3rpx solid #1890ff;
+  width: 16rpx;
+  height: 16rpx;
+  border: 2rpx solid #1890ff;
   border-radius: 50%;
   position: relative;
 }
@@ -117,29 +118,32 @@
   content: '';
   position: absolute;
   top: 50%;
-  left: 3rpx;
-  right: 3rpx;
-  height: 3rpx;
+  left: 2rpx;
+  right: 2rpx;
+  height: 2rpx;
   background: #1890ff;
+  transform: translateY(-50%);
 }
 
 .checkbox-done {
   color: #52c41a;
-  font-size: 24rpx;
+  font-size: 18rpx;
   font-weight: bold;
 }
 
-/* 内容区 */
+/* 内容区（无额外padding） */
 .todo-body {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 第一行：优先级 + 标题 + 操作 */
 .todo-row-title {
   display: flex;
   align-items: center;
-  line-height: 1;
+  min-height: 36rpx;
 }
 
 .priority-tag {
@@ -179,10 +183,9 @@
   color: #f5222d;
 }
 
-/* 第二行：备注 */
+/* 第二行：备注（和标题左对齐） */
 .todo-row-desc {
-  margin-top: 8rpx;
-  padding-left: 0;
+  margin-top: 6rpx;
 }
 
 .todo-desc {
@@ -191,12 +194,11 @@
   line-height: 1.4;
 }
 
-/* 第三行：指派人 + 时间（靠左对齐） */
+/* 第三行：指派人 + 时间（和标题左对齐） */
 .todo-row-meta {
   display: flex;
   align-items: center;
-  margin-top: 10rpx;
-  padding-left: 0;
+  margin-top: 6rpx;
 }
 
 .assignee-info {
@@ -205,10 +207,10 @@
 }
 
 .assignee-avatar {
-  width: 36rpx;
-  height: 36rpx;
+  width: 32rpx;
+  height: 32rpx;
   border-radius: 50%;
-  margin-right: 8rpx;
+  margin-right: 6rpx;
 }
 
 .assignee-name {
@@ -224,7 +226,7 @@
 .todo-time {
   font-size: 26rpx;
   color: #999;
-  margin-left: 16rpx;
+  margin-left: 12rpx;
 }
 
 /* 空状态 */
