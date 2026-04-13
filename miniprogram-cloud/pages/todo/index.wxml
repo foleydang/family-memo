@@ -28,35 +28,26 @@
   <view class="todo-list">
     <block wx:for="{{filteredList}}" wx:key="_id">
       <view class="todo-card {{item.status}}">
-        <!-- 状态图标 -->
-        <view class="todo-status {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
-          <text wx:if="{{item.status === 'done'}}">✓</text>
-          <text wx:elif="{{item.status === 'doing'}}">◐</text>
-          <text wx:else>○</text>
-        </view>
+        <!-- 左侧状态圆点 -->
+        <view class="todo-dot {{item.status}}" bindtap="toggleItem" data-item="{{item}}"></view>
         
-        <!-- 内容区 -->
-        <view class="todo-content">
-          <view class="todo-title-row">
+        <!-- 内容区：一行显示优先级+标题+指派人+时间 -->
+        <view class="todo-content" bindtap="editItem" data-item="{{item}}">
+          <view class="todo-row">
+            <!-- 优先级图标（放在标题前，小尺寸） -->
+            <text wx:if="{{item.priority > 0}}" class="priority-icon">{{item.priority === 2 ? '🔥' : '⭐'}}</text>
+            <!-- 标题 -->
             <text class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text>
-            <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
-              {{item.priority === 2 ? '🔥' : '⭐'}}
-            </text>
-          </view>
-          <view class="todo-meta">
-            <view class="assignee-info" wx:if="{{item.assigneeName}}">
-              <image class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
-              <text>{{item.assigneeName}}</text>
-            </view>
-            <text wx:else class="assignee-info">未指派</text>
-            <text>{{item.timeDisplay}}</text>
+            <!-- 指派人头像 -->
+            <image wx:if="{{item.assigneeAvatar}}" class="mini-avatar" src="{{item.assigneeAvatar}}" mode="aspectFill"></image>
+            <!-- 时间 -->
+            <text class="todo-time">{{item.timeDisplay}}</text>
           </view>
         </view>
         
-        <!-- 操作按钮 -->
+        <!-- 右侧操作 -->
         <view class="todo-actions">
-          <view class="action-btn" catchtap="editItem" data-item="{{item}}">✏️</view>
-          <view class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">🗑️</view>
+          <view class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">×</view>
         </view>
       </view>
     </block>
