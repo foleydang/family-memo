@@ -1,218 +1,149 @@
-// pages/index/index.js
-const app = getApp();
+// pages/index/index.js - 服务器版本
+const app = getApp()
+
+const TODO_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
 
 Page({
   data: {
     userInfo: null,
     familyInfo: null,
     members: [],
-    shoppingList: [],
-    shoppingStats: { pending: 0, done: 0 },
-    todoList: [],
-    todoStats: { pending: 0, doing: 0, done: 0 },
-    scheduleList: [],
+    myTodos: [],
+    todaySchedules: [],
     greeting: '',
-    todayStr: ''
+    todayStr: '',
+    loading: true,
+    subscribed: false
   },
 
-  onLoad() {
-    this.initPage();
-  },
-
+  onLoad() { this.initPage() },
   onShow() {
-    this.refreshData();
+    this.refreshData()
+    this.checkSubscribeStatus()
   },
-
   onPullDownRefresh() {
-    this.refreshData().then(() => {
-      wx.stopPullDownRefresh();
-    });
+    this.refreshData().then(() => wx.stopPullDownRefresh())
   },
 
   async initPage() {
-    // 设置问候语
-    const hour = new Date().getHours();
-    let greeting = '你好';
-    if (hour < 6) greeting = '夜深了';
-    else if (hour < 9) greeting = '早上好';
-    else if (hour < 12) greeting = '上午好';
-    else if (hour < 14) greeting = '中午好';
-    else if (hour < 18) greeting = '下午好';
-    else if (hour < 22) greeting = '晚上好';
-    else greeting = '夜深了';
+    const hour = new Date().getHours()
+    let greeting = '你好'
+    if (hour < 6) greeting = '夜深了'
+    else if (hour < 9) greeting = '早上好'
+    else if (hour < 12) greeting = '上午好'
+    else if (hour < 14) greeting = '中午好'
+    else if (hour < 18) greeting = '下午好'
+    else if (hour < 22) greeting = '晚上好'
+    else greeting = '夜深了'
 
-    const today = new Date();
-    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-
+    const today = new Date()
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六']
     this.setData({
       greeting,
       todayStr: `${today.getMonth() + 1}月${today.getDate()}日 星期${weekDays[today.getDay()]}`
-    });
+    })
 
     // 检查登录
     if (!app.globalData.token) {
       try {
-        await app.login();
-        this.setData({ userInfo: app.globalData.userInfo });
-      } catch (err) {
-        console.error('登录失败', err);
-      }
-    } else {
-      this.setData({ userInfo: app.globalData.userInfo });
+        await app.login()
+      } catch (err) { console.error('登录失败', err) }
     }
 
-    this.refreshData();
+    this.setData({ loading: false })
+    this.refreshData()
   },
 
   async refreshData() {
-    if (!app.globalData.token) return;
+    if (!app.globalData.token) return
 
     try {
-      await app.getUserInfo();
+      await app.getUserInfo()
       this.setData({
         userInfo: app.globalData.userInfo,
         familyInfo: app.globalData.familyInfo
-      });
+      })
 
       if (app.globalData.familyInfo) {
-        await Promise.all([
-          this.loadShoppingList(),
-          this.loadTodoList(),
-          this.loadScheduleList(),
-          this.loadFamilyMembers()
-        ]);
+        await this.loadMembers()
+        await this.loadMyData()
       }
-    } catch (err) {
-      console.error('刷新数据失败', err);
-    }
+    } catch (err) { console.error('刷新数据失败', err) }
   },
 
-  async loadShoppingList() {
-    try {
-      const res = await app.request({
-        url: '/shopping/list',
-        data: { familyId: this.data.familyInfo.id, status: 'pending' }
-      });
-      this.setData({
-        shoppingList: res.data.pending.slice(0, 3),
-        shoppingStats: res.data.stats
-      });
-    } catch (err) {
-      console.error('加载购物清单失败', err);
-    }
-  },
-
-  async loadTodoList() {
-    try {
-      const res = await app.request({
-        url: '/todo/list',
-        data: { familyId: this.data.familyInfo.id, status: 'pending' }
-      });
-      this.setData({
-        todoList: res.data.pending.slice(0, 3),
-        todoStats: res.data.stats
-      });
-    } catch (err) {
-      console.error('加载待办失败', err);
-    }
-  },
-
-  async loadScheduleList() {
-    try {
-      const res = await app.request({
-        url: '/schedule/upcoming',
-        data: { familyId: this.data.familyInfo.id, days: 7 }
-      });
-
-      const scheduleList = res.data.map(item => {
-        const date = new Date(item.schedule_date);
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        let day = date.getDate().toString();
-        let week = '';
-
-        if (date.toDateString() === today.toDateString()) {
-          week = '今天';
-        } else if (date.toDateString() === tomorrow.toDateString()) {
-          week = '明天';
-        } else {
-          const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-          week = weekDays[date.getDay()];
-        }
-
-        const typeNames = {
-          birthday: '生日',
-          anniversary: '纪念日',
-          appointment: '预约',
-          meeting: '会议',
-          trip: '出行',
-          other: '其他'
-        };
-
-        return {
-          ...item,
-          day,
-          week,
-          typeName: typeNames[item.type] || '其他'
-        };
-      });
-
-      this.setData({ scheduleList });
-    } catch (err) {
-      console.error('加载日程失败', err);
-    }
-  },
-
-  async loadFamilyMembers() {
+  async loadMembers() {
     try {
       const res = await app.request({
         url: `/family/${this.data.familyInfo.id}`
-      });
-      this.setData({ members: res.data.members });
-    } catch (err) {
-      console.error('加载成员失败', err);
+      })
+      this.setData({ members: res.data.members || [] })
+    } catch (err) { console.error('加载成员失败', err) }
+  },
+
+  // 加载"与我相关"数据
+  async loadMyData() {
+    const myUserId = app.globalData.userInfo?.id
+    if (!myUserId || !this.data.familyInfo) return
+
+    try {
+      // 加载指派给我的待办
+      const todoRes = await app.request({
+        url: '/todo/list',
+        data: { familyId: this.data.familyInfo.id, status: 'all', assignee: myUserId }
+      })
+      const allTodos = todoRes.data.all || []
+      const myTodos = allTodos
+        .filter(t => t.assignee_id === myUserId && t.status !== 'done')
+        .slice(0, 5)
+      this.setData({ myTodos })
+
+      // 加载今日日程
+      const todayStr = this.formatDate(new Date())
+      const scheduleRes = await app.request({
+        url: '/schedule/list',
+        data: { familyId: this.data.familyInfo.id }
+      })
+      const todaySchedules = (scheduleRes.data.list || [])
+        .filter(s => s.schedule_date === todayStr)
+        .slice(0, 3)
+      this.setData({ todaySchedules })
+    } catch (err) { console.error('加载我的数据失败', err) }
+  },
+
+  formatDate(date) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  },
+
+  checkSubscribeStatus() {
+    const subscribed = wx.getStorageSync('subscribeTodo') || false
+    this.setData({ subscribed })
+  },
+
+  subscribeNotify() {
+    if (this.data.subscribed) {
+      wx.showToast({ title: '您已订阅提醒', icon: 'success' })
+      return
     }
+    wx.requestSubscribeMessage({
+      tmplIds: [TODO_TEMPLATE_ID],
+      success: (res) => {
+        if (res[TODO_TEMPLATE_ID] === 'accept') {
+          wx.showToast({ title: '订阅成功！', icon: 'success' })
+          wx.setStorageSync('subscribeTodo', true)
+          this.setData({ subscribed: true })
+        } else {
+          wx.showToast({ title: '您拒绝了订阅', icon: 'none' })
+        }
+      },
+      fail: () => { wx.showToast({ title: '订阅失败', icon: 'none' }) }
+    })
   },
 
-  handleLogin() {
-    wx.showLoading({ title: '登录中' });
-    app.login().then(() => {
-      wx.hideLoading();
-      this.setData({ userInfo: app.globalData.userInfo });
-      this.refreshData();
-    }).catch(err => {
-      wx.hideLoading();
-      wx.showToast({ title: '登录失败', icon: 'none' });
-    });
-  },
-
-  handleCreateFamily() {
-    wx.navigateTo({ url: '/pages/family/index?action=create' });
-  },
-
-  handleJoinFamily() {
-    wx.navigateTo({ url: '/pages/family/index?action=join' });
-  },
-
-  goToShopping() {
-    wx.switchTab({ url: '/pages/shopping/index' });
-  },
-
-  goToTodo() {
-    wx.switchTab({ url: '/pages/todo/index' });
-  },
-
-  goToSchedule() {
-    wx.switchTab({ url: '/pages/schedule/index' });
-  },
-
-  goToFamily() {
-    wx.switchTab({ url: '/pages/family/index' });
-  },
-
-  goToAnnouncement() {
-    wx.navigateTo({ url: '/pages/announcement/index' });
-  }
-});
+  goToFamily() { wx.navigateTo({ url: '/pages/family/index' }) },
+  goToShopping() { wx.switchTab({ url: '/pages/shopping/index' }) },
+  goToTodo() { wx.switchTab({ url: '/pages/todo/index' }) },
+  goToSchedule() { wx.switchTab({ url: '/pages/schedule/index' }) }
+})

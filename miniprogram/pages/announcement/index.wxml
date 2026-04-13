@@ -2,31 +2,40 @@
 <view class="container">
   <!-- 公告列表 -->
   <view class="announcement-list">
-    <block wx:for="{{announcements}}" wx:key="id">
-      <view class="announcement-item">
+    <block wx:for="{{announcements}}" wx:key="_id">
+      <view class="announcement-card">
+        <!-- 发布者信息 -->
         <view class="announcement-header">
-          <text class="author">{{item.created_by_name || '匿名'}}</text>
-          <text class="time">{{item.created_at}}</text>
+          <image class="author-avatar" src="{{item.authorAvatar || '/images/default-avatar.png'}}"></image>
+          <view class="author-info">
+            <text class="author-name">{{item.authorName || '成员'}}</text>
+            <text class="publish-time">{{item.displayTime}}</text>
+          </view>
+          <view class="delete-btn" catchtap="deleteAnnouncement" data-id="{{item._id}}">×</view>
         </view>
-        <view class="announcement-content">{{item.content}}</view>
-        <view class="announcement-actions">
-          <text class="action-btn" catchtap="deleteAnnouncement" data-id="{{item.id}}">删除</text>
+        
+        <!-- 公告内容 -->
+        <view class="announcement-body">
+          <text class="announcement-content">{{item.content}}</text>
         </view>
       </view>
     </block>
 
-    <view wx:if="{{announcements.length === 0}}" class="empty-tip">
-      <text>暂无公告</text>
+    <!-- 空状态 -->
+    <view wx:if="{{announcements.length === 0}}" class="empty-state">
+      <text class="empty-icon">📢</text>
+      <text class="empty-title">暂无公告</text>
       <text class="empty-desc">点击下方按钮发布家庭公告</text>
     </view>
   </view>
 
   <!-- 发布按钮 -->
   <view class="publish-btn" bindtap="showAddModal">
+    <text class="publish-icon">✏️</text>
     <text>发布公告</text>
   </view>
 
-  <!-- 添加弹窗 -->
+  <!-- 弹窗 -->
   <view wx:if="{{showModal}}" class="modal-mask" bindtap="hideModal">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
@@ -36,8 +45,8 @@
       <view class="modal-body">
         <view class="form-item">
           <text class="form-label">公告内容 *</text>
-          <textarea class="form-textarea" placeholder="请输入公告内容" value="{{formData.content}}" bindinput="inputContent" maxlength="200" />
-          <text class="char-count">{{formData.content.length}}/200</text>
+          <textarea class="form-textarea" placeholder="请输入公告内容" value="{{formData.content}}" bindinput="inputContent" maxlength="200" auto-height />
+          <text class="char-count">{{formData.content.length || 0}}/200</text>
         </view>
       </view>
       <view class="modal-footer">
