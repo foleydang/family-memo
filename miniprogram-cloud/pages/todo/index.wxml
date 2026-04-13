@@ -28,20 +28,16 @@
   <view class="todo-list">
     <block wx:for="{{filteredList}}" wx:key="_id">
       <view class="todo-card {{item.status}}">
-        <!-- 左侧状态方块 -->
-        <view class="todo-status {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
-          <text wx:if="{{item.status === 'done'}}">✓</text>
-          <text wx:elif="{{item.status === 'doing'}}">◐</text>
-          <text wx:else>○</text>
-        </view>
+        <!-- 左侧状态方块（纯色，无图标） -->
+        <view class="todo-status {{item.status}}" bindtap="toggleItem" data-item="{{item}}"></view>
         
         <!-- 内容区 -->
         <view class="todo-content">
-          <!-- 第一行：优先级 + 标题 -->
+          <!-- 第一行：优先级标签 + 标题 -->
           <view class="todo-row-title">
-            <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
+            <view wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
               {{item.priority === 2 ? '🔥紧急' : '⭐重要'}}
-            </text>
+            </view>
             <text class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text>
           </view>
           
