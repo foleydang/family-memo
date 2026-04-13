@@ -14,6 +14,10 @@
       <view class="stat-num">{{stats.done}}</view>
       <view class="stat-label">已完成</view>
     </view>
+    <!-- 订阅提醒按钮 -->
+    <view class="subscribe-btn" bindtap="subscribeNotify">
+      <text class="subscribe-icon">🔔</text>
+    </view>
   </view>
 
   <!-- Tab切换 -->
@@ -28,16 +32,13 @@
   <view class="todo-list">
     <block wx:for="{{filteredList}}" wx:key="_id">
       <view class="todo-card">
-        <!-- 左侧状态方块 -->
         <view class="todo-checkbox {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
           <view wx:if="{{item.status === 'pending'}}" class="checkbox-empty"></view>
           <view wx:elif="{{item.status === 'doing'}}" class="checkbox-half"></view>
           <text wx:else class="checkbox-done">✓</text>
         </view>
         
-        <!-- 内容区 -->
         <view class="todo-content">
-          <!-- 第一行：标题 + 编辑删除 -->
           <view class="todo-row-1">
             <text class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text>
             <view class="todo-actions">
@@ -46,12 +47,10 @@
             </view>
           </view>
           
-          <!-- 第二行：备注（和标题左对齐） -->
           <view wx:if="{{item.description}}" class="todo-row-2">
             <text class="todo-desc">{{item.description}}</text>
           </view>
           
-          <!-- 第三行：紧急标签 + 指派人 + 时间（和标题左对齐） -->
           <view class="todo-row-3">
             <view wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
               {{item.priority === 2 ? '紧急' : '重要'}}
@@ -71,31 +70,27 @@
     </view>
   </view>
 
-  <!-- 底部操作 -->
   <view class="bottom-bar">
     <view class="btn-clear" wx:if="{{stats.done > 0}}" bindtap="clearDone">清空已完成</view>
     <view class="btn-add" bindtap="showAddModal">+ 新待办</view>
   </view>
 
-  <!-- 添加/编辑弹窗 -->
+  <!-- 弹窗 -->
   <view wx:if="{{showModal}}" class="modal-mask" bindtap="hideModal">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text>{{editMode ? '编辑待办' : '添加待办'}}</text>
         <view class="modal-close" bindtap="hideModal">×</view>
       </view>
-
       <view class="modal-body">
         <view class="form-item">
           <text class="form-label">待办内容 *</text>
           <input class="form-input" placeholder="请输入待办内容" value="{{formData.title}}" bindinput="inputTitle" />
         </view>
-
         <view class="form-item">
           <text class="form-label">备注</text>
           <input class="form-input" placeholder="可选备注" value="{{formData.description}}" bindinput="inputDescription" />
         </view>
-
         <view class="form-item">
           <text class="form-label">优先级</text>
           <view class="priority-btns">
@@ -104,7 +99,6 @@
             <view class="priority-btn urgent {{formData.priority === 2 ? 'active' : ''}}" bindtap="togglePriority" data-level="2">紧急</view>
           </view>
         </view>
-
         <view class="form-item">
           <text class="form-label">指派成员</text>
           <picker mode="selector" range="{{memberNames}}" value="{{assigneeIndex}}" bindchange="pickAssignee">
@@ -115,7 +109,6 @@
           </picker>
         </view>
       </view>
-
       <view class="modal-footer">
         <view class="btn-cancel" bindtap="hideModal">取消</view>
         <view class="btn-confirm" bindtap="submitForm">{{editMode ? '保存' : '添加'}}</view>
