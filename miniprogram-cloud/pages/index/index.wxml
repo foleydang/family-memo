@@ -20,11 +20,11 @@
     <view class="welcome-footer">
       <text class="welcome-tips">{{todayStr}}</text>
     </view>
-    <!-- 订阅提醒按钮（绝对定位在右上角） -->
+    <!-- 订阅按钮 -->
     <view class="subscribe-btn" bindtap="subscribeNotify" wx:if="{{familyInfo}}">
       <text class="subscribe-icon">🔔</text>
     </view>
-    <view class="subscribe-tip" wx:if="{{familyInfo && !subscribed}}">点击🔔订阅提醒</view>
+    <view class="subscribe-tip" wx:if="{{familyInfo && !subscribed}}">点击订阅提醒</view>
   </view>
 
   <!-- 未登录提示 -->
@@ -36,7 +36,7 @@
     </view>
   </view>
 
-  <!-- 未加入家庭提示 -->
+  <!-- 未加入家庭 -->
   <view class="no-family-card card" wx:if="{{!loading && userInfo && !familyInfo}}">
     <view class="no-family-content">
       <text class="no-family-icon">🏡</text>
@@ -45,6 +45,25 @@
       <view class="no-family-actions">
         <button class="create-btn" bindtap="handleCreateFamily">创建家庭</button>
         <button class="join-btn" bindtap="handleJoinFamily">加入家庭</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 本周统计 -->
+  <view class="section" wx:if="{{familyInfo && weekStats}}">
+    <view class="section-title">📊 本周动态</view>
+    <view class="week-stats">
+      <view class="week-stat-item">
+        <text class="week-stat-num">{{weekStats.todo}}</text>
+        <text class="week-stat-label">待办</text>
+      </view>
+      <view class="week-stat-item">
+        <text class="week-stat-num">{{weekStats.shopping}}</text>
+        <text class="week-stat-label">购物</text>
+      </view>
+      <view class="week-stat-item">
+        <text class="week-stat-num">{{weekStats.schedule}}</text>
+        <text class="week-stat-label">日程</text>
       </view>
     </view>
   </view>
@@ -64,6 +83,25 @@
       <view class="member add-member" catchtap="goToFamily">
         <view class="add-icon">+</view>
         <text class="member-name">管理</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 成员贡献排行 -->
+  <view class="section" wx:if="{{familyInfo && stats && stats.length > 0}}">
+    <view class="section-title">🏆 成员贡献榜</view>
+    <view class="rank-list">
+      <view class="rank-item {{index === 0 ? 'top' : ''}}" wx:for="{{stats}}" wx:key="userId">
+        <view class="rank-badge">{{index + 1}}</view>
+        <image class="rank-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}"></image>
+        <view class="rank-info">
+          <text class="rank-name">{{item.nickname}}</text>
+          <text class="rank-detail">待办{{item.todoTotal}} | 购物{{item.shoppingTotal}} | 日程{{item.scheduleTotal}}</text>
+        </view>
+        <view class="rank-score">
+          <text class="rank-total">{{item.total}}</text>
+          <text class="rank-label">贡献</text>
+        </view>
       </view>
     </view>
   </view>
