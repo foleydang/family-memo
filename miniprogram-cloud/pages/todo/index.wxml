@@ -31,23 +31,21 @@
         <!-- 左侧状态圆点 -->
         <view class="todo-dot {{item.status}}" bindtap="toggleItem" data-item="{{item}}"></view>
         
-        <!-- 内容区：一行显示优先级+标题+指派人+时间 -->
-        <view class="todo-content" bindtap="editItem" data-item="{{item}}">
-          <view class="todo-row">
-            <!-- 优先级图标（放在标题前，小尺寸） -->
+        <!-- 内容区 -->
+        <view class="todo-body">
+          <!-- 第一行：优先级 + 标题 + 指派人 + 时间 + 操作 -->
+          <view class="todo-row-main">
             <text wx:if="{{item.priority > 0}}" class="priority-icon">{{item.priority === 2 ? '🔥' : '⭐'}}</text>
-            <!-- 标题 -->
             <text class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text>
-            <!-- 指派人头像 -->
             <image wx:if="{{item.assigneeAvatar}}" class="mini-avatar" src="{{item.assigneeAvatar}}" mode="aspectFill"></image>
-            <!-- 时间 -->
+            <text wx:if="{{item.assigneeName}}" class="assignee-name">{{item.assigneeName}}</text>
             <text class="todo-time">{{item.timeDisplay}}</text>
+            <view class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">×</view>
           </view>
-        </view>
-        
-        <!-- 右侧操作 -->
-        <view class="todo-actions">
-          <view class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">×</view>
+          <!-- 第二行：备注（如果有） -->
+          <view wx:if="{{item.description}}" class="todo-row-desc">
+            <text class="todo-desc">{{item.description}}</text>
+          </view>
         </view>
       </view>
     </block>
