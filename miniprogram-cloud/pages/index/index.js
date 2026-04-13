@@ -1,9 +1,9 @@
 // pages/index/index.js - 云开发版本
 const app = getApp()
 
-// 订阅消息模板ID（需要在微信小程序后台申请）
+// 订阅消息模板ID
 const SCHEDULE_REMIND_TEMPLATE_ID = 'bDHCtdW_8crvYVMvD1p0fo_u1vIR0zuKTSPGr8BW1dU'
-const TODO_ASSIGN_TEMPLATE_ID = 'YOUR_TODO_TEMPLATE_ID'  // 需要替换为实际的模板ID
+const TODO_ASSIGN_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'  // 备忘录任务提醒
 
 Page({
   data: {
@@ -14,7 +14,7 @@ Page({
     todayStr: '',
     loading: true,
     dataReady: false,
-    subscribed: false  // 是否已订阅
+    subscribed: false
   },
 
   onLoad() {
@@ -26,7 +26,6 @@ Page({
       this.refreshData()
       this.checkTodayRemind()
     }
-    // 检查订阅状态
     this.checkSubscribeStatus()
   },
 
@@ -146,7 +145,6 @@ Page({
     }
   },
 
-  // 检查订阅状态（本地存储）
   checkSubscribeStatus() {
     const subscribed = wx.getStorageSync('subscribeTodo') || false
     this.setData({ subscribed })
@@ -154,15 +152,6 @@ Page({
 
   // 订阅待办提醒
   subscribeNotify() {
-    if (!TODO_ASSIGN_TEMPLATE_ID || TODO_ASSIGN_TEMPLATE_ID === 'YOUR_TODO_TEMPLATE_ID') {
-      wx.showToast({ 
-        title: '请先配置模板ID', 
-        icon: 'none',
-        duration: 2000
-      })
-      return
-    }
-
     wx.requestSubscribeMessage({
       tmplIds: [TODO_ASSIGN_TEMPLATE_ID],
       success: (res) => {

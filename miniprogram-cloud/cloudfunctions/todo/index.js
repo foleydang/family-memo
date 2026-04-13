@@ -2,6 +2,9 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
+// 备忘录任务提醒模板ID
+const TODO_ASSIGN_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
+
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
@@ -13,7 +16,7 @@ exports.main = async (event, context) => {
     case 'add':
       return await addItem(openid, data)
     case 'update':
-      return await updateItem(data)
+      return await updateItem(openid, data)
     case 'delete':
       return await deleteItem(data)
     case 'toggle':
@@ -57,7 +60,7 @@ async function addItem(openid, data) {
     
     // 发送通知给被指派的成员
     if (data.assigneeId && data.sendNotify) {
-      await sendAssignNotify(data.assigneeId, data.title, creatorName)
+      await sendAssignNotify(data.assigneeId, data.title, data.description, creatorName)
     }
     
     return { success: true, data: { _id: res._id } }
@@ -66,9 +69,8 @@ async function addItem(openid, data) {
   }
 }
 
-async function updateItem(data) {
+async function updateItem(openid, data) {
   try {
-    // 获取原来的待办信息
     const oldTodo = await db.collection('todos').doc(data._id).get()
     const oldAssigneeId = oldTodo.data.assigneeId
     
@@ -84,9 +86,9 @@ async function updateItem(data) {
     
     // 如果指派人变了，发送通知给新指派人
     if (data.assigneeId && data.assigneeId !== oldAssigneeId && data.sendNotify) {
-      const userRes = await db.collection('users').where({ openid: cloud.getWXContext().OPENID }).get()
+      const userRes = await db.collection('users').where({ openid }).get()
       const creatorName = userRes.data[0]?.nickname || '成员'
-      await sendAssignNotify(data.assigneeId, data.title, creatorName)
+      await sendAssignNotify(data.assigneeId, data.title, data.description, creatorName)
     }
     
     return { success: true }
@@ -121,7 +123,7 @@ async function toggleItem(data) {
 }
 
 // 发送待办指派通知
-async function sendAssignNotify(assigneeId, todoTitle, creatorName) {
+async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
   try {
     // 获取被指派人的 openid
     const assigneeRes = await db.collection('users').doc(assigneeId).get()
@@ -132,42 +134,33 @@ async function sendAssignNotify(assigneeId, todoTitle, creatorName) {
     
     const openid = assigneeRes.data.openid
     
-    // 发送订阅消息
-    // 注意：需要用户先在小程序中订阅消息模板
-    // 模板ID需要在微信小程序后台申请
-    // 这里使用一个通用的待办提醒模板
-    const TEMPLATE_ID = 'YOUR_TEMPLATE_ID'  // 需要替换为实际的模板ID
-    
-    // 截取标题，订阅消息有字数限制
-    const title = todoTitle.length > 20 ? todoTitle.substring(0, 20) + '...' : todoTitle
+    // 字段处理（订阅消息有字数限制）
+    // 创建人：最多10个字符
+    const creator = creatorName.length > 10 ? creatorName.substring(0, 10) : creatorName
+    // 任务名称：最多20个字符
+    const title = todoTitle.length > 20 ? todoTitle.substring(0, 20) : todoTitle
+    // 备注：最多20个字符，如果没有备注则显示"无"
+    const remark = (todoDesc && todoDesc.length > 0) 
+      ? (todoDesc.length > 20 ? todoDesc.substring(0, 20) : todoDesc) 
+      : '无'
     
     try {
       await cloud.openapi.subscribeMessage.send({
         touser: openid,
         page: 'pages/todo/index',
         data: {
-          thing1: { value: title },           // 待办内容
-          thing2: { value: creatorName },     // 创建人
-          time3: { value: formatDate(new Date()) }  // 创建时间
+          name1: { value: creator },      // 创建人
+          thing2: { value: title },       // 任务名称
+          thing3: { value: remark }       // 备注
         },
-        templateId: TEMPLATE_ID,
+        templateId: TODO_ASSIGN_TEMPLATE_ID,
         miniprogramState: 'developer'
       })
-      console.log('发送通知成功')
+      console.log('发送通知成功:', openid)
     } catch (err) {
       console.error('发送订阅消息失败:', err)
-      // 不影响主流程，只是通知失败
     }
   } catch (err) {
     console.error('发送指派通知失败:', err)
   }
-}
-
-function formatDate(date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  const h = String(date.getHours()).padStart(2, '0')
-  const min = String(date.getMinutes()).padStart(2, '0')
-  return `${y}-${m}-${d} ${h}:${min}`
 }
