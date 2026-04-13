@@ -41,9 +41,9 @@
   content: '💕';
   position: absolute;
   top: 20rpx;
-  left: 30rpx;
-  font-size: 80rpx;
-  opacity: 0.3;
+  right: 20rpx;
+  font-size: 60rpx;
+  opacity: 0.2;
 }
 
 .welcome-header {
@@ -84,6 +84,34 @@
 .welcome-tips {
   font-size: 24rpx;
   opacity: 0.8;
+}
+
+/* 订阅按钮（绝对定位在右上角） */
+.subscribe-btn {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.subscribe-icon {
+  font-size: 28rpx;
+}
+
+.subscribe-tip {
+  position: absolute;
+  top: 84rpx;
+  right: 16rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
 }
 
 /* 分区标题 */
@@ -353,28 +381,4 @@
 
 .login-btn::after {
   display: none;
-}
-
-/* 订阅提醒按钮 */
-.subscribe-btn {
-  position: relative;
-  z-index: 10;
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 16rpx;
-}
-
-.subscribe-icon {
-  font-size: 28rpx;
-}
-
-.subscribe-tip {
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.7);
-  margin-left: 16rpx;
 }
