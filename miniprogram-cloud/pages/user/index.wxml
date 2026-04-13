@@ -6,7 +6,7 @@
       <!-- 点击头像可以编辑 -->
       <image 
         class="user-avatar" 
-        src="{{userInfo.avatar || '/images/default-avatar.png'}}" 
+        src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" 
         mode="aspectFill"
         bindtap="handleAvatarClick"
       ></image>

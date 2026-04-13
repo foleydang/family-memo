@@ -5,7 +5,7 @@ Page({
   data: {
     userInfo: null,
     nickname: '',
-    avatar: '',
+    avatarUrl: '',
     isSaving: false
   },
 
@@ -18,7 +18,7 @@ Page({
     this.setData({
       userInfo,
       nickname: userInfo.nickname || '',
-      avatar: userInfo.avatar || ''
+      avatarUrl: userInfo.avatarUrl || ''
     })
   },
 
@@ -28,28 +28,38 @@ Page({
     console.log('选择的头像:', avatarUrl)
     
     // 显示临时头像
-    this.setData({ avatar: avatarUrl })
+    this.setData({ avatarUrl: avatarUrl })
     
     // 上传到云存储
     this.uploadAvatar(avatarUrl)
   },
 
-  // 上传头像到云存储
+  // 上传头像到云存储，获取永久 CDN URL
   async uploadAvatar(tempFilePath) {
     wx.showLoading({ title: '上传中...' })
     
     try {
       // 云存储上传
-      const res = await wx.cloud.uploadFile({
+      const uploadRes = await wx.cloud.uploadFile({
         cloudPath: `avatars/${app.globalData.userId}_${Date.now()}.jpg`,
         filePath: tempFilePath
       })
       
-      wx.hideLoading()
-      
-      if (res.fileID) {
-        // 更新头像为云存储地址
-        this.setData({ avatar: res.fileID })
+      if (uploadRes.fileID) {
+        // 获取临时 URL，去掉签名参数得到永久 CDN URL
+        const urlRes = await wx.cloud.getTempFileURL({
+          fileList: [uploadRes.fileID]
+        })
+        
+        wx.hideLoading()
+        
+        // 永久 CDN URL（去掉 ?sign=xxx 签名参数）
+        const tempUrl = urlRes.fileList[0]?.tempFileURL || ''
+        const permanentUrl = tempUrl.split('?')[0]  // 去掉签名参数
+        
+        console.log('永久头像URL:', permanentUrl)
+        
+        this.setData({ avatarUrl: permanentUrl })
         wx.showToast({ title: '上传成功', icon: 'success' })
       }
     } catch (err) {
@@ -66,7 +76,7 @@ Page({
 
   // 保存资料
   async handleSave() {
-    const { nickname, avatar } = this.data
+    const { nickname, avatarUrl } = this.data
     
     if (!nickname.trim()) {
       return wx.showToast({ title: '请输入昵称', icon: 'none' })
@@ -82,7 +92,7 @@ Page({
           action: 'update',
           data: {
             nickname: nickname.trim(),
-            avatar: avatar
+            avatarUrl: avatarUrl  // 只存永久 URL
           }
         }
       })
@@ -93,7 +103,7 @@ Page({
         // 更新全局用户信息
         if (app.globalData.userInfo) {
           app.globalData.userInfo.nickname = nickname.trim()
-          app.globalData.userInfo.avatar = avatar
+          app.globalData.userInfo.avatarUrl = avatarUrl
         }
         
         wx.showToast({ title: '保存成功', icon: 'success' })

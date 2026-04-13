@@ -21,14 +21,12 @@ Page({
   },
 
   onShow() {
-    // 每次显示时重新加载
     if (!this.data.loading) {
       this.loadFamilyInfo()
     }
   },
 
   async initPage() {
-    // 等待登录完成
     if (!app.globalData.userInfo) {
       await new Promise(resolve => {
         const checkTimer = setInterval(() => {
@@ -49,10 +47,8 @@ Page({
   },
 
   async loadFamilyInfo() {
-    // 从 globalData 获取
     let familyInfo = app.globalData.familyInfo
     
-    // 如果 globalData 没有，尝试从云端获取
     if (!familyInfo && app.globalData.userInfo) {
       try {
         const res = await wx.cloud.callFunction({
@@ -90,7 +86,6 @@ Page({
       
       if (res.result.success) {
         const members = res.result.data
-        // 检查当前用户是否是管理员
         const currentUserId = app.globalData.userId
         const adminMember = members.find(m => m.role === 'admin')
         const isAdmin = adminMember && adminMember._id === currentUserId
@@ -147,8 +142,6 @@ Page({
       if (res.result.success) {
         wx.showToast({ title: '创建成功', icon: 'success' })
         this.hideCreateModal()
-        
-        // 重新获取家庭信息
         await app.getFamilyInfo()
         this.setData({ familyInfo: app.globalData.familyInfo })
         await this.loadMembers()
@@ -183,8 +176,6 @@ Page({
       if (res.result.success) {
         wx.showToast({ title: '加入成功', icon: 'success' })
         this.hideJoinModal()
-        
-        // 重新获取家庭信息
         await app.getFamilyInfo()
         this.setData({ familyInfo: app.globalData.familyInfo })
         await this.loadMembers()
@@ -198,7 +189,6 @@ Page({
     }
   },
 
-  // 生成邀请码
   async generateInviteCode() {
     if (!this.data.familyInfo) return
     
@@ -228,7 +218,6 @@ Page({
     }
   },
 
-  // 复制邀请码
   copyInviteCode() {
     const code = this.data.familyInfo?.inviteCode
     if (!code) {
@@ -243,7 +232,6 @@ Page({
     })
   },
 
-  // 分享邀请码
   shareInvite() {
     const code = this.data.familyInfo?.inviteCode
     if (!code) {
@@ -251,7 +239,6 @@ Page({
     }
   },
 
-  // 退出家庭
   async leaveFamily() {
     const isAdmin = this.data.isAdmin
     

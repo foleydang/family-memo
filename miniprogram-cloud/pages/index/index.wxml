@@ -11,7 +11,7 @@
   <!-- 欢迎卡片 -->
   <view class="welcome-card card fade-in" wx:elif="{{userInfo}}">
     <view class="welcome-header">
-      <image class="avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <image class="avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
       <view class="welcome-text">
         <view class="greeting">{{greeting}}，</view>
         <view class="nickname">{{userInfo.nickname || '亲爱的'}} 💕</view>
@@ -53,7 +53,7 @@
     </view>
     <view class="family-members" wx:if="{{members.length > 0}}">
       <view class="member" wx:for="{{members}}" wx:key="_id">
-        <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}"></image>
+        <image class="member-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}"></image>
         <text class="member-name">{{item.nickname || '成员'}}</text>
       </view>
       <view class="member add-member" catchtap="goToFamily">

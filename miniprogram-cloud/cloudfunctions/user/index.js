@@ -23,7 +23,16 @@ async function getUser(openid) {
   try {
     const res = await db.collection('users').where({ openid }).get()
     if (res.data.length > 0) {
-      return { success: true, data: res.data[0] }
+      const user = res.data[0]
+      return { 
+        success: true, 
+        data: {
+          userId: user._id,
+          openid: user.openid,
+          nickname: user.nickname,
+          avatarUrl: user.avatarUrl || ''  // 只返回永久 URL
+        }
+      }
     }
     return { success: false, message: '用户不存在' }
   } catch (err) {
@@ -39,12 +48,18 @@ async function updateUser(openid, data) {
     }
     
     const userId = userRes.data[0]._id
+    
+    const updateData = {
+      nickname: data.nickname,
+      updateTime: db.serverDate()
+    }
+    
+    if (data.avatarUrl) {
+      updateData.avatarUrl = data.avatarUrl
+    }
+    
     await db.collection('users').doc(userId).update({
-      data: {
-        nickname: data.nickname,
-        avatar: data.avatar,
-        updateTime: db.serverDate()
-      }
+      data: updateData
     })
     
     return { success: true, message: '更新成功' }

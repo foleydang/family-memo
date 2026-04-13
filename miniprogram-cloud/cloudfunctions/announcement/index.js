@@ -62,7 +62,7 @@ async function addAnnouncement(openid, data) {
         content: data.content.trim(),
         authorId: user._id,
         authorName: user.nickname || '成员',
-        authorAvatar: user.avatar || '',
+        authorAvatar: user.avatarUrl || '',
         createTime: db.serverDate()
       }
     })
