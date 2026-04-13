@@ -87,6 +87,7 @@ Page({
     this.setData({ stats: { pending, doing, done } })
   },
 
+  // 排序和过滤列表
   updateFilteredList() {
     let list = this.data.todos.map(item => {
       const assignee = this.data.members.find(m => m._id === item.assigneeId)
@@ -94,39 +95,86 @@ Page({
         ...item,
         assigneeName: assignee ? (assignee.nickname || '成员') : '',
         assigneeAvatar: assignee ? assignee.avatarUrl : '',
-        createTime: this.formatTime(item.createTime)
+        timeDisplay: this.formatTimeDisplay(item)
       }
     })
+    
+    // 按状态过滤
     if (this.data.currentTab !== 'all') {
       list = list.filter(i => i.status === this.data.currentTab)
+    } else {
+      // 全部页面时排序：pending > doing > done，同状态按时间排序
+      list = this.sortTodos(list)
     }
+    
     this.setData({ filteredList: list })
   },
 
-  formatTime(time) {
+  // 排序逻辑：pending优先，doing其次，done最后；同状态按修改时间倒序
+  sortTodos(list) {
+    // 状态优先级：pending=0, doing=1, done=2
+    const statusPriority = { pending: 0, doing: 1, done: 2 }
+    
+    return list.sort((a, b) => {
+      // 先按状态排序
+      const statusDiff = (statusPriority[a.status] || 2) - (statusPriority[b.status] || 2)
+      if (statusDiff !== 0) return statusDiff
+      
+      // 同状态按时间排序（用 updateTime 或 createTime）
+      const timeA = a.updateTime || a.doneTime || a.createTime
+      const timeB = b.updateTime || b.doneTime || b.createTime
+      
+      // pending/doing 按创建时间倒序（新的在前）
+      // done 按完成时间倒序（最近完成的在前）
+      if (a.status === 'done') {
+        return new Date(timeB) - new Date(timeA)  // done: 最近完成的在前
+      } else {
+        return new Date(timeB) - new Date(timeA)  // pending/doing: 新的在前
+      }
+    })
+  },
+
+  // 时间显示格式
+  formatTimeDisplay(item) {
+    const status = item.status
+    
+    // done 状态显示完成时间
+    if (status === 'done' && item.doneTime) {
+      return '完成于 ' + this.formatShortTime(item.doneTime)
+    }
+    
+    // 其他状态显示创建时间
+    if (item.createTime) {
+      return this.formatShortTime(item.createTime)
+    }
+    
+    return ''
+  },
+
+  formatShortTime(time) {
     if (!time) return ''
     const date = new Date(time)
     const now = new Date()
     const diff = now - date
     
-    // 一天内显示"今天 HH:mm"
-    if (diff < 24 * 60 * 60 * 1000) {
-      const h = String(date.getHours()).padStart(2, '0')
-      const m = String(date.getMinutes()).padStart(2, '0')
-      return `今天 ${h}:${m}`
+    if (diff < 60 * 60 * 1000) {
+      const mins = Math.floor(diff / (60 * 1000))
+      return mins <= 1 ? '刚刚' : `${mins}分钟前`
     }
     
-    // 一周内显示"X天前"
+    if (diff < 24 * 60 * 60 * 1000) {
+      const hours = Math.floor(diff / (60 * 60 * 1000))
+      return `${hours}小时前`
+    }
+    
     if (diff < 7 * 24 * 60 * 60 * 1000) {
       const days = Math.floor(diff / (24 * 60 * 60 * 1000))
       return `${days}天前`
     }
     
-    // 其他显示日期
-    const y = date.getFullYear()
-    const mon = String(date.getMonth() + 1).padStart(2, '0')
+    const m = String(date.getMonth() + 1).padStart(2, '0')
     const d = String(date.getDate()).padStart(2, '0')
-    return `${y}-${mon}-${d}`
+    return `${m}-${d}`
   },
 
   async loadTodos() {
@@ -225,7 +273,7 @@ Page({
             description: this.data.formData.description,
             priority: this.data.formData.priority,
             assigneeId: this.data.formData.assigneeId,
-            sendNotify: this.data.formData.assigneeId ? true : false  // 有指派人时发送通知
+            sendNotify: this.data.formData.assigneeId ? true : false
           }
         }
       })
@@ -251,9 +299,15 @@ Page({
     const statusFlow = { pending: 'doing', doing: 'done', done: 'pending' }
     const newStatus = statusFlow[item.status]
     
+    // 本地先更新
     const todos = this.data.todos.map(t => {
       if (t._id === item._id) {
-        return { ...t, status: newStatus }
+        return { 
+          ...t, 
+          status: newStatus,
+          updateTime: new Date().toISOString(),
+          doneTime: newStatus === 'done' ? new Date().toISOString() : null
+        }
       }
       return t
     })

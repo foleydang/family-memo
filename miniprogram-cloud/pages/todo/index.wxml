@@ -28,35 +28,29 @@
   <view class="todo-list">
     <block wx:for="{{filteredList}}" wx:key="_id">
       <view class="todo-card {{item.status}}">
-        <!-- 顶部标签行 -->
-        <view class="todo-header">
-          <view class="status-badge {{item.status}}">
-            <text>{{item.status === 'pending' ? '待处理' : item.status === 'doing' ? '进行中' : '已完成'}}</text>
-          </view>
-          <view wx:if="{{item.priority > 0}}" class="priority-badge {{item.priority === 2 ? 'urgent' : 'important'}}">
-            {{item.priority === 2 ? '🔥紧急' : '⭐重要'}}
-          </view>
+        <!-- 状态图标 -->
+        <view class="todo-status {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
+          <text wx:if="{{item.status === 'done'}}">✓</text>
+          <text wx:elif="{{item.status === 'doing'}}">◐</text>
+          <text wx:else>○</text>
         </view>
         
         <!-- 内容区 -->
-        <view class="todo-body" bindtap="toggleItem" data-item="{{item}}">
-          <view class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</view>
-          <view wx:if="{{item.description}}" class="todo-desc">{{item.description}}</view>
-        </view>
-        
-        <!-- 底部信息行 -->
-        <view class="todo-footer">
-          <!-- 指派成员 -->
-          <view class="assignee-info" wx:if="{{item.assigneeName}}">
-            <image class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
-            <text class="assignee-name">{{item.assigneeName}}</text>
+        <view class="todo-content">
+          <view class="todo-title-row">
+            <text class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text>
+            <text wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
+              {{item.priority === 2 ? '🔥' : '⭐'}}
+            </text>
           </view>
-          <view class="assignee-info empty" wx:else>
-            <text class="no-assignee">未指派</text>
+          <view class="todo-meta">
+            <view class="assignee-info" wx:if="{{item.assigneeName}}">
+              <image class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+              <text>{{item.assigneeName}}</text>
+            </view>
+            <text wx:else class="assignee-info">未指派</text>
+            <text>{{item.timeDisplay}}</text>
           </view>
-          
-          <!-- 创建时间 -->
-          <text class="create-time">{{item.createTime}}</text>
         </view>
         
         <!-- 操作按钮 -->

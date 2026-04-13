@@ -2,7 +2,6 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
-// 备忘录任务提醒模板ID
 const TODO_ASSIGN_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
 
 exports.main = async (event, context) => {
@@ -54,11 +53,11 @@ async function addItem(openid, data) {
         assigneeId: data.assigneeId || null,
         status: 'pending',
         createdBy: userId,
-        createTime: db.serverDate()
+        createTime: db.serverDate(),
+        updateTime: db.serverDate()
       }
     })
     
-    // 发送通知给被指派的成员
     if (data.assigneeId && data.sendNotify) {
       await sendAssignNotify(data.assigneeId, data.title, data.description, creatorName)
     }
@@ -80,11 +79,11 @@ async function updateItem(openid, data) {
         description: data.description,
         dueDate: data.dueDate,
         priority: data.priority,
-        assigneeId: data.assigneeId
+        assigneeId: data.assigneeId,
+        updateTime: db.serverDate()
       }
     })
     
-    // 如果指派人变了，发送通知给新指派人
     if (data.assigneeId && data.assigneeId !== oldAssigneeId && data.sendNotify) {
       const userRes = await db.collection('users').where({ openid }).get()
       const creatorName = userRes.data[0]?.nickname || '成员'
@@ -113,6 +112,7 @@ async function toggleItem(data) {
     await db.collection('todos').doc(data._id).update({
       data: {
         status: newStatus,
+        updateTime: db.serverDate(),
         doneTime: newStatus === 'done' ? db.serverDate() : null
       }
     })
@@ -122,24 +122,15 @@ async function toggleItem(data) {
   }
 }
 
-// 发送待办指派通知
-// 模板字段：创建人(thing6)、任务名称(thing1)、备注(thing10)
 async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
   try {
     const assigneeRes = await db.collection('users').doc(assigneeId).get()
-    if (!assigneeRes.data || !assigneeRes.data.openid) {
-      console.log('找不到被指派人')
-      return
-    }
+    if (!assigneeRes.data || !assigneeRes.data.openid) return
     
     const openid = assigneeRes.data.openid
     
-    // 字段处理（订阅消息有字数限制）
-    // 创建人(thing6): 最多20个字符
     const creator = creatorName.length > 20 ? creatorName.substring(0, 20) : creatorName
-    // 任务名称(thing1): 最多20个字符
     const title = todoTitle.length > 20 ? todoTitle.substring(0, 20) : todoTitle
-    // 备注(thing10): 最多20个字符
     const remark = (todoDesc && todoDesc.trim().length > 0) 
       ? (todoDesc.length > 20 ? todoDesc.substring(0, 20) : todoDesc) 
       : '无'
@@ -149,9 +140,9 @@ async function sendAssignNotify(assigneeId, todoTitle, todoDesc, creatorName) {
         touser: openid,
         page: 'pages/todo/index',
         data: {
-          thing6: { value: creator },   // 创建人
-          thing1: { value: title },     // 任务名称
-          thing10: { value: remark }    // 备注
+          thing6: { value: creator },
+          thing1: { value: title },
+          thing10: { value: remark }
         },
         templateId: TODO_ASSIGN_TEMPLATE_ID,
         miniprogramState: 'developer'
