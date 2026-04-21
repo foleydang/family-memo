@@ -1,6 +1,15 @@
 // pages/user/index.js - 云开发版本
 const app = getApp()
 
+const DEFAULT_AVATAR = '/images/default-avatar.png'
+
+function getValidAvatar(url) {
+  if (!url) return DEFAULT_AVATAR
+  if (url.startsWith('cloud://')) return null
+  if (url.startsWith('https://') && url.includes('?')) return url
+  return DEFAULT_AVATAR
+}
+
 Page({
   data: {
     userInfo: null,
@@ -28,10 +37,32 @@ Page({
   },
 
   loadUserInfo() {
+    const userInfo = app.globalData.userInfo
+    
+    // 处理头像
+    if (userInfo) {
+      userInfo._displayAvatar = getValidAvatar(userInfo.avatarUrl) || DEFAULT_AVATAR
+      // 如果需要转换 cloud:// 头像
+      if (userInfo.avatarUrl && userInfo.avatarUrl.startsWith('cloud://')) {
+        this.convertAvatar(userInfo.avatarUrl)
+      }
+    }
+    
     this.setData({
-      userInfo: app.globalData.userInfo,
+      userInfo,
       familyInfo: app.globalData.familyInfo
     })
+  },
+
+  async convertAvatar(fileID) {
+    try {
+      const res = await wx.cloud.getTempFileURL({ fileList: [fileID] })
+      if (res.fileList?.[0]?.status === 0) {
+        this.setData({ 'userInfo._displayAvatar': res.fileList[0].tempFileURL })
+      }
+    } catch (err) {
+      console.error('转换头像失败:', err)
+    }
   },
 
   async loadStats() {
@@ -92,14 +123,12 @@ Page({
       content: '退出登录后需要重新登录',
       success: (res) => {
         if (res.confirm) {
-          // 清除登录状态
           app.logout()
           this.setData({
             userInfo: null,
             familyInfo: null,
             stats: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
           })
-          // 跳转到首页重新登录
           wx.switchTab({ url: '/pages/index/index' })
         }
       }
