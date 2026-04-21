@@ -22,7 +22,7 @@ Page({
     if (displayUrl && displayUrl.startsWith('cloud://')) {
       displayUrl = userInfo._avatarUrlTemp || ''
       // 异步转换
-      this.convertAvatarUrl(displayUrl)
+      this.convertAvatarUrl(userInfo.avatarUrl)
     }
     
     this.setData({
@@ -54,41 +54,19 @@ Page({
   // 选择头像（微信新版授权方式）
   onChooseAvatar(e) {
     const { avatarUrl } = e.detail
-    console.log('选择的头像临时路径:', avatarUrl)
+    console.log('选择的头像:', avatarUrl)
     
-    // 先显示临时头像
+    // 显示临时头像
     this.setData({ avatarUrl })
     
-    // 压缩后上传
-    this.compressAndUpload(avatarUrl)
-  },
-
-  // 压缩图片然后上传
-  async compressAndUpload(tempFilePath) {
-    wx.showLoading({ title: '处理中...', mask: true })
-    
-    try {
-      // 压缩图片 - 限制宽度 200px，质量 80%，适合头像
-      const compressRes = await wx.compressImage({
-        src: tempFilePath,
-        quality: 80,
-        compressedWidth: 200
-      })
-      
-      console.log('压缩后路径:', compressRes.tempFilePath)
-      
-      // 上传压缩后的图片
-      await this.uploadToCloud(compressRes.tempFilePath)
-      
-    } catch (err) {
-      // 压缩失败，直接上传原图
-      console.log('压缩失败，直接上传原图:', err.message)
-      await this.uploadToCloud(tempFilePath)
-    }
+    // 直接上传，不压缩（微信头像本身就很小）
+    this.uploadToCloud(avatarUrl)
   },
 
   // 上传到云存储
   async uploadToCloud(filePath) {
+    wx.showLoading({ title: '上传中...', mask: true })
+    
     const cloudPath = `avatars/${app.globalData.userId}_${Date.now()}.jpg`
     
     try {
@@ -103,17 +81,24 @@ Page({
         const fileID = uploadRes.fileID
         console.log('上传成功:', fileID)
         
+        // 存储 fileID
         this.setData({ avatarFileID: fileID })
         
         wx.showToast({ title: '上传成功', icon: 'success' })
         
-        // 获取临时 URL 用于显示
+        // 异步获取临时 URL 用于显示（不阻塞）
         this.convertAvatarUrl(fileID)
       }
     } catch (err) {
       wx.hideLoading()
       console.error('上传失败:', err)
-      wx.showToast({ title: '上传失败', icon: 'none', duration: 2000 })
+      
+      // 超时或失败，让用户可以继续编辑
+      wx.showModal({
+        title: '上传失败',
+        content: '网络可能较慢，请点击保存后再试，或稍后重新设置头像',
+        showCancel: false
+      })
     }
   },
 
@@ -124,11 +109,15 @@ Page({
 
   // 保存资料
   async handleSave() {
-    const { nickname, avatarFileID } = this.data
+    const { nickname, avatarFileID, avatarUrl } = this.data
     
     if (!nickname.trim()) {
       return wx.showToast({ title: '请输入昵称', icon: 'none' })
     }
+    
+    // 如果头像还没上传成功（avatarFileID 为空但 avatarUrl 是本地临时路径）
+    // 就不保存头像，只保存昵称
+    const saveAvatarUrl = avatarFileID || ''
     
     this.setData({ isSaving: true })
     wx.showLoading({ title: '保存中...' })
@@ -140,7 +129,7 @@ Page({
           action: 'update',
           data: {
             nickname: nickname.trim(),
-            avatarUrl: avatarFileID  // 存储 cloud:// 格式
+            avatarUrl: saveAvatarUrl
           }
         }
       })
@@ -150,7 +139,9 @@ Page({
       if (res.result.success) {
         if (app.globalData.userInfo) {
           app.globalData.userInfo.nickname = nickname.trim()
-          app.globalData.userInfo.avatarUrl = avatarFileID
+          if (saveAvatarUrl) {
+            app.globalData.userInfo.avatarUrl = saveAvatarUrl
+          }
         }
         
         wx.showToast({ title: '保存成功', icon: 'success' })
