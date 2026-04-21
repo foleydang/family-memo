@@ -10,7 +10,7 @@ const DEFAULT_AVATAR = '/images/default-avatar.png'
 function getValidAvatar(url) {
   if (!url) return DEFAULT_AVATAR
   // 有效格式：cloud:// 开头，或 https:// 开头且包含签名（有 ?sign=）
-  if (url.startsWith('cloud://')) return url  // 需要转换，但至少是有效格式
+  if (url.startsWith('cloud://')) return DEFAULT_AVATAR  // 需要转换，先显示默认头像，但至少是有效格式
   if (url.startsWith('https://') && url.includes('?')) return url  // 有签名的临时 URL
   // 无效格式（之前存的去掉签名的 URL），返回默认头像
   return DEFAULT_AVATAR

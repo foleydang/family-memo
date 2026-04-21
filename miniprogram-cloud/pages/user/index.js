@@ -5,7 +5,7 @@ const DEFAULT_AVATAR = '/images/default-avatar.png'
 
 function getValidAvatar(url) {
   if (!url) return DEFAULT_AVATAR
-  if (url.startsWith('cloud://')) return null
+  if (url.startsWith('cloud://')) return DEFAULT_AVATAR  // 需要转换，先显示默认头像
   if (url.startsWith('https://') && url.includes('?')) return url
   return DEFAULT_AVATAR
 }
