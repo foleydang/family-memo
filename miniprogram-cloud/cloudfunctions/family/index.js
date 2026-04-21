@@ -129,15 +129,52 @@ async function getMembers(data) {
     const memberRes = await db.collection('family_members').where({ familyId }).get()
     
     const members = []
+    const cloudAvatarIds = [] // 需要转换的云存储头像
+    
     for (const member of memberRes.data) {
       const userRes = await db.collection('users').doc(member.userId).get()
       if (userRes.data) {
-        members.push({
+        const userData = {
           ...userRes.data,
           _id: userRes.data._id,
           role: member.role,
           joinTime: member.joinTime
+        }
+        members.push(userData)
+        
+        // 收集需要转换的云存储头像
+        if (userData.avatarUrl && userData.avatarUrl.startsWith('cloud://')) {
+          cloudAvatarIds.push(userData.avatarUrl)
+        }
+      }
+    }
+    
+    // 批量转换云存储头像为临时链接
+    if (cloudAvatarIds.length > 0) {
+      try {
+        const tempUrlRes = await cloud.getTempFileURL({
+          fileList: cloudAvatarIds
         })
+        
+        // 建立映射关系
+        const urlMap = {}
+        if (tempUrlRes.fileList) {
+          for (const item of tempUrlRes.fileList) {
+            if (item.status === 0 && item.tempFileURL) {
+              urlMap[item.fileID] = item.tempFileURL
+            }
+          }
+        }
+        
+        // 替换成员头像 URL
+        for (const member of members) {
+          if (member.avatarUrl && urlMap[member.avatarUrl]) {
+            member.avatarUrl = urlMap[member.avatarUrl]
+          }
+        }
+      } catch (err) {
+        console.error('转换头像URL失败:', err)
+        // 失败不影响整体返回，头像可能显示不了但不报错
       }
     }
     

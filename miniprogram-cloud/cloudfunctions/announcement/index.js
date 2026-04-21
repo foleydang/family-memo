@@ -28,6 +28,37 @@ async function getList(familyId) {
       .limit(50)
       .get()
     
+    // 收集所有云存储头像
+    const cloudAvatarIds = []
+    for (const item of res.data) {
+      if (item.authorAvatar && item.authorAvatar.startsWith('cloud://')) {
+        cloudAvatarIds.push(item.authorAvatar)
+      }
+    }
+    
+    // 批量转换云存储头像
+    if (cloudAvatarIds.length > 0) {
+      try {
+        const urlRes = await cloud.getTempFileURL({ fileList: cloudAvatarIds })
+        const urlMap = {}
+        if (urlRes.fileList) {
+          for (const item of urlRes.fileList) {
+            if (item.status === 0 && item.tempFileURL) {
+              urlMap[item.fileID] = item.tempFileURL
+            }
+          }
+        }
+        // 替换头像 URL
+        for (const item of res.data) {
+          if (item.authorAvatar && urlMap[item.authorAvatar]) {
+            item.authorAvatar = urlMap[item.authorAvatar]
+          }
+        }
+      } catch (err) {
+        console.error('转换公告头像URL失败:', err)
+      }
+    }
+    
     return { success: true, data: res.data }
   } catch (err) {
     console.error('获取公告失败:', err)
@@ -55,7 +86,7 @@ async function addAnnouncement(openid, data) {
       return { success: false, message: '你不是该家庭成员' }
     }
     
-    // 创建公告
+    // 创建公告（存储 cloud:// 格式头像）
     const res = await db.collection('announcements').add({
       data: {
         familyId: data.familyId,

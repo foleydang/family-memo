@@ -24,13 +24,27 @@ async function getUser(openid) {
     const res = await db.collection('users').where({ openid }).get()
     if (res.data.length > 0) {
       const user = res.data[0]
+      
+      // 转换云存储头像为临时 URL
+      let avatarUrl = user.avatarUrl || ''
+      if (avatarUrl && avatarUrl.startsWith('cloud://')) {
+        try {
+          const urlRes = await cloud.getTempFileURL({ fileList: [avatarUrl] })
+          if (urlRes.fileList && urlRes.fileList[0]?.status === 0) {
+            avatarUrl = urlRes.fileList[0].tempFileURL
+          }
+        } catch (err) {
+          console.error('转换头像URL失败:', err)
+        }
+      }
+      
       return { 
         success: true, 
         data: {
           userId: user._id,
           openid: user.openid,
           nickname: user.nickname,
-          avatarUrl: user.avatarUrl || ''  // 只返回永久 URL
+          avatarUrl: avatarUrl
         }
       }
     }
@@ -55,7 +69,7 @@ async function updateUser(openid, data) {
     }
     
     if (data.avatarUrl) {
-      updateData.avatarUrl = data.avatarUrl
+      updateData.avatarUrl = data.avatarUrl  // 存储 cloud:// 格式
     }
     
     await db.collection('users').doc(userId).update({

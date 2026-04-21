@@ -34,7 +34,7 @@ Page({
     this.uploadAvatar(avatarUrl)
   },
 
-  // 上传头像到云存储，获取永久 CDN URL
+  // 上传头像到云存储，存储 cloud:// 格式的 fileID
   async uploadAvatar(tempFilePath) {
     wx.showLoading({ title: '上传中...' })
     
@@ -46,20 +46,32 @@ Page({
       })
       
       if (uploadRes.fileID) {
-        // 获取临时 URL，去掉签名参数得到永久 CDN URL
-        const urlRes = await wx.cloud.getTempFileURL({
-          fileList: [uploadRes.fileID]
-        })
-        
         wx.hideLoading()
         
-        // 永久 CDN URL（去掉 ?sign=xxx 签名参数）
+        // 存储 cloud:// 格式的 fileID（不是临时 URL）
+        // 显示时需要通过 getTempFileURL 转换
+        const cloudFileID = uploadRes.fileID
+        
+        console.log('头像云存储ID:', cloudFileID)
+        
+        // 获取临时 URL 用于立即显示
+        const urlRes = await wx.cloud.getTempFileURL({
+          fileList: [cloudFileID]
+        })
         const tempUrl = urlRes.fileList[0]?.tempFileURL || ''
-        const permanentUrl = tempUrl.split('?')[0]  // 去掉签名参数
         
-        console.log('永久头像URL:', permanentUrl)
+        // 更新显示（临时 URL 用于显示）
+        // 但存储的是 cloud:// fileID
+        this.setData({ 
+          avatarUrl: cloudFileID  // 存储 cloud:// 格式
+        })
         
-        this.setData({ avatarUrl: permanentUrl })
+        // 更新全局用户信息，用临时 URL 显示
+        if (app.globalData.userInfo) {
+          app.globalData.userInfo.avatarUrl = cloudFileID
+          app.globalData.userInfo._avatarUrlTemp = tempUrl  // 临时 URL 用于显示
+        }
+        
         wx.showToast({ title: '上传成功', icon: 'success' })
       }
     } catch (err) {
@@ -92,7 +104,7 @@ Page({
           action: 'update',
           data: {
             nickname: nickname.trim(),
-            avatarUrl: avatarUrl  // 只存永久 URL
+            avatarUrl: avatarUrl  // 存储 cloud:// 格式
           }
         }
       })

@@ -22,14 +22,44 @@ async function getFamilyStats(familyId) {
     
     // 获取成员详细信息
     const users = []
+    const cloudAvatarIds = []
+    
     for (const memberId of memberIds) {
       const userRes = await db.collection('users').doc(memberId).get()
       if (userRes.data) {
-        users.push({
+        const userData = {
           _id: userRes.data._id,
           nickname: userRes.data.nickname || '成员',
           avatarUrl: userRes.data.avatarUrl || ''
-        })
+        }
+        users.push(userData)
+        
+        // 收集云存储头像
+        if (userData.avatarUrl && userData.avatarUrl.startsWith('cloud://')) {
+          cloudAvatarIds.push(userData.avatarUrl)
+        }
+      }
+    }
+    
+    // 批量转换云存储头像
+    if (cloudAvatarIds.length > 0) {
+      try {
+        const urlRes = await cloud.getTempFileURL({ fileList: cloudAvatarIds })
+        const urlMap = {}
+        if (urlRes.fileList) {
+          for (const item of urlRes.fileList) {
+            if (item.status === 0 && item.tempFileURL) {
+              urlMap[item.fileID] = item.tempFileURL
+            }
+          }
+        }
+        for (const user of users) {
+          if (user.avatarUrl && urlMap[user.avatarUrl]) {
+            user.avatarUrl = urlMap[user.avatarUrl]
+          }
+        }
+      } catch (err) {
+        console.error('转换统计头像URL失败:', err)
       }
     }
     
@@ -59,7 +89,7 @@ async function getFamilyStats(familyId) {
       stats.push({
         userId: user._id,
         nickname: user.nickname,
-        avatarUrl: user.avatarUrl,
+        avatarUrl: user.avatarUrl,  // 已转换的临时 URL
         todoTotal,
         todoDone: todoDoneCount,
         todoRate,
