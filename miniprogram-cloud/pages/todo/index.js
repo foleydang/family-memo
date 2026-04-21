@@ -2,6 +2,14 @@
 const app = getApp()
 
 const TODO_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
+const DEFAULT_AVATAR = '/images/default-avatar.png'
+
+function getValidAvatar(url) {
+  if (!url) return DEFAULT_AVATAR
+  if (url.startsWith('cloud://')) return DEFAULT_AVATAR
+  if (url.startsWith('https://') && url.includes('?')) return url
+  return DEFAULT_AVATAR
+}
 
 Page({
   data: {
@@ -53,7 +61,6 @@ Page({
     this.setData({ subscribed })
   },
 
-  // 订阅提醒（每个人订阅发给自己的消息）
   requestSubscribe(callback) {
     wx.requestSubscribeMessage({
       tmplIds: [TODO_TEMPLATE_ID],
@@ -113,7 +120,7 @@ Page({
       return {
         ...item,
         assigneeName: assignee ? (assignee.nickname || '成员') : '',
-        assigneeAvatar: assignee ? assignee.avatarUrl : '',
+        assigneeAvatar: assignee ? getValidAvatar(assignee.avatarUrl) : '',
         timeDisplay: this.formatTimeDisplay(item)
       }
     })
@@ -207,18 +214,15 @@ Page({
     })
   },
 
-  // 提交表单：指派给自己时弹出订阅框
   async submitForm() {
     if (!this.data.formData.title.trim()) return wx.showToast({ title: '请输入内容', icon: 'none' })
     
     const myUserId = app.globalData.userId
     if (this.data.formData.assigneeId === myUserId) {
-      // 指派给自己，弹出订阅框
       this.requestSubscribe(async () => {
         await this.doSubmit()
       })
     } else {
-      // 指派给别人，直接保存
       await this.doSubmit()
     }
   },
@@ -249,7 +253,6 @@ Page({
         this.hideModal()
         this.loadTodos()
         
-        // 显示通知结果
         if (this.data.formData.assigneeId) {
           const notifySent = res.result.notifySent
           const notifyMsg = res.result.notifyMessage
@@ -257,7 +260,6 @@ Page({
           if (notifySent) {
             wx.showToast({ title: notifyMsg || '已发送提醒', icon: 'success' })
           } else if (notifyMsg) {
-            // 未发送，提示原因
             wx.showModal({
               title: '提醒未发送',
               content: notifyMsg,

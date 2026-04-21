@@ -1,49 +1,43 @@
 // pages/announcement/index.js - 云开发版本
 const app = getApp()
 
+const DEFAULT_AVATAR = '/images/default-avatar.png'
+
+function getValidAvatar(url) {
+  if (!url) return DEFAULT_AVATAR
+  if (url.startsWith('cloud://')) return DEFAULT_AVATAR
+  if (url.startsWith('https://') && url.includes('?')) return url
+  return DEFAULT_AVATAR
+}
+
 Page({
   data: {
     familyId: null,
     announcements: [],
     showModal: false,
-    formData: {
-      content: ''
-    },
+    formData: { content: '' },
     loading: false
   },
 
-  onLoad() {
-    this.initPage()
-  },
+  onLoad() { this.initPage() },
 
   onShow() {
-    if (this.data.familyId) {
-      this.loadAnnouncements()
-    }
+    if (this.data.familyId) this.loadAnnouncements()
   },
 
   async initPage() {
-    // 等待登录和家庭信息
     if (!app.globalData.userInfo) {
       await new Promise(resolve => {
         const timer = setInterval(() => {
-          if (app.globalData.userInfo) {
-            clearInterval(timer)
-            resolve()
-          }
+          if (app.globalData.userInfo) { clearInterval(timer); resolve() }
         }, 100)
-        setTimeout(() => {
-          clearInterval(timer)
-          resolve()
-        }, 3000)
+        setTimeout(() => { clearInterval(timer); resolve() }, 3000)
       })
     }
     
     if (!app.globalData.familyInfo) {
       wx.showToast({ title: '请先加入家庭', icon: 'none' })
-      setTimeout(() => {
-        wx.navigateBack()
-      }, 1500)
+      setTimeout(() => wx.navigateBack(), 1500)
       return
     }
     
@@ -52,9 +46,7 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.loadAnnouncements().then(() => {
-      wx.stopPullDownRefresh()
-    })
+    this.loadAnnouncements().then(() => wx.stopPullDownRefresh())
   },
 
   async loadAnnouncements() {
@@ -65,17 +57,14 @@ Page({
     try {
       const res = await wx.cloud.callFunction({
         name: 'announcement',
-        data: {
-          action: 'list',
-          data: { familyId: this.data.familyId }
-        }
+        data: { action: 'list', data: { familyId: this.data.familyId } }
       })
       
       if (res.result.success) {
-        // 格式化时间显示
         const announcements = (res.result.data || []).map(item => ({
           ...item,
-          displayTime: this.formatTime(item.createTime)
+          displayTime: this.formatTime(item.createTime),
+          authorAvatar: getValidAvatar(item.authorAvatar)
         }))
         this.setData({ announcements, loading: false })
       } else {
@@ -90,51 +79,29 @@ Page({
   formatTime(time) {
     if (!time) return ''
     const date = new Date(time)
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const hour = String(date.getHours()).padStart(2, '0')
-    const minute = String(date.getMinutes()).padStart(2, '0')
-    return `${month}/${day} ${hour}:${minute}`
+    return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
   },
 
   showAddModal() {
-    this.setData({
-      showModal: true,
-      formData: { content: '' }
-    })
+    this.setData({ showModal: true, formData: { content: '' } })
   },
 
-  hideModal() {
-    this.setData({ showModal: false })
-  },
+  hideModal() { this.setData({ showModal: false }) },
 
-  inputContent(e) {
-    this.setData({ 'formData.content': e.detail.value })
-  },
+  inputContent(e) { this.setData({ 'formData.content': e.detail.value }) },
 
   async submitForm() {
     const { content } = this.data.formData
     
-    if (!content.trim()) {
-      return wx.showToast({ title: '请输入公告内容', icon: 'none' })
-    }
-    
-    if (content.trim().length < 5) {
-      return wx.showToast({ title: '内容至少5个字', icon: 'none' })
-    }
+    if (!content.trim()) return wx.showToast({ title: '请输入公告内容', icon: 'none' })
+    if (content.trim().length < 5) return wx.showToast({ title: '内容至少5个字', icon: 'none' })
     
     wx.showLoading({ title: '发布中' })
     
     try {
       const res = await wx.cloud.callFunction({
         name: 'announcement',
-        data: {
-          action: 'add',
-          data: {
-            familyId: this.data.familyId,
-            content: content.trim()
-          }
-        }
+        data: { action: 'add', data: { familyId: this.data.familyId, content: content.trim() } }
       })
       
       wx.hideLoading()
@@ -166,10 +133,7 @@ Page({
           try {
             const result = await wx.cloud.callFunction({
               name: 'announcement',
-              data: {
-                action: 'delete',
-                data: { _id: id }
-              }
+              data: { action: 'delete', data: { _id: id } }
             })
             
             wx.hideLoading()

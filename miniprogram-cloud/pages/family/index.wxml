@@ -34,7 +34,7 @@
       <view class="section-title">家庭成员</view>
       <view class="members-list">
         <view class="member-item" wx:for="{{members}}" wx:key="_id">
-          <image class="member-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+          <image class="member-avatar" src="{{item._displayAvatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
           <view class="member-info">
             <view class="member-name">{{item.nickname || '成员'}}</view>
             <view class="member-role {{item.role}}">{{item.role === 'admin' ? '⭐ 管理员' : '成员'}}</view>

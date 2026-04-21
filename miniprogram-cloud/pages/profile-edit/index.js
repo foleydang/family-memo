@@ -6,7 +6,7 @@ const DEFAULT_AVATAR = '/images/default-avatar.png'
 // 检查头像 URL 是否有效
 function getValidAvatar(url) {
   if (!url) return DEFAULT_AVATAR
-  if (url.startsWith('cloud://')) return null  // 需要转换
+  if (url.startsWith('cloud://')) return DEFAULT_AVATAR  // 需要转换，先显示默认头像
   if (url.startsWith('https://') && url.includes('?')) return url  // 有效临时 URL
   if (url.startsWith('wxfile://')) return url  // 本地临时文件
   return DEFAULT_AVATAR  // 无效格式用默认头像
