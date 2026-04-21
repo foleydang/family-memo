@@ -5,8 +5,10 @@ Page({
   data: {
     userInfo: null,
     nickname: '',
-    avatarUrl: '',
-    isSaving: false
+    avatarUrl: '',        // 显示用的 URL（可能是临时文件或临时 CDN URL）
+    avatarFileID: '',     // 实际存储的 cloud:// fileID
+    isSaving: false,
+    isUploading: false
   },
 
   onLoad() {
@@ -15,69 +17,96 @@ Page({
 
   loadUserInfo() {
     const userInfo = app.globalData.userInfo || {}
+    
+    // 如果头像是 cloud:// 格式，显示时需要转换
+    let displayUrl = userInfo.avatarUrl || ''
+    if (displayUrl && displayUrl.startsWith('cloud://')) {
+      // 有临时缓存 URL 就用那个，否则先显示空或默认头像
+      displayUrl = userInfo._avatarUrlTemp || ''
+    }
+    
     this.setData({
       userInfo,
       nickname: userInfo.nickname || '',
-      avatarUrl: userInfo.avatarUrl || ''
+      avatarUrl: displayUrl,
+      avatarFileID: userInfo.avatarUrl || ''
     })
+    
+    // 如果头像需要转换，异步获取临时 URL
+    if (userInfo.avatarUrl && userInfo.avatarUrl.startsWith('cloud://') && !userInfo._avatarUrlTemp) {
+      this.refreshAvatarUrl(userInfo.avatarUrl)
+    }
+  },
+
+  // 异步刷新头像显示 URL
+  async refreshAvatarUrl(fileID) {
+    try {
+      const res = await wx.cloud.getTempFileURL({ fileList: [fileID] })
+      if (res.fileList && res.fileList[0]?.status === 0) {
+        const tempUrl = res.fileList[0].tempFileURL
+        this.setData({ avatarUrl: tempUrl })
+        // 缓存到全局
+        if (app.globalData.userInfo) {
+          app.globalData.userInfo._avatarUrlTemp = tempUrl
+        }
+      }
+    } catch (err) {
+      console.error('刷新头像URL失败:', err)
+    }
   },
 
   // 选择头像（微信新版授权方式）
   onChooseAvatar(e) {
     const { avatarUrl } = e.detail
-    console.log('选择的头像:', avatarUrl)
+    console.log('选择的临时头像:', avatarUrl)
     
-    // 显示临时头像
-    this.setData({ avatarUrl: avatarUrl })
+    // 立即显示临时头像（本地文件）
+    this.setData({ 
+      avatarUrl: avatarUrl,
+      isUploading: true
+    })
     
-    // 上传到云存储
+    // 异步上传到云存储
     this.uploadAvatar(avatarUrl)
   },
 
-  // 上传头像到云存储，存储 cloud:// 格式的 fileID
+  // 上传头像到云存储
   async uploadAvatar(tempFilePath) {
-    wx.showLoading({ title: '上传中...' })
+    wx.showLoading({ title: '上传中...', mask: true })
     
     try {
-      // 云存储上传
+      // 上传到云存储
       const uploadRes = await wx.cloud.uploadFile({
         cloudPath: `avatars/${app.globalData.userId}_${Date.now()}.jpg`,
-        filePath: tempFilePath
+        filePath: tempFilePath,
+        timeout: 60000  // 60秒超时
       })
       
+      wx.hideLoading()
+      
       if (uploadRes.fileID) {
-        wx.hideLoading()
-        
-        // 存储 cloud:// 格式的 fileID（不是临时 URL）
-        // 显示时需要通过 getTempFileURL 转换
         const cloudFileID = uploadRes.fileID
+        console.log('头像上传成功:', cloudFileID)
         
-        console.log('头像云存储ID:', cloudFileID)
-        
-        // 获取临时 URL 用于立即显示
-        const urlRes = await wx.cloud.getTempFileURL({
-          fileList: [cloudFileID]
+        // 存储 cloud:// fileID
+        this.setData({
+          avatarFileID: cloudFileID,
+          isUploading: false
         })
-        const tempUrl = urlRes.fileList[0]?.tempFileURL || ''
-        
-        // 更新显示（临时 URL 用于显示）
-        // 但存储的是 cloud:// fileID
-        this.setData({ 
-          avatarUrl: cloudFileID  // 存储 cloud:// 格式
-        })
-        
-        // 更新全局用户信息，用临时 URL 显示
-        if (app.globalData.userInfo) {
-          app.globalData.userInfo.avatarUrl = cloudFileID
-          app.globalData.userInfo._avatarUrlTemp = tempUrl  // 临时 URL 用于显示
-        }
         
         wx.showToast({ title: '上传成功', icon: 'success' })
+        
+        // 异步获取临时 URL 用于显示（不阻塞）
+        this.refreshAvatarUrl(cloudFileID)
       }
     } catch (err) {
       wx.hideLoading()
       console.error('上传头像失败:', err)
-      wx.showToast({ title: '上传失败', icon: 'none' })
+      
+      this.setData({ isUploading: false })
+      
+      // 上传失败，但用户可以继续用临时头像，保存时再处理
+      wx.showToast({ title: '上传慢，稍后重试', icon: 'none', duration: 2000 })
     }
   },
 
@@ -88,11 +117,21 @@ Page({
 
   // 保存资料
   async handleSave() {
-    const { nickname, avatarUrl } = this.data
+    const { nickname, avatarUrl, avatarFileID, isUploading } = this.data
     
     if (!nickname.trim()) {
       return wx.showToast({ title: '请输入昵称', icon: 'none' })
     }
+    
+    // 如果正在上传，等待一下
+    if (isUploading) {
+      wx.showLoading({ title: '等待上传完成...' })
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      wx.hideLoading()
+    }
+    
+    // 最终存储的 avatarUrl
+    const finalAvatarUrl = avatarFileID || avatarUrl
     
     this.setData({ isSaving: true })
     wx.showLoading({ title: '保存中...' })
@@ -104,7 +143,7 @@ Page({
           action: 'update',
           data: {
             nickname: nickname.trim(),
-            avatarUrl: avatarUrl  // 存储 cloud:// 格式
+            avatarUrl: finalAvatarUrl
           }
         }
       })
@@ -115,7 +154,11 @@ Page({
         // 更新全局用户信息
         if (app.globalData.userInfo) {
           app.globalData.userInfo.nickname = nickname.trim()
-          app.globalData.userInfo.avatarUrl = avatarUrl
+          app.globalData.userInfo.avatarUrl = finalAvatarUrl
+          // 保留临时显示 URL
+          if (avatarUrl && !avatarUrl.startsWith('cloud://')) {
+            app.globalData.userInfo._avatarUrlTemp = avatarUrl
+          }
         }
         
         wx.showToast({ title: '保存成功', icon: 'success' })
