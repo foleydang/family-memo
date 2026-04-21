@@ -1,6 +1,17 @@
 // pages/profile-edit/index.js - 云开发版本
 const app = getApp()
 
+const DEFAULT_AVATAR = '/images/default-avatar.png'
+
+// 检查头像 URL 是否有效
+function getValidAvatar(url) {
+  if (!url) return DEFAULT_AVATAR
+  if (url.startsWith('cloud://')) return null  // 需要转换
+  if (url.startsWith('https://') && url.includes('?')) return url  // 有效临时 URL
+  if (url.startsWith('wxfile://')) return url  // 本地临时文件
+  return DEFAULT_AVATAR  // 无效格式用默认头像
+}
+
 Page({
   data: {
     userInfo: null,
@@ -17,37 +28,36 @@ Page({
   loadUserInfo() {
     const userInfo = app.globalData.userInfo || {}
     
-    // 如果头像是 cloud:// 格式，异步获取临时 URL
-    let displayUrl = userInfo.avatarUrl || ''
-    if (displayUrl && displayUrl.startsWith('cloud://')) {
-      displayUrl = userInfo._avatarUrlTemp || ''
-      // 异步转换
+    // 处理头像显示
+    let displayAvatar = getValidAvatar(userInfo.avatarUrl)
+    
+    // 如果需要转换 cloud:// 头像
+    if (userInfo.avatarUrl && userInfo.avatarUrl.startsWith('cloud://')) {
       this.convertAvatarUrl(userInfo.avatarUrl)
     }
     
     this.setData({
       userInfo,
       nickname: userInfo.nickname || '',
-      avatarUrl: displayUrl,
+      avatarUrl: displayAvatar || DEFAULT_AVATAR,
       avatarFileID: userInfo.avatarUrl || ''
     })
   },
 
   // 转换 cloud:// 头像为可显示的临时 URL
   async convertAvatarUrl(fileID) {
-    if (!fileID || !fileID.startsWith('cloud://')) return
-    
     try {
       const res = await wx.cloud.getTempFileURL({ fileList: [fileID] })
       if (res.fileList?.[0]?.status === 0) {
-        const tempUrl = res.fileList[0].tempFileURL
-        this.setData({ avatarUrl: tempUrl })
+        this.setData({ avatarUrl: res.fileList[0].tempFileURL })
         if (app.globalData.userInfo) {
-          app.globalData.userInfo._avatarUrlTemp = tempUrl
+          app.globalData.userInfo._avatarUrlTemp = res.fileList[0].tempFileURL
         }
       }
     } catch (err) {
       console.error('头像URL转换失败:', err)
+      // 转换失败，显示默认头像
+      this.setData({ avatarUrl: DEFAULT_AVATAR })
     }
   },
 
@@ -93,10 +103,9 @@ Page({
       wx.hideLoading()
       console.error('上传失败:', err)
       
-      // 超时或失败，让用户可以继续编辑
       wx.showModal({
         title: '上传失败',
-        content: '网络可能较慢，请点击保存后再试，或稍后重新设置头像',
+        content: '网络可能较慢，请稍后重新设置头像',
         showCancel: false
       })
     }
@@ -109,15 +118,11 @@ Page({
 
   // 保存资料
   async handleSave() {
-    const { nickname, avatarFileID, avatarUrl } = this.data
+    const { nickname, avatarFileID } = this.data
     
     if (!nickname.trim()) {
       return wx.showToast({ title: '请输入昵称', icon: 'none' })
     }
-    
-    // 如果头像还没上传成功（avatarFileID 为空但 avatarUrl 是本地临时路径）
-    // 就不保存头像，只保存昵称
-    const saveAvatarUrl = avatarFileID || ''
     
     this.setData({ isSaving: true })
     wx.showLoading({ title: '保存中...' })
@@ -129,7 +134,7 @@ Page({
           action: 'update',
           data: {
             nickname: nickname.trim(),
-            avatarUrl: saveAvatarUrl
+            avatarUrl: avatarFileID  // 存储 cloud:// 格式
           }
         }
       })
@@ -139,9 +144,7 @@ Page({
       if (res.result.success) {
         if (app.globalData.userInfo) {
           app.globalData.userInfo.nickname = nickname.trim()
-          if (saveAvatarUrl) {
-            app.globalData.userInfo.avatarUrl = saveAvatarUrl
-          }
+          app.globalData.userInfo.avatarUrl = avatarFileID
         }
         
         wx.showToast({ title: '保存成功', icon: 'success' })

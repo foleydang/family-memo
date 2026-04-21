@@ -1,6 +1,16 @@
 // pages/family/index.js - 云开发版本
 const app = getApp()
 
+const DEFAULT_AVATAR = '/images/default-avatar.png'
+
+// 检查头像 URL 是否有效
+function getValidAvatar(url) {
+  if (!url) return DEFAULT_AVATAR
+  if (url.startsWith('cloud://')) return DEFAULT_AVATAR  // 需要转换但还没转换成功
+  if (url.startsWith('https://') && url.includes('?')) return url  // 有签名的临时 URL
+  return DEFAULT_AVATAR  // 无效格式
+}
+
 Page({
   data: {
     familyInfo: null,
@@ -85,7 +95,12 @@ Page({
       })
       
       if (res.result.success) {
-        const members = res.result.data
+        // 处理成员头像，无效的用默认头像
+        const members = res.result.data.map(m => ({
+          ...m,
+          _displayAvatar: getValidAvatar(m.avatarUrl)
+        }))
+        
         const currentUserId = app.globalData.userId
         const adminMember = members.find(m => m.role === 'admin')
         const isAdmin = adminMember && adminMember._id === currentUserId

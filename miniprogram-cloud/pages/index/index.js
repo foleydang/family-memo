@@ -3,6 +3,19 @@ const app = getApp()
 
 const TODO_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
 
+// 默认头像路径
+const DEFAULT_AVATAR = '/images/default-avatar.png'
+
+// 检查头像 URL 是否有效
+function getValidAvatar(url) {
+  if (!url) return DEFAULT_AVATAR
+  // 有效格式：cloud:// 开头，或 https:// 开头且包含签名（有 ?sign=）
+  if (url.startsWith('cloud://')) return url  // 需要转换，但至少是有效格式
+  if (url.startsWith('https://') && url.includes('?')) return url  // 有签名的临时 URL
+  // 无效格式（之前存的去掉签名的 URL），返回默认头像
+  return DEFAULT_AVATAR
+}
+
 Page({
   data: {
     userInfo: null,
@@ -67,10 +80,37 @@ Page({
   },
 
   async refreshData() {
-    this.setData({ userInfo: app.globalData.userInfo, familyInfo: app.globalData.familyInfo })
+    // 处理用户头像
+    const userInfo = app.globalData.userInfo
+    if (userInfo) {
+      userInfo._displayAvatar = getValidAvatar(userInfo.avatarUrl)
+      // 如果是 cloud:// 需要转换
+      if (userInfo.avatarUrl && userInfo.avatarUrl.startsWith('cloud://')) {
+        this.convertUserAvatar(userInfo.avatarUrl)
+      }
+    }
+    
+    this.setData({ userInfo, familyInfo: app.globalData.familyInfo })
+    
     if (app.globalData.familyInfo) {
       await this.loadMembers()
       await this.loadMyData()
+    }
+  },
+
+  // 异步转换用户头像
+  async convertUserAvatar(fileID) {
+    try {
+      const res = await wx.cloud.getTempFileURL({ fileList: [fileID] })
+      if (res.fileList?.[0]?.status === 0) {
+        const tempUrl = res.fileList[0].tempFileURL
+        this.setData({ 'userInfo._displayAvatar': tempUrl })
+        if (app.globalData.userInfo) {
+          app.globalData.userInfo._displayAvatar = tempUrl
+        }
+      }
+    } catch (err) {
+      console.error('转换头像失败:', err)
     }
   },
 
@@ -80,7 +120,14 @@ Page({
         name: 'family',
         data: { action: 'getMembers', data: { familyId: this.data.familyInfo._id } }
       })
-      if (res.result.success) this.setData({ members: res.result.data })
+      if (res.result.success) {
+        // 处理成员头像
+        const members = res.result.data.map(m => ({
+          ...m,
+          _displayAvatar: getValidAvatar(m.avatarUrl)
+        }))
+        this.setData({ members })
+      }
     } catch (err) { console.error('加载成员失败', err) }
   },
 
