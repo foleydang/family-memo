@@ -113,7 +113,7 @@ Page({
   },
 
   inputQuantity(e) {
-    this.setData({ 'formData.quantity': e.detail.value || 1 });
+    this.setData({ 'formData.quantity': e.detail.value });
   },
 
   inputUnit(e) {
