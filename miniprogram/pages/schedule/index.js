@@ -24,10 +24,9 @@ Page({
     },
     types: [
       { name: '生日', value: 'birthday' },
-      { name: '纪念日', value: 'anniversary' },
       { name: '预约', value: 'appointment' },
-      { name: '会议', value: 'meeting' },
       { name: '出行', value: 'trip' },
+      { name: '日程', value: 'schedule' },
       { name: '其他', value: 'other' }
     ],
     typeIndex: 0,

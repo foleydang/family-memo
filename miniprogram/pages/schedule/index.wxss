@@ -190,17 +190,22 @@
 
 .schedule-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;  /* 横向排列 */
+  gap: 16rpx;
+  align-items: center;
 }
 
 .action-btn {
   font-size: 24rpx;
   color: #1890ff;
-  padding: 8rpx 16rpx;
+  padding: 8rpx 20rpx;
+  background: rgba(24, 144, 255, 0.1);
+  border-radius: 8rpx;
 }
 
 .action-btn.delete {
   color: #f5222d;
+  background: rgba(245, 34, 34, 0.1);
 }
 
 /* 空状态 */
