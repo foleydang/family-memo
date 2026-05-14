@@ -1,3 +1,14 @@
+const CATEGORY_MAP = {
+  'food': '🥬 食品',
+  'daily': '🧴 日用品',
+  'fresh': '🥬 食品',
+  'electronics': '📱 电器',
+  'clothing': '👕 服饰',
+  'medicine': '💊 医药',
+  'other': '📦 其他',
+  '其他': '📦 其他'
+};
+
 // pages/shopping/index.js
 const app = getApp();
 
@@ -57,8 +68,14 @@ Page({
         url: '/shopping/list',
         data: { familyId: this.data.familyId, status: 'all' }
       });
+      // 转换分类为中文
+      const listWithCategoryName = res.data.all.map(item => ({
+        ...item,
+        categoryName: CATEGORY_MAP[item.category] || item.category
+      }));
+      
       this.setData({
-        list: res.data.all,
+        list: listWithCategoryName,
         stats: res.data.stats
       });
       this.filterList();

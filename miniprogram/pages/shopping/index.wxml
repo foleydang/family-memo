@@ -43,8 +43,8 @@
           <view class="item-badge" wx:if="{{item.priority === 1}}">紧急</view>
         </view>
         <view class="item-meta">
-          <text class="item-category">{{item.category}}</text>
-          <text class="item-quantity">{{item.quantity}}{{item.unit}}</text>
+          <text class="item-category">{{item.categoryName || item.category}}</text>
+          <text class="item-quantity">{{item.quantity}}{{item.unit || '个'}}</text>
         </view>
       </view>
       <view class="item-actions">
