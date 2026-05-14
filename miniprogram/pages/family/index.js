@@ -41,6 +41,7 @@ Page({
       this.setData({
         familyInfo: res.data,
         members: res.data.members || [],
+        inviteCode: res.data.invite_code || '',  // 从API获取邀请码
         currentUserId: app.globalData.userInfo?.id
       });
     } catch (err) {
@@ -104,7 +105,7 @@ Page({
       this.setData({
         familyInfo: res.data,
         showModal: false,
-        inviteCode: res.data.inviteCode || ''
+        inviteCode: res.data.invite_code || ''  // 使用API返回的字段名''
       });
 
       // 刷新用户信息
