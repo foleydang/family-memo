@@ -65,10 +65,14 @@ Page({
       });
       
       // 更新为服务器返回的 URL（完整路径）
+      // uploadRes 是相对路径如 /static/uploads/avatars/xxx.jpeg
+      // baseUrl 是 https://api.yanten.top/api
+      // 需要拼接成 https://api.yanten.top/static/uploads/avatars/xxx.jpeg
       const fullUrl = uploadRes.startsWith('http') 
         ? uploadRes 
-        : `${app.globalData.baseUrl.replace('/api', '')}${uploadRes}`;
+        : `https://api.yanten.top${uploadRes}`;
       
+      console.log('头像完整URL:', fullUrl);
       this.setData({ avatar: fullUrl });
       wx.hideLoading();
       wx.showToast({ title: '头像已上传', icon: 'success' });

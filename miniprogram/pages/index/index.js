@@ -76,7 +76,12 @@ Page({
       const res = await app.request({
         url: `/family/${this.data.familyInfo.id}`
       })
-      this.setData({ members: res.data.members || [] })
+      // 映射 avatar 字段
+      const members = (res.data.members || []).map(m => ({
+        ...m,
+        avatarUrl: m.avatar || m.avatarUrl
+      }));
+      this.setData({ members })
     } catch (err) { console.error('加载成员失败', err) }
   },
 
