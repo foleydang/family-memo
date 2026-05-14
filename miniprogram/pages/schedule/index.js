@@ -57,7 +57,7 @@ Page({
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
     const today = now.getDate();
-    const todayStr = `${year}-${month}-${today}`;
+    const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(today).padStart(2, '0')}`;
 
     this.setData({
       currentYear: year,
@@ -87,7 +87,7 @@ Page({
 
     // 日期
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${month}-${d}`;
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const hasSchedule = this.checkHasSchedule(dateStr);
       const isToday = dateStr === todayStr;
 
