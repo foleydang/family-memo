@@ -121,7 +121,7 @@ Page({
       currentMonth: `${currentYear}年${currentMonthNum}月`
     });
     this.generateCalendar(currentYear, currentMonthNum);
-    this.loadMonthSchedules();
+    this.loadScheduleList();  // 使用完整的日程列表，包含循环日程
   },
 
   nextMonth() {
@@ -138,7 +138,7 @@ Page({
       currentMonth: `${currentYear}年${currentMonthNum}月`
     });
     this.generateCalendar(currentYear, currentMonthNum);
-    this.loadMonthSchedules();
+    this.loadScheduleList();  // 使用完整的日程列表，包含循环日程
   },
 
   selectDay(e) {
@@ -210,8 +210,8 @@ Page({
     if (!this.data.familyId) return;
 
     const { currentYear, currentMonthNum } = this.data;
-    const startDate = `${currentYear}-${currentMonthNum}-01`;
-    const endDate = `${currentYear}-${currentMonthNum}-31`;
+    const startDate = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-01`;
+    const endDate = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-31`;
 
     try {
       const res = await app.request({
@@ -222,7 +222,11 @@ Page({
           endDate
         }
       });
-      this.setData({ scheduleList: res.data });
+      
+      // 处理循环日程
+      const expandedList = this.expandRecurringSchedules(res.data || []);
+      
+      this.setData({ scheduleList: expandedList });
       this.generateCalendar(currentYear, currentMonthNum);
       this.updateDaySchedules(this.data.selectedDate);
     } catch (err) {
