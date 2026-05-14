@@ -166,12 +166,44 @@ Page({
         url: '/schedule/list',
         data: { familyId: this.data.familyId }
       });
-      this.setData({ scheduleList: res.data });
+      
+      // 处理循环日程，展开到当前月份的每一天
+      const expandedList = this.expandRecurringSchedules(res.data || []);
+      
+      this.setData({ scheduleList: expandedList });
       this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
       this.updateDaySchedules(this.data.selectedDate);
     } catch (err) {
       console.error('加载日程失败', err);
     }
+  },
+  
+  // 展开循环日程到每一天
+  expandRecurringSchedules(schedules) {
+    const { currentYear, currentMonthNum } = this.data;
+    const expanded = [];
+    
+    schedules.forEach(schedule => {
+      const recurring = schedule.recurring || schedule.repeat_type || 'none';
+      
+      if (recurring === 'none') {
+        // 非循环日程，直接添加
+        expanded.push(schedule);
+      } else if (recurring === 'daily') {
+        // 每日循环：在当前月份的每一天都显示
+        const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          expanded.push({
+            ...schedule,
+            schedule_date: dateStr,
+            isRecurring: true
+          });
+        }
+      }
+    });
+    
+    return expanded;
   },
 
   async loadMonthSchedules() {
