@@ -91,7 +91,11 @@
       <view class="form-row">
         <view class="form-item half">
           <text class="form-label">数量</text>
-          <input class="form-input" type="digit" placeholder="1" value="{{formData.quantity}}" bindblur="inputQuantity" bindconfirm="inputQuantity" />
+          <view class="quantity-stepper">
+            <view class="stepper-btn minus" bindtap="decreaseQuantity">-</view>
+            <input class="stepper-input" type="number" value="{{formData.quantity}}" bindblur="inputQuantity" />
+            <view class="stepper-btn plus" bindtap="increaseQuantity">+</view>
+          </view>
         </view>
         <view class="form-item half">
           <text class="form-label">单位</text>

@@ -113,13 +113,21 @@ Page({
   },
 
   inputQuantity(e) {
-    // 只在输入完成后更新（blur/confirm）
     const value = e.detail.value;
-    if (value === '' || value === undefined) {
-      // 空值时保持为空，让用户继续输入
-      return;
+    const num = parseInt(value) || 1;
+    this.setData({ 'formData.quantity': num < 1 ? 1 : num });
+  },
+
+  increaseQuantity() {
+    const current = parseInt(this.data.formData.quantity) || 1;
+    this.setData({ 'formData.quantity': current + 1 });
+  },
+
+  decreaseQuantity() {
+    const current = parseInt(this.data.formData.quantity) || 1;
+    if (current > 1) {
+      this.setData({ 'formData.quantity': current - 1 });
     }
-    this.setData({ 'formData.quantity': parseInt(value) || '' });
   },
 
   inputUnit(e) {
