@@ -150,21 +150,24 @@ Page({
     }
   },
 
-  async generateInviteCode() {
+  async getInviteCode() {
+    // 直接从家庭信息获取邀请码，不需要生成新的
     if (!this.data.familyInfo) return;
-
-    try {
-      const res = await app.request({
-        url: `/family/${this.data.familyInfo.id}/invite-code`,
-        method: 'POST'
-      });
-      this.setData({ inviteCode: res.data.code });
-    } catch (err) {
-      wx.showToast({ title: '生成失败', icon: 'none' });
-    }
+    
+    // 如果已有邀请码，直接使用
+    if (this.data.inviteCode) return;
+    
+    // 否则重新加载家庭信息
+    await this.loadFamilyInfo();
   },
 
   copyInviteCode() {
+    const code = this.data.inviteCode;
+    if (!code) {
+      wx.showToast({ title: '邀请码加载中...', icon: 'none' });
+      this.loadFamilyInfo();
+      return;
+    }
     wx.setClipboardData({
       data: this.data.inviteCode,
       success: () => {
@@ -176,7 +179,8 @@ Page({
   shareInvite() {
     const code = this.data.inviteCode;
     if (!code) {
-      this.generateInviteCode().then(() => {
+      // 邀请码还未加载，先加载
+      this.loadFamilyInfo().then(() => {
         this.shareInvite();
       });
       return;

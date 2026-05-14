@@ -52,7 +52,7 @@
       <view class="section-title">邀请成员</view>
       <view class="invite-card">
         <view wx:if="{{!inviteCode}}" class="invite-empty">
-          <view class="btn-generate" bindtap="generateInviteCode">生成邀请码</view>
+          <view class="btn-generate" bindtap="getInviteCode">生成邀请码</view>
         </view>
         <view wx:else class="invite-code-box">
           <view class="invite-code">{{inviteCode}}</view>
