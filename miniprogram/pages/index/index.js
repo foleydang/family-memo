@@ -168,5 +168,38 @@ Page({
   goToFamily() { wx.navigateTo({ url: '/pages/family/index' }) },
   goToShopping() { wx.switchTab({ url: '/pages/shopping/index' }) },
   goToTodo() { wx.switchTab({ url: '/pages/todo/index' }) },
-  goToSchedule() { wx.switchTab({ url: '/pages/schedule/index' }) }
+  goToSchedule() { wx.switchTab({ url: '/pages/schedule/index' }) },
+
+  handleLogin() {
+    wx.showLoading({ title: '登录中' });
+    app.login().then(() => {
+      wx.hideLoading();
+      this.refreshData();
+      wx.showToast({ title: '登录成功', icon: 'success' });
+    }).catch(err => {
+      wx.hideLoading();
+      console.error('登录失败:', err);
+      wx.showToast({ title: '登录失败', icon: 'none' });
+    });
+  },
+
+  async handleLogout() {
+    const res = await wx.showModal({
+      title: '确认退出',
+      content: '退出登录后需要重新登录'
+    });
+
+    if (res.confirm) {
+      app.logout();
+      this.setData({
+        userInfo: null,
+        familyInfo: null,
+        members: [],
+        myTodos: [],
+        todaySchedules: [],
+        loading: false
+      });
+      wx.showToast({ title: '已退出登录', icon: 'success' });
+    }
+  }
 })
