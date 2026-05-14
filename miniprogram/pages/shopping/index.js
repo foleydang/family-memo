@@ -113,7 +113,13 @@ Page({
   },
 
   inputQuantity(e) {
-    this.setData({ 'formData.quantity': e.detail.value });
+    // 只在输入完成后更新（blur/confirm）
+    const value = e.detail.value;
+    if (value === '' || value === undefined) {
+      // 空值时保持为空，让用户继续输入
+      return;
+    }
+    this.setData({ 'formData.quantity': parseInt(value) || '' });
   },
 
   inputUnit(e) {
