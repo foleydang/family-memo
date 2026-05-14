@@ -55,7 +55,18 @@ Page({
   },
 
   async refreshData() {
-    if (!app.globalData.token) return
+    // 如果没有 token，显示未登录状态
+    if (!app.globalData.token) {
+      this.setData({
+        userInfo: null,
+        familyInfo: null,
+        members: [],
+        myTodos: [],
+        todaySchedules: [],
+        loading: false
+      });
+      return;
+    }
 
     try {
       await app.getUserInfo()
@@ -68,7 +79,14 @@ Page({
         await this.loadMembers()
         await this.loadMyData()
       }
-    } catch (err) { console.error('刷新数据失败', err) }
+    } catch (err) { 
+      console.error('刷新数据失败', err);
+      // 获取失败也显示未登录
+      this.setData({
+        userInfo: null,
+        familyInfo: null
+      });
+    }
   },
 
   async loadMembers() {
