@@ -205,34 +205,6 @@ Page({
     return expanded;
   },
 
-  async loadMonthSchedules() {
-    if (!this.data.familyId) return;
-
-    const { currentYear, currentMonthNum } = this.data;
-    const startDate = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-01`;
-    const endDate = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-31`;
-
-    try {
-      const res = await app.request({
-        url: '/schedule/range',
-        data: {
-          familyId: this.data.familyId,
-          startDate,
-          endDate
-        }
-      });
-      
-      // 处理循环日程
-      const expandedList = this.expandRecurringSchedules(res.data || []);
-      
-      this.setData({ scheduleList: expandedList });
-      this.generateCalendar(currentYear, currentMonthNum);
-      this.updateDaySchedules(this.data.selectedDate);
-    } catch (err) {
-      console.error('加载日程失败', err);
-    }
-  },
-
   getDaySchedules() {
     return this.data.scheduleList.filter(s => s.schedule_date === this.data.selectedDate);
   },

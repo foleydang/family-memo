@@ -1,7 +1,7 @@
 const CATEGORY_MAP = {
   'food': '🥬 食品',
   'daily': '🧴 日用品',
-  'fresh': '🥬 食品',
+  'fresh': '🥩 生鲜',
   'electronics': '📱 电器',
   'clothing': '👕 服饰',
   'medicine': '💊 医药',

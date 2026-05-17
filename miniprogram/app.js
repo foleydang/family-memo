@@ -4,15 +4,14 @@ App({
     userInfo: null,
     familyInfo: null,
     token: null,
-    baseUrl: 'https://api.yanten.top/api'
+    baseUrl: 'https://api.yanten.top/api',
+    _isRefreshing: false // token刷新锁
   },
 
   onLaunch() {
-    // 检查登录状态
     this.checkLogin();
   },
 
-  // 检查登录状态
   checkLogin() {
     const token = wx.getStorageSync('token');
     if (token) {
@@ -22,105 +21,49 @@ App({
   },
 
   // 获取用户信息
-  getUserInfo() {
-    return new Promise((resolve, reject) => {
-      if (!this.globalData.token) {
-        reject('未登录');
-        return;
-      }
-
-      wx.request({
-        url: `${this.globalData.baseUrl}/auth/user`,
-        header: {
-          'Authorization': `Bearer ${this.globalData.token}`
-        },
-        success: (res) => {
-          if (res.data.success) {
-            this.globalData.userInfo = res.data.data;
-            // 优先使用 familyInfo，否则从 families 数组获取
-            if (res.data.data.familyInfo) {
-              this.globalData.familyInfo = res.data.data.familyInfo;
-            } else if (res.data.data.families && res.data.data.families.length > 0) {
-              this.globalData.familyInfo = res.data.data.families[0];
-            } else {
-              this.globalData.familyInfo = null;
-            }
-            resolve(res.data.data);
-          } else {
-            this.logout();
-            reject(res.data.message);
-          }
-        },
-        fail: reject
-      });
+  async getUserInfo() {
+    if (!this.globalData.token) throw new Error('未登录');
+    const res = await this._rawRequest({
+      url: '/auth/user',
+      method: 'GET'
     });
+    const data = res.data;
+    if (res.data.success) {
+      this.globalData.userInfo = data.data;
+      if (data.data.familyInfo) {
+        this.globalData.familyInfo = data.data.familyInfo;
+      } else if (data.data.families && data.data.families.length > 0) {
+        this.globalData.familyInfo = data.data.families[0];
+      } else {
+        this.globalData.familyInfo = null;
+      }
+      return data.data;
+    }
+    this.logout();
+    throw new Error(data.message);
   },
 
   // 登录
-  login() {
-    return new Promise((resolve, reject) => {
-      wx.login({
-        success: (res) => {
-          if (res.code) {
-            // 尝试微信登录
-            wx.request({
-              url: `${this.globalData.baseUrl}/auth/login`,
-              method: 'POST',
-              data: { code: res.code },
-              success: (response) => {
-                if (response.data.success) {
-                  const { token, user } = response.data.data;
-                  this.globalData.token = token;
-                  this.globalData.userInfo = user;
-                  wx.setStorageSync('token', token);
-                  resolve(response.data);
-                } else {
-                  // 微信登录失败，尝试测试登录
-                  this.devLogin().then(resolve).catch(reject);
-                }
-              },
-              fail: () => {
-                // 网络失败，尝试测试登录
-                this.devLogin().then(resolve).catch(reject);
-              }
-            });
-          } else {
-            // 没有 code，尝试测试登录
-            this.devLogin().then(resolve).catch(reject);
-          }
-        },
-        fail: () => {
-          // 登录失败，尝试测试登录
-          this.devLogin().then(resolve).catch(reject);
-        }
-      });
+  async login() {
+    const { code } = await wx.login();
+    if (!code) throw new Error('获取code失败');
+    
+    const res = await this._rawRequest({
+      url: '/auth/login',
+      method: 'POST',
+      data: { code }
     });
+    
+    if (res.data.success) {
+      const { token, user } = res.data.data;
+      this.globalData.token = token;
+      this.globalData.userInfo = user;
+      wx.setStorageSync('token', token);
+      return res.data;
+    }
+    throw new Error(res.data.message || '登录失败');
   },
 
-  // 测试登录（开发环境）
-  devLogin() {
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: `${this.globalData.baseUrl}/auth/dev-login`,
-        method: 'POST',
-        data: {},
-        success: (response) => {
-          if (response.data.success) {
-            const { token, user } = response.data.data;
-            this.globalData.token = token;
-            this.globalData.userInfo = user;
-            wx.setStorageSync('token', token);
-            resolve(response.data);
-          } else {
-            reject(response.data.message);
-          }
-        },
-        fail: reject
-      });
-    });
-  },
-
-  // 退出登录
   logout() {
     this.globalData.token = null;
     this.globalData.userInfo = null;
@@ -128,8 +71,8 @@ App({
     wx.removeStorageSync('token');
   },
 
-  // 封装请求方法
-  request(options) {
+  // 内部原始请求（不处理401）
+  _rawRequest(options) {
     return new Promise((resolve, reject) => {
       wx.request({
         url: `${this.globalData.baseUrl}${options.url}`,
@@ -139,19 +82,42 @@ App({
           'Authorization': `Bearer ${this.globalData.token}`,
           'Content-Type': 'application/json'
         },
-        success: (res) => {
-          if (res.data.success) {
-            resolve(res.data);
-          } else {
-            wx.showToast({
-              title: res.data.message || '请求失败',
-              icon: 'none'
-            });
-            reject(res.data);
-          }
-        },
+        success: resolve,
         fail: reject
       });
     });
+  },
+
+  // 封装请求方法 - 支持401自动重登
+  async request(options) {
+    const res = await this._rawRequest(options);
+    
+    // 401/token过期 → 自动重新登录后重试
+    if (res.statusCode === 401 && !options._isRetry) {
+      if (!this.globalData._isRefreshing) {
+        this.globalData._isRefreshing = true;
+        try {
+          await this.login();
+          this.globalData._isRefreshing = false;
+          // 重试原请求
+          return this.request({ ...options, _isRetry: true });
+        } catch (err) {
+          this.globalData._isRefreshing = false;
+          this.logout();
+          wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+          throw err;
+        }
+      }
+      // 其他请求等待刷新完成后再重试
+      await new Promise(r => setTimeout(r, 1000));
+      return this.request({ ...options, _isRetry: true });
+    }
+    
+    if (res.data.success) {
+      return res.data;
+    }
+    
+    // 业务错误不弹toast，由调用方处理
+    throw res.data;
   }
 });

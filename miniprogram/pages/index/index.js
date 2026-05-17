@@ -1,8 +1,6 @@
 // pages/index/index.js - 服务器版本
 const app = getApp()
 
-const TODO_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0'
-
 Page({
   data: {
     userInfo: null,
@@ -146,23 +144,7 @@ Page({
   },
 
   subscribeNotify() {
-    if (this.data.subscribed) {
-      wx.showToast({ title: '您已订阅提醒', icon: 'success' })
-      return
-    }
-    wx.requestSubscribeMessage({
-      tmplIds: [TODO_TEMPLATE_ID],
-      success: (res) => {
-        if (res[TODO_TEMPLATE_ID] === 'accept') {
-          wx.showToast({ title: '订阅成功！', icon: 'success' })
-          wx.setStorageSync('subscribeTodo', true)
-          this.setData({ subscribed: true })
-        } else {
-          wx.showToast({ title: '您拒绝了订阅', icon: 'none' })
-        }
-      },
-      fail: () => { wx.showToast({ title: '订阅失败', icon: 'none' }) }
-    })
+    wx.switchTab({ url: '/pages/todo/index' })
   },
 
   goToFamily() { wx.navigateTo({ url: '/pages/family/index' }) },
