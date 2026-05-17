@@ -40,18 +40,6 @@
     </view>
   </view>
 
-  <!-- 联系方式 -->
-  <view class="section">
-    <view class="section-title">联系方式（可选）</view>
-    <input 
-      class="contact-input"
-      placeholder="微信/邮箱/电话，方便我们回复您"
-      value="{{contact}}"
-      bindinput="onContactChange"
-      maxlength="50"
-    />
-  </view>
-
   <!-- 提交按钮 -->
   <view class="submit-section">
     <button class="submit-btn" bindtap="handleSubmit" disabled="{{isSubmitting}}">

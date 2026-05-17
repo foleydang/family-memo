@@ -11,7 +11,6 @@ Page({
     ],
     currentType: 'bug',
     content: '',
-    contact: '',
     images: [],
     uploadedUrls: [],
     maxImages: 4,
@@ -47,10 +46,6 @@ Page({
     this.setData({ content: e.detail.value });
   },
 
-  // 输入联系方式
-  onContactChange(e) {
-    this.setData({ contact: e.detail.value });
-  },
 
   // 选择图片
   chooseImage() {
@@ -122,7 +117,7 @@ Page({
 
   // 提交反馈
   async handleSubmit() {
-    const { currentType, content, contact, images } = this.data;
+    const { currentType, content, images } = this.data;
     
     if (!content.trim()) {
       return wx.showToast({ title: '请填写反馈内容', icon: 'none' });
@@ -156,7 +151,6 @@ Page({
         data: {
           type: currentType,
           content: content.trim(),
-          contact: contact.trim(),
           images: uploadedUrls
         }
       });
@@ -167,8 +161,7 @@ Page({
       // 重置表单
       this.setData({
         content: '',
-        contact: '',
-        images: [],
+            images: [],
         uploadedUrls: [],
         isSubmitting: false
       });
