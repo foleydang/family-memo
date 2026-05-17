@@ -15,7 +15,7 @@ module.exports = {
   
   // JWT 配置
   jwt: {
-    secret: process.env.JWT_SECRET || 'family-memo-secret-key-2024',
+    secret: process.env.JWT_SECRET || 'change-me-in-production',
     expiresIn: '7d',
   },
   

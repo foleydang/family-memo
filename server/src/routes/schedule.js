@@ -138,14 +138,12 @@ router.post('/add', authMiddleware, (req, res) => {
     );
     
     // 获取刚插入的日程
-    const schedules = db.prepare(`
+    const schedule = db.prepare(`
       SELECT s.*, u.nickname as created_by_name
       FROM schedules s
       LEFT JOIN users u ON s.created_by = u.id
-      ORDER BY s.id DESC LIMIT 1
-    `).all();
-    
-    const schedule = schedules[0];
+      WHERE s.id = ?
+    `).get(result.lastInsertRowid);
     
     res.json({
       success: true,

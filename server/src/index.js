@@ -37,43 +37,6 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/wawaxiao', wawaxiaoRoutes);
 
-// 用户统计 API
-app.get('/api/user/stats', authMiddleware, (req, res) => {
-  const db = getDb();
-  const { familyId } = req.query;
-  
-  if (!familyId) {
-    return res.json({
-      success: true,
-      data: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
-    });
-  }
-  
-  try {
-    const shoppingCount = db.prepare(
-      'SELECT COUNT(*) as count FROM shopping_items WHERE family_id = ? AND added_by = ?'
-    ).get(familyId, req.userId)?.count || 0;
-    
-    const todoCount = db.prepare(
-      'SELECT COUNT(*) as count FROM todos WHERE family_id = ? AND added_by = ?'
-    ).get(familyId, req.userId)?.count || 0;
-    
-    const scheduleCount = db.prepare(
-      'SELECT COUNT(*) as count FROM schedules WHERE family_id = ? AND created_by = ?'
-    ).get(familyId, req.userId)?.count || 0;
-    
-    res.json({
-      success: true,
-      data: { shoppingCount, todoCount, scheduleCount }
-    });
-  } catch (error) {
-    console.error('获取统计失败:', error);
-    res.json({
-      success: true,
-      data: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
-    });
-  }
-});
 
 // 健康检查
 app.get('/api/health', (req, res) => {

@@ -33,17 +33,13 @@ router.post('/login', async (req, res) => {
     
     if (errcode) {
       console.error('微信登录失败:', errmsg);
-      // 开发模式：使用模拟 openid
-      const mockOpenid = 'dev_' + Date.now();
-      return handleLogin(mockOpenid, res);
+      return res.status(500).json({ success: false, message: '微信登录服务异常' });
     }
     
     return handleLogin(openid, res);
   } catch (error) {
     console.error('登录错误:', error);
-    // 开发模式：允许测试登录
-    const mockOpenid = 'dev_' + req.body.testUserId || Date.now();
-    return handleLogin(mockOpenid, res);
+    return res.status(500).json({ success: false, message: '登录失败，请重试' });
   }
 });
 
@@ -148,52 +144,34 @@ router.get('/stats', authMiddleware, (req, res) => {
   if (!familyId) {
     return res.json({
       success: true,
-      data: {
-        shoppingCount: 0,
-        todoCount: 0,
-        scheduleCount: 0
-      }
+      data: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
     });
   }
   
   try {
-    // 获取购物记录数
     const shoppingCount = db.prepare(
       'SELECT COUNT(*) as count FROM shopping_items WHERE family_id = ? AND added_by = ?'
     ).get(familyId, req.userId)?.count || 0;
     
-    // 获取待办记录数
     const todoCount = db.prepare(
       'SELECT COUNT(*) as count FROM todos WHERE family_id = ? AND added_by = ?'
     ).get(familyId, req.userId)?.count || 0;
     
-    // 获取日程记录数
     const scheduleCount = db.prepare(
       'SELECT COUNT(*) as count FROM schedules WHERE family_id = ? AND created_by = ?'
     ).get(familyId, req.userId)?.count || 0;
     
     res.json({
       success: true,
-      data: {
-        shoppingCount,
-        todoCount,
-        scheduleCount
-      }
+      data: { shoppingCount, todoCount, scheduleCount }
     });
   } catch (error) {
     console.error('获取统计失败:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: '获取失败' 
+    res.json({
+      success: true,
+      data: { shoppingCount: 0, todoCount: 0, scheduleCount: 0 }
     });
   }
-});
-
-// 测试登录（开发环境）
-router.post('/dev-login', (req, res) => {
-  const { userId } = req.body;
-  const mockOpenid = 'dev_' + (userId || Date.now());
-  return handleLogin(mockOpenid, res);
 });
 
 module.exports = router;
