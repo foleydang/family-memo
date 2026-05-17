@@ -32,7 +32,7 @@
           <view class="member-item">
             <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
             <view class="member-info">
-              <view class="member-name">{{item.name || item.nickname}}</view>
+              <view class="member-name">{{item.member_nickname || item.nickname}}</view>
               <view class="member-role {{item.role}}">{{item.role === 'owner' ? '👑 创建者' : item.role === 'admin' ? '⭐ 管理员' : '成员'}}</view>
             </view>
             <!-- 权限管理按钮（仅创建者可见） -->

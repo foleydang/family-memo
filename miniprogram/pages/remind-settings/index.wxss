@@ -1,9 +1,4 @@
 /* pages/remind-settings/index.wxss */
-.container {
-  padding: 20rpx;
-  background: #f5f5f5;
-  min-height: 100vh;
-}
 
 .section {
   background: #fff;

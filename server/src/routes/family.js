@@ -114,7 +114,7 @@ router.get('/:familyId', authMiddleware, (req, res) => {
   const { familyId } = req.params;
   
   try {
-    const family = db.prepare('SELECT * FROM families WHERE id = ?').get(familyId);
+    const family = db.prepare('SELECT *, created_by as owner_id FROM families WHERE id = ?').get(familyId);
     
     if (!family) {
       return res.status(404).json({ 
@@ -125,7 +125,7 @@ router.get('/:familyId', authMiddleware, (req, res) => {
     
     // 获取成员列表
     const members = db.prepare(`
-      SELECT u.id, u.nickname, u.avatar, fm.nickname as member_nickname
+      SELECT u.id, u.nickname, u.avatar, fm.nickname as member_nickname, fm.role
       FROM family_members fm
       JOIN users u ON fm.user_id = u.id
       WHERE fm.family_id = ?

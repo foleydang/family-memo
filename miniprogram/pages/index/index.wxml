@@ -56,7 +56,7 @@
       <text class="family-arrow">›</text>
     </view>
     <view class="family-members" wx:if="{{members.length > 0}}">
-      <view class="member" wx:for="{{members}}" wx:key="_id">
+      <view class="member" wx:for="{{members}}" wx:key="id">
         <image class="member-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}"></image>
         <text class="member-name">{{item.nickname || '成员'}}</text>
       </view>
@@ -75,7 +75,7 @@
       <view class="my-section" wx:if="{{myTodos.length > 0}}">
         <view class="my-title">指派给我的待办 <text class="my-count">{{myTodos.length}}</text></view>
         <view class="my-list">
-          <view class="my-item" wx:for="{{myTodos}}" wx:key="_id" bindtap="goToTodo">
+          <view class="my-item" wx:for="{{myTodos}}" wx:key="id" bindtap="goToTodo">
             <view class="my-status {{item.status}}"></view>
             <text class="my-text">{{item.title}}</text>
             <text class="my-priority" wx:if="{{item.priority > 0}}">{{item.priority === 2 ? '🔥' : '⭐'}}</text>
@@ -87,7 +87,7 @@
       <view class="my-section" wx:if="{{todaySchedules.length > 0}}">
         <view class="my-title">今日日程 <text class="my-count">{{todaySchedules.length}}</text></view>
         <view class="my-list">
-          <view class="my-item" wx:for="{{todaySchedules}}" wx:key="_id" bindtap="goToSchedule">
+          <view class="my-item" wx:for="{{todaySchedules}}" wx:key="id" bindtap="goToSchedule">
             <text class="my-time">{{item.startTime || '全天'}}</text>
             <text class="my-text">{{item.title}}</text>
           </view>

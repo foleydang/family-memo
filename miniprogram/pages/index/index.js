@@ -105,29 +105,25 @@ Page({
   async loadMyData() {
     const myUserId = app.globalData.userInfo?.id
     if (!myUserId || !this.data.familyInfo) return
+    const familyId = this.data.familyInfo.id
+    const todayStr = this.formatDate(new Date())
 
     try {
-      // 加载指派给我的待办
-      const todoRes = await app.request({
-        url: '/todo/list',
-        data: { familyId: this.data.familyInfo.id, status: 'all', assignee: myUserId }
-      })
-      const allTodos = todoRes.data.all || []
-      const myTodos = allTodos
+      // 并行加载待办和日程
+      const [todoRes, scheduleRes] = await Promise.all([
+        app.request({ url: '/todo/list', data: { familyId, status: 'all', assignee: myUserId } }),
+        app.request({ url: '/schedule/list', data: { familyId } })
+      ])
+
+      const myTodos = (todoRes.data.all || [])
         .filter(t => t.assignee_id === myUserId && t.status !== 'done')
         .slice(0, 5)
-      this.setData({ myTodos })
-
-      // 加载今日日程
-      const todayStr = this.formatDate(new Date())
-      const scheduleRes = await app.request({
-        url: '/schedule/list',
-        data: { familyId: this.data.familyInfo.id }
-      })
-      const todaySchedules = (scheduleRes.data.list || [])
+      
+      const todaySchedules = (scheduleRes.data || [])
         .filter(s => s.schedule_date === todayStr)
         .slice(0, 3)
-      this.setData({ todaySchedules })
+      
+      this.setData({ myTodos, todaySchedules })
     } catch (err) { console.error('加载我的数据失败', err) }
   },
 

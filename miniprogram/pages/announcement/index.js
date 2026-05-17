@@ -39,7 +39,15 @@ Page({
         url: '/announcement/list',
         data: { familyId: this.data.familyId }
       });
-      this.setData({ announcements: res.data || [] });
+      // 映射服务器字段到前端显示字段
+      const announcements = (res.data || []).map(a => ({
+        ...a,
+        _id: a.id,
+        authorName: a.author_name || a.authorName,
+        authorAvatar: a.author_avatar || a.authorAvatar,
+        displayTime: a.created_at ? a.created_at.replace('T', ' ').substring(0, 16) : ''
+      }));
+      this.setData({ announcements });
     } catch (err) {
       console.error('加载公告失败', err);
       // 如果 API 不存在，显示空列表

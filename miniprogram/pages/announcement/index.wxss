@@ -1,9 +1,6 @@
 /* pages/announcement/index.wxss */
 .container {
-  padding: 20rpx;
   padding-bottom: 120rpx;
-  background: #f5f5f5;
-  min-height: 100vh;
 }
 
 /* 公告列表 */

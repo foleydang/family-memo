@@ -1,9 +1,4 @@
 /* pages/my-records/index.wxss */
-.container {
-  padding: 20rpx;
-  background: #f5f5f5;
-  min-height: 100vh;
-}
 
 /* Tab 切换 */
 .tabs {

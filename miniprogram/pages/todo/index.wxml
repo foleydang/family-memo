@@ -30,7 +30,7 @@
 
   <!-- 待办列表 -->
   <view class="todo-list">
-    <block wx:for="{{filteredList}}" wx:key="_id">
+    <block wx:for="{{filteredList}}" wx:key="id">
       <view class="todo-card">
         <view class="todo-checkbox {{item.status}}" bindtap="toggleItem" data-item="{{item}}">
           <view wx:if="{{item.status === 'pending'}}" class="checkbox-empty"></view>
@@ -43,7 +43,7 @@
             <text class="todo-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text>
             <view class="todo-actions">
               <text class="action-btn" catchtap="editItem" data-item="{{item}}">编辑</text>
-              <text class="action-btn delete" catchtap="deleteItem" data-id="{{item._id}}">删除</text>
+              <text class="action-btn delete" catchtap="deleteItem" data-id="{{item.id}}">删除</text>
             </view>
           </view>
           

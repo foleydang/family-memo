@@ -16,6 +16,7 @@ const scheduleRoutes = require('./routes/schedule');
 const feedbackRoutes = require('./routes/feedback');
 const uploadRoutes = require('./routes/upload');
 const wawaxiaoRoutes = require('./routes/wawaxiao');
+const announcementRoutes = require('./routes/announcement');
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/wawaxiao', wawaxiaoRoutes);
+app.use('/api/announcement', announcementRoutes);
 
 
 // 健康检查
