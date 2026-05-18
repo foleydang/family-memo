@@ -106,7 +106,7 @@ Page({
       return {
         ...item,
         assigneeName: assignee ? (assignee.name || assignee.nickname || '成员') : '',
-        assigneeAvatar: assignee ? assignee.avatar_url : '',
+        assigneeAvatar: assignee ? assignee.avatar : '',
         timeDisplay: this.formatTimeDisplay(item)
       }
     })
