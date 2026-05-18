@@ -69,7 +69,7 @@
 
 <!-- 添加/编辑弹窗 -->
 <view class="modal-mask" wx:if="{{showModal}}" bindtap="hideModal">
-  <view class="modal-content" catchtap>
+  <view class="modal-content" catchtap="stopPropagation">
     <view class="modal-header">
       <text class="modal-title">{{editMode ? '编辑购物项' : '添加购物项'}}</text>
       <text class="modal-close" bindtap="hideModal">×</text>

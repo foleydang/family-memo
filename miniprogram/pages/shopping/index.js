@@ -4,7 +4,6 @@ const CATEGORY_MAP = {
   'fresh': '🥬 食品',  // 生鲜归入食品
   'electronics': '📱 电器',
   'clothing': '👕 服饰',
-  'medicine': '💊 医药',
   'other': '📦 其他',
   '其他': '📦 其他'
 };
@@ -287,4 +286,5 @@ Page({
       }
     }
   }
+  stopPropagation() {}
 });

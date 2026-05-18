@@ -55,8 +55,10 @@
             <view wx:if="{{item.priority > 0}}" class="priority-tag {{item.priority === 2 ? 'urgent' : 'important'}}">
               {{item.priority === 2 ? '紧急' : '重要'}}
             </view>
-            <image wx:if="{{item.assigneeAvatar}}" class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}"></image>
-            <text wx:if="{{item.assigneeName}}" class="assignee-name">{{item.assigneeName}}</text>
+            <block wx:if="{{item.assigneeName}}">
+              <image class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}"></image>
+              <text class="assignee-name">{{item.assigneeName}}</text>
+            </block>
             <text wx:else class="no-assignee">未指派</text>
             <text class="todo-time">{{item.timeDisplay}}</text>
           </view>
