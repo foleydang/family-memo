@@ -56,7 +56,7 @@
               {{item.priority === 2 ? '紧急' : '重要'}}
             </view>
             <block wx:if="{{item.assigneeName}}">
-              <view class="assignee-avatar-text">{{item.assigneeName[0]}}</view>
+              <image class="assignee-avatar" src="{{item.assigneeAvatar || '/images/default-avatar.png'}}"></image>
               <text class="assignee-name">{{item.assigneeName}}</text>
             </block>
             <text wx:else class="no-assignee">未指派</text>
