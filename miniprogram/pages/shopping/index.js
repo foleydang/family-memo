@@ -285,6 +285,7 @@ Page({
         wx.showToast({ title: '操作失败', icon: 'none' });
       }
     }
-  }
+  },
+
   stopPropagation() {}
 });
