@@ -41,14 +41,6 @@ Page({
     if (app.globalData.familyInfo) {
       this.setData({ familyId: app.globalData.familyInfo.id });
       this.loadList();
-    } else if (app.globalData.token) {
-      // 还没拿到familyInfo，先获取
-      app.getUserInfo().then(() => {
-        if (app.globalData.familyInfo) {
-          this.setData({ familyId: app.globalData.familyInfo.id });
-          this.loadList();
-        }
-      }).catch(err => console.error('获取用户信息失败', err));
     }
   },
 

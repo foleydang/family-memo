@@ -42,13 +42,6 @@ Page({
     if (app.globalData.familyInfo) {
       this.setData({ familyId: app.globalData.familyInfo.id });
       this.loadScheduleList();
-    } else if (app.globalData.token) {
-      app.getUserInfo().then(() => {
-        if (app.globalData.familyInfo) {
-          this.setData({ familyId: app.globalData.familyInfo.id });
-          this.loadScheduleList();
-        }
-      }).catch(err => console.error('获取用户信息失败', err));
     }
   },
 

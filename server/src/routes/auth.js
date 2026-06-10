@@ -30,7 +30,6 @@ router.post('/login', async (req, res) => {
     });
     
     const { openid, session_key, errcode, errmsg } = wxRes.data;
-    console.log('[登录] 微信返回openid:', openid, 'errcode:', errcode);
     
     if (errcode) {
       console.error('微信登录失败:', errmsg);
@@ -48,12 +47,8 @@ router.post('/login', async (req, res) => {
 async function handleLogin(openid, res) {
   const db = getDb();
   
-  console.log('[登录] 查找openid:', openid);
-  
   // 查找或创建用户
   let user = db.prepare('SELECT * FROM users WHERE openid = ?').get(openid);
-  
-  console.log('[登录] 查找结果:', user ? `找到用户id=${user.id} nickname=${user.nickname}` : '未找到，将创建新用户');
   
   if (!user) {
     db.prepare(
