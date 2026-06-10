@@ -30,6 +30,7 @@ app.use('/static', express.static(path.join(__dirname, '../public')));
 
 // 路由
 app.use('/api/auth', authRoutes);
+app.use('/api/user', authRoutes); // 小程序用/user/stats访问
 app.use('/api/family', familyRoutes);
 app.use('/api/shopping', shoppingRoutes);
 app.use('/api/todo', todoRoutes);

@@ -125,7 +125,7 @@ router.get('/:familyId', authMiddleware, (req, res) => {
     
     // 获取成员列表
     const members = db.prepare(`
-      SELECT u.id, u.nickname, u.avatar, fm.nickname as member_nickname, fm.role
+      SELECT u.id, u.nickname, u.avatar, fm.nickname as member_nickname, u.role
       FROM family_members fm
       JOIN users u ON fm.user_id = u.id
       WHERE fm.family_id = ?
