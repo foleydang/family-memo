@@ -7,7 +7,7 @@ const DEFAULT_AVATAR = '/images/default-avatar.png'
 function getValidAvatar(url) {
   if (!url) return DEFAULT_AVATAR
   if (url.startsWith('cloud://')) return DEFAULT_AVATAR  // 需要转换，先显示默认头像
-  if (url.startsWith('https://') && url.includes('?')) return url  // 有效临时 URL
+  if (url.startsWith('https://')) return url  // 所有 HTTPS URL 都有效（含服务器头像和带签名的临时URL）
   if (url.startsWith('wxfile://')) return url  // 本地临时文件
   return DEFAULT_AVATAR  // 无效格式用默认头像
 }

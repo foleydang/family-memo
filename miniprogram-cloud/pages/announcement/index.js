@@ -6,7 +6,7 @@ const DEFAULT_AVATAR = '/images/default-avatar.png'
 function getValidAvatar(url) {
   if (!url) return DEFAULT_AVATAR
   if (url.startsWith('cloud://')) return DEFAULT_AVATAR
-  if (url.startsWith('https://') && url.includes('?')) return url
+  if (url.startsWith('https://')) return url
   return DEFAULT_AVATAR
 }
 
