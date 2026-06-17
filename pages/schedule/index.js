@@ -97,38 +97,31 @@ Page({
       const isWorkday = holidayInfo.holiday === false;
       const holidayWage = holidayInfo.wage || 0;
       
-      // 右上角标记: 休/班 (调休日显示具体假期名如"端午休")
+      // 右上角标记: 休/班
       let restMark = null, restMarkClass = '';
-      if (isHoliday && holidayWage === 2) {
-        const hName = holidayInfo.holidayName || '';
-        if (hName.includes('端午')) restMark = '端午休';
-        else if (hName.includes('春节')) restMark = '春节休';
-        else if (hName.includes('清明')) restMark = '清明休';
-        else if (hName.includes('劳动')) restMark = '劳动休';
-        else if (hName.includes('中秋')) restMark = '中秋休';
-        else if (hName.includes('国庆')) restMark = '国庆休';
-        else restMark = '休';
-        restMarkClass = 'rest-tag';
-      }
+      if (isHoliday && holidayWage === 2) { restMark = '休'; restMarkClass = 'rest-tag'; }
       if (isWorkday) { restMark = '班'; restMarkClass = 'work-tag'; }
-      // 核心假日日(wage=3)角标也显示假期名
-      if (isHoliday && holidayWage === 3) {
-        const hName = holidayInfo.holidayName || '';
-        if (hName.includes('端午')) restMark = '端午';
-        else if (hName.includes('春节')) restMark = '春节';
-        else if (hName.includes('清明')) restMark = '清明';
-        else if (hName.includes('劳动')) restMark = '劳动';
+      if (isHoliday && holidayWage === 3) { restMark = '休'; restMarkClass = 'holiday-tag'; }
         else if (hName.includes('中秋')) restMark = '中秋';
         else if (hName.includes('国庆')) restMark = '国庆';
         else if (hName.includes('元旦')) restMark = '元旦';
-        else restMark = hName || '休';
-        restMarkClass = 'holiday-tag';
-      }
-
-      // 下方标签行: 节气、纪念日、日程类型 等，最多2个
-      // (wage=3核心假日名已在右上角角标显示，不再占下方标签位)
+        
+      // 下方标签行: 节日名(wage=3)、节气、纪念日、日程类型 等，最多2个
       const dayTags = [];
       
+      // 核心假日名(wage=3)也显示在下方标签行
+      if (isHoliday && holidayWage === 3) {
+        const name = holidayInfo.holidayName || '';
+        let shortName = name;
+        if (name.includes('初') || name.includes('除夕')) shortName = '春节';
+        else if (name.includes('清明')) shortName = '清明';
+        else if (name.includes('劳动')) shortName = '劳动节';
+        else if (name.includes('端午')) shortName = '端午';
+        else if (name.includes('中秋')) shortName = '中秋';
+        else if (name.includes('国庆')) shortName = '国庆';
+        else if (name.includes('元旦')) shortName = '元旦';
+        dayTags.push({ text: shortName, cls: 'holiday-tag' });
+      }
       if (holidayInfo.term) {
         dayTags.push({ text: holidayInfo.term, cls: 'term-tag' });
       }
