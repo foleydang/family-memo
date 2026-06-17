@@ -52,7 +52,7 @@
 /* 日历格子 */
 .day-cell {
   width: calc(100% / 7);
-  min-height: 88rpx;
+  min-height: 100rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -91,17 +91,15 @@
 .day-cell.selected { background: #FFE4EC; border-radius: 8rpx; }
 .day-cell.selected .day-num { color: #FF85A2; }
 
-/* 下方标签行 */
-.day-tags { display: flex; flex-wrap: wrap; gap: 2rpx; margin-top: 4rpx; max-width: 100%; }
-.day-tag { font-size: 10px; line-height: 1.2; white-space: nowrap; }
+/* 下方标签行 - 纵排每行一个标签 */
+.day-tags { display: flex; flex-direction: column; align-items: center; margin-top: 4rpx; width: 100%; }
+.day-tag { font-size: 9px; line-height: 1.2; white-space: nowrap; text-align: center; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .day-tag.holiday-tag { color: #f5222d; font-weight: 600; }
-.day-tag.rest-tag { color: #FF85A2; }
-.day-tag.work-tag { color: #999; }
 .day-tag.term-tag { color: #52c41a; }
 .day-tag.festival-tag { color: #FF85A2; }
 .day-tag.schedule-tag { color: #1890ff; }
 
-.schedule-dot { width: 6rpx; height: 6px; background: #FF85A2; border-radius: 50%; margin-top: 2rpx; }
+.schedule-dot { width: 6rpx; height: 6rpx; background: #FF85A2; border-radius: 50%; margin-top: 2rpx; }
 
 .day-cell.is-holiday .day-num { color: #f5222d; }
 .day-cell.is-workday { background: #f5f5f5; border-radius: 8rpx; }
