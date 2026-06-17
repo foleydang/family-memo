@@ -56,17 +56,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 6rpx;
+  padding-top: 10rpx;
   position: relative;
 }
 
 .day-cell.empty { visibility: hidden; }
 
-/* 日期数字行 */
+/* 日期数字 */
 .day-num-wrap {
   display: flex;
-  align-items: baseline;
-  position: relative;
+  align-items: center;
 }
 
 .day-num {
@@ -75,18 +74,18 @@
   line-height: 1;
 }
 
-/* 休/班 右上角角标 */
+/* 休/班 格子右上角角标 */
 .rest-badge {
   font-size: 9px;
   line-height: 1;
   padding: 1px 2px;
   border-radius: 2px;
   position: absolute;
-  top: 0;
-  right: -12rpx;
+  top: 4rpx;
+  right: 4rpx;
 }
 .rest-badge.rest-tag { color: #FF85A2; background: rgba(255, 228, 236, 0.85); }
-.rest-badge.work-tag { color: #999; background: rgba(240, 240, 240, 085); }
+.rest-badge.work-tag { color: #999; background: rgba(240, 240, 240, 0.85); }
 
 .day-cell.today .day-num { color: #FF85A2; font-weight: bold; }
 .day-cell.selected { background: #FFE4EC; border-radius: 8rpx; }
