@@ -204,7 +204,8 @@ Page({
   },
 
   updateDaySchedules(date) {
-    const daySchedules = this.data.scheduleList.filter(s => s.schedule_date === date);
+    const typeNames = { birthday: '生日', anniversary: '纪念日', appointment: '预约', meeting: '会议', trip: '出行', schedule: '日程', other: '其他' };
+    const daySchedules = this.data.scheduleList.filter(s => s.schedule_date === date).map(s => ({ ...s, typeName: typeNames[s.type] || '其他' }));
     this.setData({ daySchedules });
   },
 
