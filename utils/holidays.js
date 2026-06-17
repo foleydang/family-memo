@@ -1,7 +1,7 @@
 // utils/holidays.js - 前端节假日工具
 // 从后端获取节假日/节气/节日信息，缓存到storage
 
-const CACHE_KEY = 'holidays_cache';
+const CACHE_KEY = 'holidays_cache_v2';
 
 /**
  * 获取某月的节假日数据

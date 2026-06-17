@@ -209,10 +209,6 @@ Page({
     const daySchedules = this.data.scheduleList.filter(s => s.schedule_date === date).map(s => ({ ...s, typeName: typeNames[s.type] || '其他' }));
     // 计算选中日期的标签信息，传到wxml
     const holidayInfo = this.data.monthHolidays[date] || {};
-    console.log('=== updateDaySchedules debug ===');
-    console.log('date:', date);
-    console.log('monthHolidays keys:', Object.keys(this.data.monthHolidays).slice(0, 5));
-    console.log('holidayInfo for date:', JSON.stringify(holidayInfo));
     const isHoliday = holidayInfo.holiday === true;
     const isWorkday = holidayInfo.holiday === false;
     const selectedDateInfo = {
@@ -224,7 +220,6 @@ Page({
       festival: holidayInfo.festival || '',
       festivalEmoji: holidayInfo.festivalEmoji || ''
     };
-    console.log('selectedDateInfo:', JSON.stringify(selectedDateInfo));
     this.setData({ daySchedules, selectedDateInfo });
   },
 
