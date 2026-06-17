@@ -217,8 +217,9 @@ Page({
       isWorkday,
       term: holidayInfo.term || '',
       termEmoji: holidayInfo.termEmoji || '',
-      festival: holidayInfo.festival || '',
-      festivalEmoji: holidayInfo.festivalEmoji || ''
+      festival: holidayInfo.festival || null,
+      festivalEmoji: holidayInfo.festivalEmoji || null
+
     };
     this.setData({ daySchedules, selectedDateInfo });
   },
