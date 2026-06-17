@@ -115,8 +115,17 @@
 .date-title {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16rpx;
+}
+
+.date-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.date-text {
   font-size: 28rpx;
   color: #333;
   font-weight: bold;
