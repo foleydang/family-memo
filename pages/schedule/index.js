@@ -104,11 +104,18 @@ Page({
       if (isWorkday) { restMark = '班'; restMarkClass = 'work-tag'; }
       if (isHoliday && holidayWage === 3) { restMark = '休'; restMarkClass = 'holiday-tag'; }
 
-      // 下方标签行: 节日名(wage=3)、节气、纪念日、日程类型 等，最多2个
+      // 判断是否是假期正日(前一天不是同一个holidayName)
+      let isHolidayMainDay = false;
+      if (isHoliday && holidayWage === 3) {
+        const prevDateStr = `${year}-${String(month).padStart(2, '0')}-${String(d - 1).padStart(2, '0')}`;
+        const prevInfo = monthHolidays[prevDateStr] || {};
+        isHolidayMainDay = prevInfo.holidayName !== holidayInfo.holidayName;
+      }
+
+      // 下方标签行: 只有假期正日才显示节日名, 其他天只显示"休"
       const dayTags = [];
       
-      // 核心假日名(wage=3)也显示在下方标签行
-      if (isHoliday && holidayWage === 3) {
+      if (isHoliday && holidayWage === 3 && isHolidayMainDay) {
         const name = holidayInfo.holidayName || '';
         let shortName = name;
         if (name.includes('初') || name.includes('除夕')) shortName = '春节';
@@ -211,9 +218,16 @@ Page({
     const holidayInfo = this.data.monthHolidays[date] || {};
     const isHoliday = holidayInfo.holiday === true;
     const isWorkday = holidayInfo.holiday === false;
+    // 判断是否假期正日(前一天不是同一个holidayName)
+    const year = this.data.currentYear;
+    const month = this.data.currentMonthNum;
+    const dayNum = parseInt(date.split('-')[2]);
+    const prevDateStr = `${year}-${String(month).padStart(2, '0')}-${String(dayNum - 1).padStart(2, '0')}`;
+    const prevInfo = this.data.monthHolidays[prevDateStr] || {};
+    const isHolidayMainDay = isHoliday && holidayInfo.wage === 3 && prevInfo.holidayName !== holidayInfo.holidayName;
     const selectedDateInfo = {
-      holidayName: isHoliday ? (holidayInfo.holidayName || '') : '',
-      holidaySuffix: isHoliday && holidayInfo.wage === 2 ? '休' : '',
+      holidayName: isHolidayMainDay ? (holidayInfo.holidayName || '') : null,
+      holidaySuffix: isHoliday ? '休' : (isWorkday ? '' : null),
       isWorkday,
       term: holidayInfo.term || '',
       termEmoji: holidayInfo.termEmoji || '',
