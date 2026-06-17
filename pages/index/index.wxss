@@ -146,6 +146,36 @@
 
 .my-empty { text-align: center; padding: 20rpx; color: #999; font-size: 26rpx; }
 
+/* 倒计时 */
+.countdown-list { display: flex; flex-direction: column; gap: 10rpx; }
+
+.countdown-item {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 16rpx 20rpx;
+  border-radius: 14rpx;
+}
+
+.countdown-emoji { font-size: 36rpx; margin-right: 16rpx; }
+
+.countdown-info { flex: 1; }
+.countdown-title { font-size: 28rpx; font-weight: 500; color: #333; }
+.countdown-date { font-size: 24rpx; color: #999; margin-top: 4rpx; }
+
+.countdown-days {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #FF85A2;
+  padding: 8rpx 20rpx;
+  background: #FFE4EC;
+  border-radius: 20rpx;
+}
+.countdown-days.today {
+  color: #fff;
+  background: #FF4D6A;
+}
+
 /* 快捷入口 */
 .quick-actions { display: flex; flex-direction: column; gap: 12rpx; }
 
@@ -155,6 +185,7 @@
 .action-icon-box.shopping { background: linear-gradient(135deg, #FFE4EC 0%, #FFB6C1 100%); }
 .action-icon-box.todo { background: linear-gradient(135deg, #E8F5E9 0%, #A5D6A7 100%); }
 .action-icon-box.schedule { background: linear-gradient(135deg, #FFF3E0 0%, #FFCC80 100%); }
+.action-icon-box.wish { background: linear-gradient(135deg, #E8DEF8 0%, #C4B5FD 100%); }
 .action-icon { font-size: 32rpx; }
 
 .action-info { flex: 1; }

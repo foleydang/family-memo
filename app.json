@@ -11,7 +11,8 @@
     "pages/my-records/index",
     "pages/remind-settings/index",
     "pages/announcement/index",
-    "pages/export/index"
+    "pages/export/index",
+    "pages/wish/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

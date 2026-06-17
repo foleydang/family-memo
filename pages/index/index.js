@@ -8,6 +8,7 @@ Page({
     members: [],
     myTodos: [],
     todaySchedules: [],
+    countdowns: [],
     greeting: '',
     todayStr: '',
     loading: true,
@@ -41,7 +42,6 @@ Page({
       todayStr: `${today.getMonth() + 1}月${today.getDate()}日 星期${weekDays[today.getDay()]}`
     })
 
-    // 检查登录
     if (!app.globalData.token) {
       try {
         await app.login()
@@ -53,14 +53,10 @@ Page({
   },
 
   async refreshData() {
-    // 如果没有 token，显示未登录状态
     if (!app.globalData.token) {
       this.setData({
-        userInfo: null,
-        familyInfo: null,
-        members: [],
-        myTodos: [],
-        todaySchedules: [],
+        userInfo: null, familyInfo: null, members: [],
+        myTodos: [], todaySchedules: [], countdowns: [],
         loading: false
       });
       return;
@@ -79,11 +75,7 @@ Page({
       }
     } catch (err) { 
       console.error('刷新数据失败', err);
-      // 获取失败也显示未登录
-      this.setData({
-        userInfo: null,
-        familyInfo: null
-      });
+      this.setData({ userInfo: null, familyInfo: null });
     }
   },
 
@@ -92,7 +84,6 @@ Page({
       const res = await app.request({
         url: `/family/${this.data.familyInfo.id}`
       })
-      // 映射 avatar 字段
       const members = (res.data.members || []).map(m => ({
         ...m,
         avatarUrl: m.avatar || m.avatarUrl
@@ -101,7 +92,6 @@ Page({
     } catch (err) { console.error('加载成员失败', err) }
   },
 
-  // 加载"与我相关"数据
   async loadMyData() {
     const myUserId = app.globalData.userInfo?.id
     if (!myUserId || !this.data.familyInfo) return
@@ -109,7 +99,6 @@ Page({
     const todayStr = this.formatDate(new Date())
 
     try {
-      // 并行加载待办和日程
       const [todoRes, scheduleRes] = await Promise.all([
         app.request({ url: '/todo/list', data: { familyId, status: 'all', assignee: myUserId } }),
         app.request({ url: '/schedule/list', data: { familyId } })
@@ -123,8 +112,70 @@ Page({
         .filter(s => s.schedule_date === todayStr)
         .slice(0, 3)
       
-      this.setData({ myTodos, todaySchedules })
+      // 计算重要日期倒计时
+      const countdowns = this.calcCountdowns(scheduleRes.data || [])
+      
+      this.setData({ myTodos, todaySchedules, countdowns })
     } catch (err) { console.error('加载我的数据失败', err) }
+  },
+
+  // 从日程数据中计算倒计时
+  calcCountdowns(schedules) {
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const typeEmoji = { birthday: '🎂', anniversary: '💕', trip: '✈️', appointment: '📋', schedule: '📅', other: '📌' }
+    const typeName = { birthday: '生日', anniversary: '纪念日', trip: '出行', appointment: '预约', schedule: '日程', other: '重要日期' }
+    
+    // 只取生日、纪念日、出行类型 + 循环日程中的重要类型
+    const importantTypes = ['birthday', 'anniversary', 'trip']
+    
+    const countdowns = []
+    
+    schedules.forEach(s => {
+      const type = s.type || 'other'
+      if (!importantTypes.includes(type) && type !== 'other') return
+      
+      const recurring = s.recurring || s.repeat_type || 'none'
+      let targetDate
+      
+      if (recurring === 'yearly' || type === 'birthday' || type === 'anniversary') {
+        // 循环日程：计算今年的下一次日期
+        const origDate = new Date(s.schedule_date)
+        const origMonth = origDate.getMonth()
+        const origDay = origDate.getDate()
+        
+        // 今年该日期
+        targetDate = new Date(currentYear, origMonth, origDay)
+        // 如果已经过了，算明年
+        if (targetDate < now) {
+          targetDate = new Date(currentYear + 1, origMonth, origDay)
+        }
+      } else {
+        // 非循环日程：直接用原日期，但只显示未来的
+        targetDate = new Date(s.schedule_date)
+        if (targetDate < now) return
+      }
+      
+      const diffDays = Math.ceil((targetDate - now) / 86400000)
+      
+      // 只显示30天内的倒计时
+      if (diffDays <= 30) {
+        countdowns.push({
+          id: s.id,
+          title: s.title,
+          type,
+          emoji: typeEmoji[type] || '📌',
+          typeName: typeName[type] || '重要日期',
+          days: diffDays,
+          dateStr: `${targetDate.getMonth() + 1}月${targetDate.getDate()}日`,
+          isToday: diffDays === 0
+        })
+      }
+    })
+    
+    // 按天数排序
+    countdowns.sort((a, b) => a.days - b.days)
+    return countdowns.slice(0, 5)
   },
 
   formatDate(date) {
@@ -147,6 +198,7 @@ Page({
   goToShopping() { wx.switchTab({ url: '/pages/shopping/index' }) },
   goToTodo() { wx.switchTab({ url: '/pages/todo/index' }) },
   goToSchedule() { wx.switchTab({ url: '/pages/schedule/index' }) },
+  goToWish() { wx.navigateTo({ url: '/pages/wish/index' }) },
 
   handleLogin() {
     wx.showLoading({ title: '登录中' });
@@ -170,11 +222,8 @@ Page({
     if (res.confirm) {
       app.logout();
       this.setData({
-        userInfo: null,
-        familyInfo: null,
-        members: [],
-        myTodos: [],
-        todaySchedules: [],
+        userInfo: null, familyInfo: null, members: [],
+        myTodos: [], todaySchedules: [], countdowns: [],
         loading: false
       });
       wx.showToast({ title: '已退出登录', icon: 'success' });

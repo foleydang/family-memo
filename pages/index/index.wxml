@@ -100,6 +100,25 @@
     </view>
   </view>
 
+  <!-- 重要日期倒计时 -->
+  <view class="section" wx:if="{{familyInfo && countdowns.length > 0}}">
+    <view class="section-title">⏳ 倒计时</view>
+    <view class="countdown-list">
+      <view class="countdown-item" wx:for="{{countdowns}}" wx:key="id" bindtap="goToSchedule">
+        <view class="countdown-emoji">{{item.emoji}}</view>
+        <view class="countdown-info">
+          <view class="countdown-title">{{item.title}}</view>
+          <view class="countdown-date">{{item.dateStr}}</view>
+        </view>
+        <view class="countdown-days {{item.isToday ? 'today' : ''}}">
+          <text wx:if="{{item.isToday}}">就是今天!</text>
+          <text wx:elif="{{item.days === 1}}">明天</text>
+          <text wx:else>{{item.days}}天</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- 快捷入口 -->
   <view class="section" wx:if="{{familyInfo}}">
     <view class="section-title">快捷入口</view>
@@ -123,6 +142,13 @@
         <view class="action-info">
           <view class="action-title">日程安排</view>
           <view class="action-desc">记录重要日程事件</view>
+        </view>
+      </view>
+      <view class="action-card" bindtap="goToWish">
+        <view class="action-icon-box wish"><text class="action-icon">🌟</text></view>
+        <view class="action-info">
+          <view class="action-title">心愿墙</view>
+          <view class="action-desc">写下家人的心愿</view>
         </view>
       </view>
     </view>
