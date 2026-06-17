@@ -102,10 +102,7 @@ Page({
       if (isHoliday && holidayWage === 2) { restMark = '休'; restMarkClass = 'rest-tag'; }
       if (isWorkday) { restMark = '班'; restMarkClass = 'work-tag'; }
       if (isHoliday && holidayWage === 3) { restMark = '休'; restMarkClass = 'holiday-tag'; }
-        else if (hName.includes('中秋')) restMark = '中秋';
-        else if (hName.includes('国庆')) restMark = '国庆';
-        else if (hName.includes('元旦')) restMark = '元旦';
-        
+
       // 下方标签行: 节日名(wage=3)、节气、纪念日、日程类型 等，最多2个
       const dayTags = [];
       
