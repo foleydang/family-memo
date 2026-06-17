@@ -104,14 +104,14 @@ Page({
       const isWorkday = holidayInfo.holiday === false;
       const holidayWage = holidayInfo.wage || 0;
       
-      // 右上角标记: 休/班 (只有这两类才显示在右上角)
-      let restMark = null, restMarkClass = '';
-      if (isHoliday && holidayWage === 2) { restMark = '休'; restMarkClass = 'rest-tag'; }
-      if (isWorkday) { restMark = '班'; restMarkClass = 'work-tag'; }
-      // wage=3的核心假日不显示角标,下方标签行会显示节日名
-      
-      // 下方标签行: 节气、节日名(wage=3)、纪念日 等，可以有多个
+      // 下方标签行: 休/班、节气、节日名(wage=3)、纪念日等，可以有多个
       const dayTags = [];
+      
+      // 休/班标签
+      if (isHoliday && holidayWage === 2) { dayTags.push({ text: '休', cls: 'rest-tag' }); }
+      if (isWorkday) { dayTags.push({ text: '班', cls: 'work-tag' }); }
+      
+      // 核心假日名(wage=3)
       if (isHoliday && holidayWage === 3) {
         const name = holidayInfo.holidayName || '';
         let shortName = name;
@@ -149,8 +149,6 @@ Page({
         isToday,
         hasSchedule,
         selected: dateStr === this.data.selectedDate,
-        restMark,
-        restMarkClass,
         dayTags,
         isHoliday,
         isWorkday,

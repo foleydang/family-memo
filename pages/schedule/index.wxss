@@ -61,31 +61,11 @@
 
 .day-cell.empty { visibility: hidden; }
 
-/* 日期数字行 + 右上角角标 */
-.day-num-row {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
 .day-num {
   font-size: 26rpx;
   color: #333;
   line-height: 1;
 }
-
-/* 右上角角标: 休/班 */
-.rest-mark {
-  font-size: 10px;
-  position: absolute;
-  top: -4px;
-  right: -8px;
-  padding: 0 3px;
-  border-radius: 3px;
-  line-height: 14px;
-}
-.rest-mark.rest-tag { color: #FF85A2; background: #FFE4EC; }
-.rest-mark.work-tag { color: #999; background: #f0f0f0; }
 
 .day-cell.today .day-num { color: #FF85A2; font-weight: bold; }
 .day-cell.selected { background: #FFE4EC; border-radius: 8rpx; }
@@ -107,6 +87,8 @@
 }
 
 .day-tag.holiday-tag { color: #f5222d; font-weight: 600; }
+.day-tag.rest-tag { color: #FF85A2; }
+.day-tag.work-tag { color: #999; }
 .day-tag.term-tag { color: #52c41a; }
 .day-tag.festival-tag { color: #FF85A2; }
 .day-tag.schedule-tag { color: #1890ff; }
