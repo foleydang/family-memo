@@ -103,6 +103,14 @@ Page({
       const isHoliday = holidayInfo.holiday === true;
       const isWorkday = holidayInfo.holiday === false;
       const holidayWage = holidayInfo.wage || 0;
+      
+      // 标签样式: holiday-text(核心假日名)/rest-day(调休)/work-day(补班)/term-text(节气)
+      let holidayLabelClass = 'term-text';
+      if (isHoliday && holidayWage === 3) holidayLabelClass = 'holiday-text';
+      else if (isHoliday && holidayWage === 2) holidayLabelClass = 'rest-day';
+      else if (isWorkday) holidayLabelClass = 'work-day';
+      else if (holidayInfo.term) holidayLabelClass = 'term-text';
+      else if (holidayInfo.festival) holidayLabelClass = 'festival-text';
 
       days.push({
         day: d,
@@ -111,6 +119,7 @@ Page({
         hasSchedule,
         selected: dateStr === this.data.selectedDate,
         holidayLabel,
+        holidayLabelClass,
         isHoliday,
         isWorkday,
         holidayWage

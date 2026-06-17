@@ -23,7 +23,7 @@
         <view wx:if="{{item.empty}}" class="day-cell empty"></view>
         <view wx:else class="day-cell {{item.isToday ? 'today' : ''}} {{item.selected ? 'selected' : ''}} {{item.hasSchedule ? 'has-schedule' : ''}} {{item.isHoliday ? 'is-holiday' : ''}} {{item.isWorkday ? 'is-workday' : ''}}" bindtap="selectDay" data-date="{{item.dateStr}}">
           <text class="day-num {{item.isWorkday ? 'workday-text' : ''}}">{{item.day}}</text>
-          <text wx:if="{{item.holidayLabel}}" class="holiday-label {{item.isHoliday && item.holidayWage === 3 ? 'holiday-text' : item.isHoliday ? 'holiday-text rest-day' : item.isWorkday ? 'workday-text' : 'term-text'}}">{{item.holidayLabel}}</text>
+          <text wx:if="{{item.holidayLabel}}" class="holiday-label {{item.holidayLabelClass}}">{{item.holidayLabel}}</text>
           <view wx:if="{{item.hasSchedule && !item.holidayLabel}}" class="schedule-dot"></view>
         </view>
       </block>

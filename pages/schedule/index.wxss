@@ -109,12 +109,19 @@
   font-weight: 600;
 }
 
-.holiday-label.holiday-text.rest-day {
+/* 调休标记(wage=2放假日) */
+.holiday-label.rest-day {
   color: #FF85A2;
   font-weight: 400;
-  font-size: 16rpx;
 }
 
+/* 补班标记 */
+.holiday-label.work-day {
+  color: #999;
+  font-size: 14rpx;
+}
+
+/* 节气 */
 .holiday-label.term-text {
   color: #52c41a;
 }

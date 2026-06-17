@@ -39,7 +39,7 @@ async function getMonthHolidays(year, month) {
  * 获取某日的节假日标签（简短，用于日历格子显示）
  * @param {string} dateStr - YYYY-MM-DD
  * @param {object} monthHolidays - 该月节假日数据
- * @returns {string|null} - 如 "端午" / "芒种" / "儿童节"
+ * @returns {string|null} - 如 "端午" / "休" / "芒种" / "儿童节"
  */
 function getDayLabel(dateStr, monthHolidays) {
   const info = monthHolidays[dateStr];
@@ -51,10 +51,10 @@ function getDayLabel(dateStr, monthHolidays) {
   // 法定假日：wage=3 是真正的节日日，wage=2 是调休放假日
   if (info.holiday === true) {
     if (info.wage === 3) {
-      // 真正的节日：简化名称
-      const name = info.holidayName;
+      // 核心假日日：显示具体节日名
+      const name = info.holidayName || '';
       if (name.includes('除夕')) return '除夕';
-      if (name.includes('初一')) return '春节';
+      if (name.includes('初')) return '春节';
       if (name.includes('清明')) return '清明';
       if (name.includes('劳动')) return '劳动节';
       if (name.includes('端午')) return '端午';
@@ -63,7 +63,7 @@ function getDayLabel(dateStr, monthHolidays) {
       if (name.includes('元旦')) return '元旦';
       return name;
     }
-    // wage=2 的放假日 → "休"
+    // wage=2 的调休放假日 → "休"
     return '休';
   }
   
