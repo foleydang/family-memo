@@ -1,5 +1,6 @@
 // pages/schedule/index.js
 const app = getApp();
+const { getMonthHolidays, getDayLabel } = require('../../utils/holidays');
 
 Page({
   data: {
@@ -7,6 +8,7 @@ Page({
     scheduleList: [],
     rawSchedules: [], // 服务器原始数据，不展开循环
     daySchedules: [], // 当天日程
+    monthHolidays: {}, // 该月节假日数据
     currentMonth: '',
     currentYear: 0,
     currentMonthNum: 0,
@@ -86,23 +88,30 @@ Page({
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    // 前置空格
+    const monthHolidays = this.data.monthHolidays || {};
+
     for (let i = 0; i < startWeekday; i++) {
       days.push({ empty: true });
     }
 
-    // 日期
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const hasSchedule = this.checkHasSchedule(dateStr);
       const isToday = dateStr === todayStr;
+      const holidayLabel = getDayLabel(dateStr, monthHolidays);
+      const holidayInfo = monthHolidays[dateStr] || {};
+      const isHoliday = holidayInfo.holiday === true;
+      const isWorkday = holidayInfo.holiday === false;
 
       days.push({
         day: d,
         dateStr,
         isToday,
         hasSchedule,
-        selected: dateStr === this.data.selectedDate
+        selected: dateStr === this.data.selectedDate,
+        holidayLabel,
+        isHoliday,
+        isWorkday
       });
     }
 
@@ -113,41 +122,36 @@ Page({
     return this.data.scheduleList.some(s => s.schedule_date === dateStr);
   },
 
-  prevMonth() {
+  async prevMonth() {
     let { currentYear, currentMonthNum } = this.data;
     if (currentMonthNum === 1) {
-      currentYear--;
-      currentMonthNum = 12;
+      currentYear--; currentMonthNum = 12;
     } else {
       currentMonthNum--;
     }
-    this.setData({
-      currentYear,
-      currentMonthNum,
-      currentMonth: `${currentYear}年${currentMonthNum}月`
-    });
-    this.expandAndRender();
+    this.setData({ currentYear, currentMonthNum, currentMonth: `${currentYear}年${currentMonthNum}月` });
+    await this.expandAndRender();
   },
 
-  nextMonth() {
+  async nextMonth() {
     let { currentYear, currentMonthNum } = this.data;
     if (currentMonthNum === 12) {
-      currentYear++;
-      currentMonthNum = 1;
+      currentYear++; currentMonthNum = 1;
     } else {
       currentMonthNum++;
     }
-    this.setData({
-      currentYear,
-      currentMonthNum,
-      currentMonth: `${currentYear}年${currentMonthNum}月`
-    });
-    this.expandAndRender();
+    this.setData({ currentYear, currentMonthNum, currentMonth: `${currentYear}年${currentMonthNum}月` });
+    await this.expandAndRender();
   },
 
-  expandAndRender() {
+  async expandAndRender() {
     const expandedList = this.expandRecurringSchedules(this.data.rawSchedules);
     this.setData({ scheduleList: expandedList });
+    
+    // 加载该月节假日数据
+    const monthHolidays = await getMonthHolidays(this.data.currentYear, this.data.currentMonthNum);
+    this.setData({ monthHolidays });
+    
     this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
     this.updateDaySchedules(this.data.selectedDate);
   },
@@ -177,15 +181,13 @@ Page({
       const rawSchedules = res.data || [];
       const expandedList = this.expandRecurringSchedules(rawSchedules);
       
-      this.setData({ 
-        rawSchedules,
-        scheduleList: expandedList 
-      });
+      // 加载节假日
+      const monthHolidays = await getMonthHolidays(this.data.currentYear, this.data.currentMonthNum);
+      
+      this.setData({ rawSchedules, scheduleList: expandedList, monthHolidays });
       this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
       this.updateDaySchedules(this.data.selectedDate);
-    } catch (err) {
-      console.error('加载日程失败', err);
-    }
+    } catch (err) { console.error('加载日程失败', err); }
   },
   
   expandRecurringSchedules(schedules) {

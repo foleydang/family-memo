@@ -21,9 +21,10 @@
     <view class="calendar-body">
       <block wx:for="{{calendarDays}}" wx:key="index">
         <view wx:if="{{item.empty}}" class="day-cell empty"></view>
-        <view wx:else class="day-cell {{item.isToday ? 'today' : ''}} {{item.selected ? 'selected' : ''}} {{item.hasSchedule ? 'has-schedule' : ''}}" bindtap="selectDay" data-date="{{item.dateStr}}">
-          <text class="day-num">{{item.day}}</text>
-          <view wx:if="{{item.hasSchedule}}" class="schedule-dot"></view>
+        <view wx:else class="day-cell {{item.isToday ? 'today' : ''}} {{item.selected ? 'selected' : ''}} {{item.hasSchedule ? 'has-schedule' : ''}} {{item.isHoliday ? 'is-holiday' : ''}} {{item.isWorkday ? 'is-workday' : ''}}" bindtap="selectDay" data-date="{{item.dateStr}}">
+          <text class="day-num {{item.isWorkday ? 'workday-text' : ''}}">{{item.day}}</text>
+          <text wx:if="{{item.holidayLabel}}" class="holiday-label {{item.isHoliday ? 'holiday-text' : 'term-text'}}">{{item.holidayLabel}}</text>
+          <view wx:if="{{item.hasSchedule && !item.holidayLabel}}" class="schedule-dot"></view>
         </view>
       </block>
     </view>
@@ -33,6 +34,9 @@
   <view class="day-schedules">
     <view class="date-title">
       <text>{{selectedDate}}</text>
+      <text wx:if="{{monthHolidays[selectedDate].holidayName}}" class="date-holiday">🎉 {{monthHolidays[selectedDate].holidayName}}</text>
+      <text wx:if="{{monthHolidays[selectedDate].term}}" class="date-term">🌿 {{monthHolidays[selectedDate].term}}</text>
+      <text wx:if="{{monthHolidays[selectedDate].festival}}" class="date-festival">{{monthHolidays[selectedDate].festivalEmoji}} {{monthHolidays[selectedDate].festival}}</text>
       <view class="add-btn" bindtap="showAddModal">+ 添加</view>
     </view>
 
