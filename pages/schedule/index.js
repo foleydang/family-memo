@@ -35,8 +35,6 @@ Page({
     ],
     typeIndex: 0,
     remindOptions: ['不提醒', '当天', '提前1天', '提前3天', '提前7天'],
-    // 提醒值映射：index → remind天数
-    // 0: 不提醒(0), 1: 当天(0), 2: 提前1天(1), 3: 提前3天(3), 4: 提前7天(7)
     remindValues: [0, 0, 1, 3, 7],
     remindIndex: 0,
     repeatOptions: ['不循环', '每日', '每周', '每月', '每年'],
@@ -44,9 +42,7 @@ Page({
     repeatValues: ['none', 'daily', 'weekly', 'monthly', 'yearly']
   },
 
-  onLoad() {
-    this.initCalendar();
-  },
+  onLoad() { this.initCalendar(); },
 
   onShow() {
     if (app.globalData.familyInfo) {
@@ -56,9 +52,7 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.loadScheduleList().then(() => {
-      wx.stopPullDownRefresh();
-    });
+    this.loadScheduleList().then(() => wx.stopPullDownRefresh());
   },
 
   initCalendar() {
@@ -98,10 +92,52 @@ Page({
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const hasSchedule = this.checkHasSchedule(dateStr);
       const isToday = dateStr === todayStr;
-      const labels = getDayLabels(dateStr, monthHolidays);
       const holidayInfo = monthHolidays[dateStr] || {};
       const isHoliday = holidayInfo.holiday === true;
       const isWorkday = holidayInfo.holiday === false;
+      const holidayWage = holidayInfo.wage || 0;
+      
+      // 右上角标记: 休/班
+      let restMark = null, restMarkClass = '';
+      if (isHoliday && holidayWage === 2) { restMark = '休'; restMarkClass = 'rest-tag'; }
+      if (isWorkday) { restMark = '班'; restMarkClass = 'work-tag'; }
+
+      // 下方标签行: 节气、节日名(wage=3)、纪念日 等，最多2个
+      const dayTags = [];
+      
+      // 核心假日名(wage=3)
+      if (isHoliday && holidayWage === 3) {
+        const name = holidayInfo.holidayName || '';
+        let shortName = name;
+        if (name.includes('初')) shortName = '春节';
+        if (name.includes('除夕')) shortName = '除夕';
+        if (name.includes('清明')) shortName = '清明';
+        if (name.includes('劳动')) shortName = '劳动节';
+        if (name.includes('端午')) shortName = '端午';
+        if (name.includes('中秋')) shortName = '中秋';
+        if (name.includes('国庆')) shortName = '国庆';
+        if (name.includes('元旦')) shortName = '元旦';
+        dayTags.push({ text: shortName, cls: 'holiday-tag' });
+      }
+      if (holidayInfo.term) {
+        dayTags.push({ text: holidayInfo.term, cls: 'term-tag' });
+      }
+      if (holidayInfo.festival) {
+        dayTags.push({ text: holidayInfo.festival, cls: 'festival-tag' });
+      }
+      // 当天日程中的重要类型也加入标签行(最多1个)
+      const daySchedTypes = { birthday: '🎂生日', anniversary: '💕纪念日', trip: '✈️出行' };
+      this.data.scheduleList.forEach(s => {
+        if (s.schedule_date === dateStr && daySchedTypes[s.type]) {
+          const tagText = daySchedTypes[s.type];
+          if (!dayTags.find(t => t.text === tagText)) {
+            dayTags.push({ text: tagText, cls: 'schedule-tag' });
+          }
+        }
+      });
+      
+      // 只保留最多2个标签
+      const displayTags = dayTags.slice(0, 2);
 
       days.push({
         day: d,
@@ -109,14 +145,12 @@ Page({
         isToday,
         hasSchedule,
         selected: dateStr === this.data.selectedDate,
-        cornerTag: labels ? labels.cornerTag : null,
-        cornerClass: labels ? labels.cornerClass : null,
-        mainLabel: labels ? labels.mainLabel : null,
-        mainClass: labels ? labels.mainClass : null,
-        subLabel: labels ? labels.subLabel : null,
-        subClass: labels ? labels.subClass : null,
+        restMark,
+        restMarkClass,
+        dayTags: displayTags,
         isHoliday,
-        isWorkday
+        isWorkday,
+        holidayWage
       });
     }
 
@@ -127,7 +161,7 @@ Page({
     return this.data.scheduleList.some(s => s.schedule_date === dateStr);
   },
 
-  async prevMonth() {
+  prevMonth() {
     let { currentYear, currentMonthNum } = this.data;
     if (currentMonthNum === 1) {
       currentYear--; currentMonthNum = 12;
@@ -135,18 +169,18 @@ Page({
       currentMonthNum--;
     }
     this.setData({ currentYear, currentMonthNum, currentMonth: `${currentYear}年${currentMonthNum}月` });
-    await this.expandAndRender();
+    this.expandAndRender();
   },
 
-  async nextMonth() {
-    let { currentYear, currentMonthNum } = this.data;
+  nextMonth() {
+    let { currentYear, currentMonthNum } = this.data
     if (currentMonthNum === 12) {
-      currentYear++; currentMonthNum = 1;
+      currentYear++ currentMonthNum = 1;
     } else {
       currentMonthNum++;
     }
     this.setData({ currentYear, currentMonthNum, currentMonth: `${currentYear}年${currentMonthNum}月` });
-    await this.expandAndRender();
+    this.expandAndRender();
   },
 
   async expandAndRender() {
@@ -192,7 +226,7 @@ Page({
       this.setData({ rawSchedules, scheduleList: expandedList, monthHolidays });
       this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
       this.updateDaySchedules(this.data.selectedDate);
-    } catch (err) { console.error('加载日程失败', err); }
+    } catch (err) { console.error('加载日程失败', err) }
   },
   
   expandRecurringSchedules(schedules) {
@@ -208,11 +242,7 @@ Page({
         const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
         for (let d = 1; d <= daysInMonth; d++) {
           const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-          expanded.push({
-            ...schedule,
-            schedule_date: dateStr,
-            isRecurring: true
-          });
+          expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
         }
       } else if (recurring === 'weekly') {
         const originalDate = new Date(schedule.schedule_date);
@@ -222,11 +252,7 @@ Page({
           const date = new Date(currentYear, currentMonthNum - 1, d);
           if (date.getDay() === targetWeekday) {
             const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            expanded.push({
-              ...schedule,
-              schedule_date: dateStr,
-              isRecurring: true
-            });
+            expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
           }
         }
       } else if (recurring === 'monthly') {
@@ -234,11 +260,7 @@ Page({
         const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
         if (originalDay <= daysInMonth) {
           const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
-          expanded.push({
-            ...schedule,
-            schedule_date: dateStr,
-            isRecurring: true
-          });
+          expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
         }
       } else if (recurring === 'yearly') {
         const originalDate = new Date(schedule.schedule_date);
@@ -248,11 +270,7 @@ Page({
           const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
           if (originalDay <= daysInMonth) {
             const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
-            expanded.push({
-              ...schedule,
-              schedule_date: dateStr,
-              isRecurring: true
-            });
+            expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
           }
         }
       }
@@ -281,50 +299,28 @@ Page({
     });
   },
 
-  hideModal() {
-    this.setData({ showModal: false });
-  },
+  hideModal() { this.setData({ showModal: false }); },
 
   stopPropagation() {},
 
-  inputTitle(e) {
-    this.setData({ 'formData.title': e.detail.value });
-  },
-
-  inputTime(e) {
-    this.setData({ 'formData.time': e.detail.value });
-  },
-
-  onDateChange(e) {
-    this.setData({ 'formData.date': e.detail.value });
-  },
-
-  inputDescription(e) {
-    this.setData({ 'formData.description': e.detail.value });
-  },
+  inputTitle(e) { this.setData({ 'formData.title': e.detail.value }); },
+  inputTime(e) { this.setData({ 'formData.time': e.detail.value }); },
+  onDateChange(e) { this.setData({ 'formData.date': e.detail.value }); },
+  inputDescription(e) { this.setData({ 'formData.description': e.detail.value }); },
 
   pickType(e) {
     const index = e.detail.value;
-    this.setData({
-      typeIndex: index,
-      'formData.type': this.data.types[index].value
-    });
+    this.setData({ typeIndex: index, 'formData.type': this.data.types[index].value });
   },
 
   pickRemind(e) {
     const index = e.detail.value;
-    this.setData({
-      remindIndex: index,
-      'formData.remind': this.data.remindValues[index]
-    });
+    this.setData({ remindIndex: index, 'formData.remind': this.data.remindValues[index] });
   },
 
   pickRepeat(e) {
     const index = e.detail.value;
-    this.setData({
-      repeatIndex: index,
-      'formData.repeatType': this.data.repeatValues[index]
-    });
+    this.setData({ repeatIndex: index, 'formData.repeatType': this.data.repeatValues[index] });
   },
 
   async submitForm() {
@@ -336,7 +332,7 @@ Page({
     }
 
     if (!date) {
-      wx.showToast({ title: '请选择日期', icon: 'none' });
+      wx.showToast({ title: '请选择日期' icon: 'none' });
       return;
     }
 
@@ -358,16 +354,7 @@ Page({
         await app.request({
           url: '/schedule/add',
           method: 'POST',
-          data: {
-            familyId: this.data.familyId,
-            title,
-            type,
-            date,
-            time,
-            description,
-            remind,
-            repeatType
-          }
+          data: { familyId: this.data.familyId, title, type, date, time, description, remind, repeatType }
         });
       }
 
@@ -385,7 +372,6 @@ Page({
     const item = e.currentTarget.dataset.item;
     const typeIndex = this.data.types.findIndex(t => t.value === item.type);
     
-    // 后端返回 remind_before，前端用 remind
     const remindBefore = item.remind_before ?? item.remind ?? 0;
     const remindReverseMap = { 0: 1, 1: 2, 3: 3, 7: 4 };
     let remindIndex;
@@ -397,11 +383,9 @@ Page({
       remindIndex = remindReverseMap[remindBefore] || 0;
     }
 
-    // 后端返回 repeat_type，前端用 repeatType
     const repeatType = item.repeat_type ?? item.recurring ?? 'none';
     const repeatIndex = this.data.repeatValues.indexOf(repeatType);
     
-    // 后端返回 schedule_time，前端用 time
     const scheduleTime = item.schedule_time ?? item.time ?? '';
 
     this.setData({
@@ -424,24 +408,16 @@ Page({
   },
 
   async deleteItem(e) {
-    const id = e.currentTarget.dataset.id;
+    const id = e.currentTarget.dataset.id
 
-    const res = await wx.showModal({
-      title: '确认删除',
-      content: '确定要删除这个日程吗？'
-    });
+    const res = await wx.showModal({ title: '确认删除', content: '确定要删除这个日程吗？' });
 
     if (res.confirm) {
       try {
-        await app.request({
-          url: `/schedule/${id}`,
-          method: 'DELETE'
-        });
+        await app.request({ url: `/schedule/${id}`, method: 'DELETE' });
         wx.showToast({ title: '已删除', icon: 'success' });
         this.loadScheduleList();
-      } catch (err) {
-        wx.showToast({ title: '删除失败', icon: 'none' });
-      }
+      } catch (err) { wx.showToast({ title: '删除失败', icon: 'none' }) }
     }
   }
 });
