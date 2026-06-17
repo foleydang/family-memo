@@ -1,22 +1,20 @@
 // utils/holidays.js - 前端节假日工具
 // 从后端获取节假日/节气/节日信息，缓存到storage
 
-const app = getApp();
-
 const CACHE_KEY = 'holidays_cache';
-const CACHE_DURATION = 86400000; // 24小时
 
 /**
  * 获取某月的节假日数据
- * @param {number} year 
- * @param {number} month (1-12)
- * @returns {object} { 'YYYY-MM-DD': { holiday, holidayName, term, festival, ... } }
+ * 法定假日一年不变 → 缓存到该年12月31日过期
+ * 节气数据内置，永远有效
  */
 async function getMonthHolidays(year, month) {
-  // 先检查缓存
+  const app = getApp();
+  // 缓存过期时间：该年12月31日23:59:59
+  const expireTime = new Date(year, 11, 31, 23, 59, 59).getTime();
   const cacheKey = `${CACHE_KEY}_${year}_${month}`;
   const cached = wx.getStorageSync(cacheKey);
-  if (cached && Date.now() - cached.time < CACHE_DURATION) {
+  if (cached && cached.expire > Date.now()) {
     return cached.data;
   }
   
@@ -27,7 +25,7 @@ async function getMonthHolidays(year, month) {
     });
     
     if (res.success) {
-      wx.setStorageSync(cacheKey, { data: res.data, time: Date.now() });
+      wx.setStorageSync(cacheKey, { data: res.data, expire: expireTime });
       return res.data;
     }
   } catch (err) {

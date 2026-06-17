@@ -126,40 +126,36 @@ Page({
     const typeEmoji = { birthday: '🎂', anniversary: '💕', trip: '✈️', appointment: '📋', schedule: '📅', other: '📌' }
     const typeName = { birthday: '生日', anniversary: '纪念日', trip: '出行', appointment: '预约', schedule: '日程', other: '重要日期' }
     
-    // 只取生日、纪念日、出行类型 + 循环日程中的重要类型
-    const importantTypes = ['birthday', 'anniversary', 'trip']
-    
     const countdowns = []
     
     schedules.forEach(s => {
       const type = s.type || 'other'
-      if (!importantTypes.includes(type) && type !== 'other') return
-      
       const recurring = s.recurring || s.repeat_type || 'none'
+      
+      // 循环日程(yearly) 或者 生日/纪念日/出行类型 都算倒计时
+      const isImportant = ['birthday', 'anniversary', 'trip'].includes(type)
+      const isYearly = recurring === 'yearly'
+      if (!isImportant && !isYearly) return
+      
       let targetDate
       
-      if (recurring === 'yearly' || type === 'birthday' || type === 'anniversary') {
-        // 循环日程：计算今年的下一次日期
+      if (isYearly || isImportant) {
         const origDate = new Date(s.schedule_date)
         const origMonth = origDate.getMonth()
         const origDay = origDate.getDate()
         
-        // 今年该日期
         targetDate = new Date(currentYear, origMonth, origDay)
-        // 如果已经过了，算明年
         if (targetDate < now) {
           targetDate = new Date(currentYear + 1, origMonth, origDay)
         }
       } else {
-        // 非循环日程：直接用原日期，但只显示未来的
         targetDate = new Date(s.schedule_date)
         if (targetDate < now) return
       }
       
       const diffDays = Math.ceil((targetDate - now) / 86400000)
       
-      // 只显示30天内的倒计时
-      if (diffDays <= 30) {
+      if (diffDays <= 60) {
         countdowns.push({
           id: s.id,
           title: s.title,
@@ -173,7 +169,6 @@ Page({
       }
     })
     
-    // 按天数排序
     countdowns.sort((a, b) => a.days - b.days)
     return countdowns.slice(0, 5)
   },
