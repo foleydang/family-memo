@@ -19,6 +19,7 @@ function normalizeCategory(raw) {
   const reverseMap = {
     '🥬 食品': 'food', '🧴 日用品': 'daily', '👟 鞋服': 'clothing', '👕 服饰': 'clothing',
     '📦 其他': 'other', '其他': 'other'
+  };
   return reverseMap[raw] || 'other'
 }
 
