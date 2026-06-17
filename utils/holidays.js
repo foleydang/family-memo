@@ -10,9 +10,9 @@ const CACHE_KEY = 'holidays_cache_v2';
 async function getMonthHolidays(year, month) {
   const app = getApp();
   const expireTime = new Date(year, 11, 31, 23, 59, 59).getTime();
-  const cacheKey = `holidays_${year}_${month}`;
+  const cacheKey = `holidays_v3_${year}_${month}`;
   const cached = wx.getStorageSync(cacheKey);
-  if (cached && cached.expire > Date.now() && cached.version === 2) {
+  if (cached && cached.expire > Date.now() && cached.version === 3) {
     return cached.data;
   }
   
@@ -23,7 +23,7 @@ async function getMonthHolidays(year, month) {
     });
     
     if (res.success) {
-      wx.setStorageSync(cacheKey, { data: res.data, expire: expireTime, version: 2 });
+      wx.setStorageSync(cacheKey, { data: res.data, expire: expireTime, version: 3 });
       return res.data;
     }
   } catch (err) {

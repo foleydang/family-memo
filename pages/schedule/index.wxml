@@ -44,6 +44,7 @@
         <text wx:if="{{selectedDateInfo.isWorkday}}" class="date-work">班</text>
         <text wx:if="{{selectedDateInfo.term}}" class="date-term">{{selectedDateInfo.termEmoji}} {{selectedDateInfo.term}}</text>
         <text wx:if="{{selectedDateInfo.festival}}" class="date-festival">{{selectedDateInfo.festivalEmoji}} {{selectedDateInfo.festival}}</text>
+        <text wx:if="{{selectedDateInfo.lunarDay}}" class="date-lunar">农历 {{selectedDateInfo.lunarMonth}}月{{selectedDateInfo.lunarDay}}</text>
       </view>
       <view class="add-btn" bindtap="showAddModal">+ 添加</view>
     </view>

@@ -98,6 +98,16 @@ Page({
       const isWorkday = holidayInfo.holiday === false;
       const holidayWage = holidayInfo.wage || 0;
       
+      // 农历显示: 初一显示月份(如"五月"), 其他显示日(如"初七")
+      let lunarText = null;
+      if (holidayInfo.lunarMonth && holidayInfo.lunarDay) {
+        if (holidayInfo.lunarDay === '初一') {
+          lunarText = holidayInfo.lunarMonth + '月';
+        } else {
+          lunarText = holidayInfo.lunarDay;
+        }
+      }
+      
       // 右上角标记: 休/班
       let restMark = null, restMarkClass = '';
       if (isHoliday && holidayWage === 2) { restMark = '休'; restMarkClass = 'rest-tag'; }
@@ -143,6 +153,11 @@ Page({
           }
         }
       });
+      
+      // 农历日(只在没有其他标签时显示)
+      if (lunarText && dayTags.length === 0) {
+        dayTags.push({ text: lunarText, cls: 'lunar-tag' });
+      }
       
       // 只保留最多2个标签
       const displayTags = dayTags.slice(0, 2);
@@ -232,7 +247,9 @@ Page({
       term: holidayInfo.term || '',
       termEmoji: holidayInfo.termEmoji || '',
       festival: holidayInfo.festival || null,
-      festivalEmoji: holidayInfo.festivalEmoji || null
+      festivalEmoji: holidayInfo.festivalEmoji || null,
+      lunarMonth: holidayInfo.lunarMonth || '',
+      lunarDay: holidayInfo.lunarDay || ''
 
     };
     this.setData({ daySchedules, selectedDateInfo });

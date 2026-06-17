@@ -98,6 +98,7 @@
 .day-tag.term-tag { color: #52c41a; }
 .day-tag.festival-tag { color: #FF85A2; }
 .day-tag.schedule-tag { color: #1890ff; }
+.day-tag.lunar-tag { color: #999; font-size: 9px; }
 
 .schedule-dot { width: 6rpx; height: 6rpx; background: #FF85A2; border-radius: 50%; margin-top: 2rpx; }
 
@@ -136,6 +137,7 @@
 .date-work { color: #999; font-size: 24rpx; }
 .date-term { color: #52c41a; font-size: 24rpx; }
 .date-festival { color: #FF85A2; font-size: 24rpx; }
+.date-lunar { color: #999; font-size: 22rpx; }
 
 .add-btn {
   font-size: 24rpx;
