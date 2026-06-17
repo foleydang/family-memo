@@ -43,9 +43,9 @@ Page({
       const announcements = (res.data || []).map(a => ({
         ...a,
         _id: a.id,
-        authorName: a.author_name || a.authorName,
-        authorAvatar: a.author_avatar || a.authorAvatar,
-        displayTime: a.created_at ? a.created_at.replace('T', ' ').substring(0, 16) : ''
+        authorName: a.author_name || a.authorName || a.created_by_name,
+        authorAvatar: a.author_avatar || a.authorAvatar || a.created_by_avatar,
+        displayTime: this.formatRelativeTime(a.created_at)
       }));
       this.setData({ announcements });
     } catch (err) {
@@ -141,5 +141,17 @@ Page({
   formatTime(timeStr) {
     if (!timeStr) return '';
     return timeStr.replace('T', ' ').substring(0, 16);
+  },
+
+  formatRelativeTime(timeStr) {
+    if (!timeStr) return '';
+    const date = new Date(timeStr);
+    const now = new Date();
+    const diff = now - date;
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+    return `${date.getMonth() + 1}月${date.getDate()}日`;
   }
 });

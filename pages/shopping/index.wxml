@@ -30,9 +30,8 @@
   <!-- 购物列表 -->
   <view class="shopping-list" wx:if="{{filteredList.length > 0}}">
     <view class="shopping-item {{item.status === 'done' ? 'done' : ''}}" 
-          wx:for="{{filteredList}}" wx:key="id"
-          bindtap="toggleItem" data-id="{{item.id}}">
-      <view class="item-check">
+          wx:for="{{filteredList}}" wx:key="id">
+      <view class="item-check" bindtap="toggleItem" data-id="{{item.id}}">
         <view class="check-box {{item.status === 'done' ? 'checked' : ''}}">
           <text wx:if="{{item.status === 'done'}}">✓</text>
         </view>
@@ -99,7 +98,7 @@
         </view>
         <view class="form-item half">
           <text class="form-label">单位</text>
-          <input class="form-input" placeholder="个" value="{{formData.unit}}" bindinput="inputUnit" />
+          <input class="form-input" placeholder="可选，留空默认个" value="{{formData.unit}}" bindinput="inputUnit" />
         </view>
       </view>
       <view class="form-item">

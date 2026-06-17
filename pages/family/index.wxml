@@ -19,7 +19,7 @@
         <view class="family-name">{{familyInfo.name}}</view>
         <view class="family-meta">
           <text>{{members.length}} 位成员</text>
-          <text>创建于 {{familyInfo.created_at}}</text>
+          <text>{{familyInfo.created_at ? formatDate(familyInfo.created_at) : ''}}</text>
         </view>
       </view>
     </view>

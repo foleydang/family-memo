@@ -32,15 +32,15 @@
     <view class="stats-card">
       <view class="stat-item" bindtap="goToShopping">
         <view class="stat-num">{{stats.shoppingCount}}</view>
-        <view class="stat-label">购物记录</view>
+        <view class="stat-label">购物项</view>
       </view>
       <view class="stat-item" bindtap="goToTodo">
         <view class="stat-num">{{stats.todoCount}}</view>
-        <view class="stat-label">待办记录</view>
+        <view class="stat-label">待办项</view>
       </view>
       <view class="stat-item" bindtap="goToSchedule">
         <view class="stat-num">{{stats.scheduleCount}}</view>
-        <view class="stat-label">日程记录</view>
+        <view class="stat-label">日程项</view>
       </view>
     </view>
   </view>
@@ -68,6 +68,6 @@
 
   <!-- 版本信息 -->
   <view class="version-info">
-    <text>家庭备忘录 v1.1.0</text>
+    <text>家庭备忘录 v1.2.0</text>
   </view>
 </view>

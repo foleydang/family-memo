@@ -164,15 +164,16 @@ Page({
 
   copyInviteCode() {
     const code = this.data.inviteCode;
+    const name = this.data.familyInfo?.name || '家庭';
     if (!code) {
       wx.showToast({ title: '邀请码加载中...', icon: 'none' });
       this.loadFamilyInfo();
       return;
     }
     wx.setClipboardData({
-      data: this.data.inviteCode,
+      data: `加入「${name}」的家庭备忘录\n邀请码: ${code}\n打开小程序 → 家庭 → 加入家庭 → 输入邀请码`,
       success: () => {
-        wx.showToast({ title: '已复制邀请码', icon: 'success' });
+        wx.showToast({ title: '已复制，分享给家人吧', icon: 'success' });
       }
     });
   },
@@ -295,6 +296,12 @@ Page({
   getRoleText(role) {
     const map = { owner: '创建者', admin: '管理员', member: '成员' };
     return map[role] || '成员';
+  },
+
+  formatDate(timeStr) {
+    if (!timeStr) return '';
+    const date = new Date(timeStr);
+    return `${date.getFullYear()}年${date.getMonth() + 1}月`;
   },
 
   goToShopping() {
