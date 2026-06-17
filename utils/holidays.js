@@ -74,3 +74,4 @@ function getDayLabel(dateStr, monthHolidays) {
   return null;
 }
 
+module.exports = { getMonthHolidays, getDayLabel };
