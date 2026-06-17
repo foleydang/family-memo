@@ -1,5 +1,6 @@
 // utils/holidays.js - 前端节假日工具
 // 从后端获取节假日/节气/节日信息，缓存到storage
+// 不需要 getApp延迟获取
 
 const CACHE_KEY = 'holidays_cache';
 
@@ -36,10 +37,12 @@ async function getMonthHolidays(year, month) {
 }
 
 /**
- * 获取某日的节假日标签（简短，用于日历格子显示）
- * @param {string} dateStr - YYYY-MM-DD
- * @param {object} monthHolidays - 该月节假日数据
- * @returns {string|null} - 如 "端午" / "休" / "芒种" / "儿童节"
+ * 获取某日的节假日标签(简短,用于日历格子显示)
+ * 补班日 → "班" (灰色)
+ * 核心假日(wage=3) → 具体节日名如"端午" (红色加粗)
+ * 调休日(wage=2) → "休" (粉色小字)
+ * 节气 → 节气名 (绿色)
+ * 纪念日 → 名称 (粉色)
  */
 function getDayLabel(dateStr, monthHolidays) {
   const info = monthHolidays[dateStr];
@@ -48,10 +51,9 @@ function getDayLabel(dateStr, monthHolidays) {
   // 补班日 → "班"
   if (info.holiday === false) return '班';
   
-  // 法定假日：wage=3 是真正的节日日，wage=2 是调休放假日
+  // 法定假日: wage=3 核心节日日, wage=2 调休放假日
   if (info.holiday === true) {
     if (info.wage === 3) {
-      // 核心假日日：显示具体节日名
       const name = info.holidayName || '';
       if (name.includes('除夕')) return '除夕';
       if (name.includes('初')) return '春节';
@@ -63,7 +65,6 @@ function getDayLabel(dateStr, monthHolidays) {
       if (name.includes('元旦')) return '元旦';
       return name;
     }
-    // wage=2 的调休放假日 → "休"
     return '休';
   }
   
@@ -73,4 +74,3 @@ function getDayLabel(dateStr, monthHolidays) {
   return null;
 }
 
-module.exports = { getMonthHolidays, getDayLabel };
