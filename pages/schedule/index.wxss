@@ -99,10 +99,11 @@
 }
 
 /* 节假日标签 */
+.day-labels { display: flex; gap: 2rpx; }
+
 .holiday-label {
-  font-size: 18rpx;
+  font-size: 14rpx;
   line-height: 1;
-  margin-top: 4rpx;
 }
 
 .holiday-label.holiday-text {
@@ -119,6 +120,18 @@
 /* 补班标记 */
 .holiday-label.work-day {
   color: #999;
+  font-size: 14rpx;
+}
+
+/* 纪念日(非节气) */
+.holiday-label.festival-text {
+  color: #FF85A2;
+  font-size: 14rpx;
+}
+
+/* 副标签(同一天的第二个标签) */
+.holiday-label.sub-label {
+  color: #52c41a;
   font-size: 14rpx;
 }
 

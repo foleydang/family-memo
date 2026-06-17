@@ -132,25 +132,24 @@ Page({
       const type = s.type || 'other'
       const recurring = s.recurring || s.repeat_type || 'none'
       
-      // 循环日程(yearly) 或者 生日/纪念日/出行类型 都算倒计时
+      // 过滤：只取重要类型或循环日程
       const isImportant = ['birthday', 'anniversary', 'trip'].includes(type)
       const isYearly = recurring === 'yearly'
-      if (!isImportant && !isYearly) return
+      // daily/weekly/monthly 不算倒计时（太多了）
+      if (!isImportant && !isYearly && recurring !== 'none') return
       
       let targetDate
       
-      if (isYearly || isImportant) {
+      if (isYearly) {
         const origDate = new Date(s.schedule_date)
-        const origMonth = origDate.getMonth()
-        const origDay = origDate.getDate()
-        
-        targetDate = new Date(currentYear, origMonth, origDay)
+        targetDate = new Date(currentYear, origDate.getMonth(), origDate.getDate())
         if (targetDate < now) {
-          targetDate = new Date(currentYear + 1, origMonth, origDay)
+          targetDate = new Date(currentYear + 1, origDate.getMonth(), origDate.getDate())
         }
       } else {
+        // 非循环日程：直接用日期
         targetDate = new Date(s.schedule_date)
-        if (targetDate < now) return
+        if (targetDate < now) return // 已过的日程不算
       }
       
       const diffDays = Math.ceil((targetDate - now) / 86400000)

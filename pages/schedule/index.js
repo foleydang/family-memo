@@ -1,6 +1,6 @@
 // pages/schedule/index.js
 const app = getApp();
-const { getMonthHolidays, getDayLabel } = require('../../utils/holidays');
+const { getMonthHolidays, getDayLabels } = require('../../utils/holidays');
 
 Page({
   data: {
@@ -98,19 +98,11 @@ Page({
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const hasSchedule = this.checkHasSchedule(dateStr);
       const isToday = dateStr === todayStr;
-      const holidayLabel = getDayLabel(dateStr, monthHolidays);
+      const labels = getDayLabels(dateStr, monthHolidays);
       const holidayInfo = monthHolidays[dateStr] || {};
       const isHoliday = holidayInfo.holiday === true;
       const isWorkday = holidayInfo.holiday === false;
       const holidayWage = holidayInfo.wage || 0;
-      
-      // 标签样式: holiday-text(核心假日名)/rest-day(调休)/work-day(补班)/term-text(节气)
-      let holidayLabelClass = 'term-text';
-      if (isHoliday && holidayWage === 3) holidayLabelClass = 'holiday-text';
-      else if (isHoliday && holidayWage === 2) holidayLabelClass = 'rest-day';
-      else if (isWorkday) holidayLabelClass = 'work-day';
-      else if (holidayInfo.term) holidayLabelClass = 'term-text';
-      else if (holidayInfo.festival) holidayLabelClass = 'festival-text';
 
       days.push({
         day: d,
@@ -118,8 +110,9 @@ Page({
         isToday,
         hasSchedule,
         selected: dateStr === this.data.selectedDate,
-        holidayLabel,
-        holidayLabelClass,
+        holidayLabel: labels ? labels.primary : null,
+        holidayLabelClass: labels ? labels.primaryClass : 'term-text',
+        holidaySubLabel: labels ? labels.secondary : null,
         isHoliday,
         isWorkday,
         holidayWage

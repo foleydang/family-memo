@@ -1,17 +1,14 @@
 // utils/holidays.js - 前端节假日工具
 // 从后端获取节假日/节气/节日信息，缓存到storage
-// 不需要 getApp延迟获取
 
 const CACHE_KEY = 'holidays_cache';
 
 /**
  * 获取某月的节假日数据
- * 法定假日一年不变 → 缓存到该年12月31日过期
- * 节气数据内置，永远有效
+ * 缓存到该年12月31日过期
  */
 async function getMonthHolidays(year, month) {
   const app = getApp();
-  // 缓存过期时间：该年12月31日23:59:59
   const expireTime = new Date(year, 11, 31, 23, 59, 59).getTime();
   const cacheKey = `${CACHE_KEY}_${year}_${month}`;
   const cached = wx.getStorageSync(cacheKey);
@@ -37,41 +34,67 @@ async function getMonthHolidays(year, month) {
 }
 
 /**
- * 获取某日的节假日标签(简短,用于日历格子显示)
- * 补班日 → "班" (灰色)
- * 核心假日(wage=3) → 具体节日名如"端午" (红色加粗)
- * 调休日(wage=2) → "休" (粉色小字)
- * 节气 → 节气名 (绿色)
- * 纪念日 → 名称 (粉色)
+ * 获取某日的标签信息（主标签+副标签）
+ * 同一天可能同时有: 假日+节气、节气+节日 等
+ * 返回 { primary: '端午', primaryClass: 'holiday-text', secondary: '夏至', secondaryClass: 'term-text' }
+ * 或 null
  */
-function getDayLabel(dateStr, monthHolidays) {
+function getDayLabels(dateStr, monthHolidays) {
   const info = monthHolidays[dateStr];
   if (!info) return null;
   
-  // 补班日 → "班"
-  if (info.holiday === false) return '班';
+  let primary = null, primaryClass = 'term-text';
+  let secondary = null, secondaryClass = 'term-text';
   
-  // 法定假日: wage=3 核心节日日, wage=2 调休放假日
+  // 法定假日优先级最高
   if (info.holiday === true) {
     if (info.wage === 3) {
       const name = info.holidayName || '';
-      if (name.includes('除夕')) return '除夕';
-      if (name.includes('初')) return '春节';
-      if (name.includes('清明')) return '清明';
-      if (name.includes('劳动')) return '劳动节';
-      if (name.includes('端午')) return '端午';
-      if (name.includes('中秋')) return '中秋';
-      if (name.includes('国庆')) return '国庆';
-      if (name.includes('元旦')) return '元旦';
-      return name;
+      if (name.includes('除夕')) primary = '除夕';
+      else if (name.includes('初')) primary = '春节';
+      else if (name.includes('清明')) primary = '清明';
+      else if (name.includes('劳动')) primary = '劳动节';
+      else if (name.includes('端午')) primary = '端午';
+      else if (name.includes('中秋')) primary = '中秋';
+      else if (name.includes('国庆')) primary = '国庆';
+      else if (name.includes('元旦')) primary = '元旦';
+      else primary = name;
+      primaryClass = 'holiday-text';
+    } else {
+      primary = '休';
+      primaryClass = 'rest-day';
     }
-    return '休';
+  } else if (info.holiday === false) {
+    primary = '班';
+    primaryClass = 'work-day';
   }
   
-  if (info.term) return info.term;
-  if (info.festival) return info.festival;
+  // 节气：如果主标签已有假日，节气作为副标签
+  if (info.term) {
+    if (primary) {
+      secondary = info.term;
+      secondaryClass = 'term-text';
+    } else {
+      primary = info.term;
+      primaryClass = 'term-text';
+    }
+  }
   
-  return null;
+  // 纪念日：如果主标签已有，纪念日作为副标签
+  if (info.festival) {
+    if (primary) {
+      if (!secondary) {
+        secondary = info.festival;
+        secondaryClass = 'festival-text';
+      }
+    } else {
+      primary = info.festival;
+      primaryClass = 'festival-text';
+    }
+  }
+  
+  if (!primary) return null;
+  return { primary, primaryClass, secondary, secondaryClass };
 }
 
-module.exports = { getMonthHolidays, getDayLabel };
+module.exports = { getMonthHolidays, getDayLabels };
