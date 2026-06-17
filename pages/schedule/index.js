@@ -332,7 +332,7 @@ Page({
     }
 
     if (!date) {
-      wx.showToast({ title: '请选择日期' icon: 'none' });
+      wx.showToast({ title: '请选择日期', icon: 'none' });
       return;
     }
 
