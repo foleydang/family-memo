@@ -22,10 +22,12 @@
       <block wx:for="{{calendarDays}}" wx:key="index">
         <view wx:if="{{item.empty}}" class="day-cell empty"></view>
         <view wx:else class="day-cell {{item.isToday ? 'today' : ''}} {{item.selected ? 'selected' : ''}} {{item.hasSchedule ? 'has-schedule' : ''}} {{item.isHoliday ? 'is-holiday' : ''}} {{item.isWorkday ? 'is-workday' : ''}}" bindtap="selectDay" data-date="{{item.dateStr}}">
-          <text class="day-num {{item.isWorkday ? 'workday-text' : ''}}">{{item.day}}</text>
-          <view class="day-tags" wx:if="{{item.dayTags.length > 0}}">
-            <text wx:for="{{item.dayTags}}" wx:key="index" class="day-tag {{item.cls}}">{{item.text}}</text>
+          <view class="day-num-row">
+            <text class="day-num">{{item.day}}</text>
+            <text wx:if="{{item.cornerTag}}" class="corner-tag {{item.cornerClass}}">{{item.cornerTag}}</text>
           </view>
+          <text wx:if="{{item.mainLabel}}" class="day-label {{item.mainClass}}">{{item.mainLabel}}</text>
+          <text wx:if="{{item.subLabel}}" class="day-label sub {{item.subClass}}">{{item.subLabel}}</text>
           <view wx:if="{{item.hasSchedule}}" class="schedule-dot"></view>
         </view>
       </block>

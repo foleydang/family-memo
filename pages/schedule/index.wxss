@@ -61,37 +61,49 @@
 
 .day-cell.empty { visibility: hidden; }
 
+/* 日期数字 + 右上角角标 */
+.day-num-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .day-num {
   font-size: 26rpx;
   color: #333;
   line-height: 1;
 }
 
+/* 右上角角标: 休/班 */
+.corner-tag {
+  font-size: 9px;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  line-height: 1;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+.corner-tag.rest-tag { color: #FF85A2; background: #FFE4EC; }
+.corner-tag.work-tag { color: #999; background: #f0f0f0; }
+
 .day-cell.today .day-num { color: #FF85A2; font-weight: bold; }
 .day-cell.selected { background: #FFE4EC; border-radius: 8rpx; }
 .day-cell.selected .day-num { color: #FF85A2; }
 
-/* 下方标签行: 节气/节日/生日等，可多个 */
-.day-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rpx;
-  margin-top: 4rpx;
-  max-width: 100%;
-}
-
-.day-tag {
+/* 下方标签: 主标签 + 副标签 */
+.day-label {
   font-size: 10px;
   line-height: 1.2;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
-
-.day-tag.holiday-tag { color: #f5222d; font-weight: 600; }
-.day-tag.rest-tag { color: #FF85A2; }
-.day-tag.work-tag { color: #999; }
-.day-tag.term-tag { color: #52c41a; }
-.day-tag.festival-tag { color: #FF85A2; }
-.day-tag.schedule-tag { color: #1890ff; }
+.day-label.holiday-text { color: #f5222d; font-weight: 600; }
+.day-label.term-text { color: #52c41a; }
+.day-label.festival-text { color: #FF85A2; }
+.day-label.sub { font-size: 10px; }
 
 /* 日程圆点 */
 .schedule-dot {

@@ -102,46 +102,6 @@ Page({
       const holidayInfo = monthHolidays[dateStr] || {};
       const isHoliday = holidayInfo.holiday === true;
       const isWorkday = holidayInfo.holiday === false;
-      const holidayWage = holidayInfo.wage || 0;
-      
-      // 下方标签行: 休/班、节气、节日名(wage=3)、纪念日等，可以有多个
-      const dayTags = [];
-      
-      // 休/班标签
-      if (isHoliday && holidayWage === 2) { dayTags.push({ text: '休', cls: 'rest-tag' }); }
-      if (isWorkday) { dayTags.push({ text: '班', cls: 'work-tag' }); }
-      
-      // 核心假日名(wage=3)
-      if (isHoliday && holidayWage === 3) {
-        const name = holidayInfo.holidayName || '';
-        let shortName = name;
-        if (name.includes('初')) shortName = '春节';
-        if (name.includes('除夕')) shortName = '除夕';
-        if (name.includes('清明')) shortName = '清明';
-        if (name.includes('劳动')) shortName = '劳动节';
-        if (name.includes('端午')) shortName = '端午';
-        if (name.includes('中秋')) shortName = '中秋';
-        if (name.includes('国庆')) shortName = '国庆';
-        if (name.includes('元旦')) shortName = '元旦';
-        dayTags.push({ text: shortName, cls: 'holiday-tag' });
-      }
-      if (holidayInfo.term) {
-        dayTags.push({ text: holidayInfo.term, cls: 'term-tag' });
-      }
-      if (holidayInfo.festival) {
-        dayTags.push({ text: holidayInfo.festival, cls: 'festival-tag' });
-      }
-      // 当天日程中的重要类型也加入标签行
-      const daySchedTypes = { birthday: '🎂生日', anniversary: '💕纪念日', trip: '✈️出行' };
-      this.data.scheduleList.forEach(s => {
-        if (s.schedule_date === dateStr && daySchedTypes[s.type]) {
-          // 避免重复
-          const tagText = daySchedTypes[s.type];
-          if (!dayTags.find(t => t.text === tagText)) {
-            dayTags.push({ text: tagText, cls: 'schedule-tag' });
-          }
-        }
-      });
 
       days.push({
         day: d,
@@ -149,10 +109,14 @@ Page({
         isToday,
         hasSchedule,
         selected: dateStr === this.data.selectedDate,
-        dayTags,
+        cornerTag: labels ? labels.cornerTag : null,
+        cornerClass: labels ? labels.cornerClass : null,
+        mainLabel: labels ? labels.mainLabel : null,
+        mainClass: labels ? labels.mainClass : null,
+        subLabel: labels ? labels.subLabel : null,
+        subClass: labels ? labels.subClass : null,
         isHoliday,
-        isWorkday,
-        holidayWage
+        isWorkday
       });
     }
 
