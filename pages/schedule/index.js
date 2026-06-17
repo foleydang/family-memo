@@ -5,6 +5,7 @@ Page({
   data: {
     familyId: null,
     scheduleList: [],
+    rawSchedules: [], // 服务器原始数据，不展开循环
     daySchedules: [], // 当天日程
     currentMonth: '',
     currentYear: 0,
@@ -31,6 +32,9 @@ Page({
     ],
     typeIndex: 0,
     remindOptions: ['不提醒', '当天', '提前1天', '提前3天', '提前7天'],
+    // 提醒值映射：index → remind天数
+    // 0: 不提醒(0), 1: 当天(0), 2: 提前1天(1), 3: 提前3天(3), 4: 提前7天(7)
+    remindValues: [0, 0, 1, 3, 7],
     remindIndex: 0
   },
 
@@ -75,9 +79,8 @@ Page({
     const startWeekday = firstDay.getDay();
 
     const days = [];
-    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
     const today = new Date();
-    const todayStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     // 前置空格
     for (let i = 0; i < startWeekday; i++) {
@@ -119,8 +122,8 @@ Page({
       currentMonthNum,
       currentMonth: `${currentYear}年${currentMonthNum}月`
     });
-    this.generateCalendar(currentYear, currentMonthNum);
-    this.loadScheduleList();  // 使用完整的日程列表，包含循环日程
+    // 只重新展开循环日程，不重新请求服务器
+    this.expandAndRender();
   },
 
   nextMonth() {
@@ -136,8 +139,16 @@ Page({
       currentMonthNum,
       currentMonth: `${currentYear}年${currentMonthNum}月`
     });
-    this.generateCalendar(currentYear, currentMonthNum);
-    this.loadScheduleList();  // 使用完整的日程列表，包含循环日程
+    // 只重新展开循环日程，不重新请求服务器
+    this.expandAndRender();
+  },
+
+  // 从 rawSchedules 展开循环日程并渲染
+  expandAndRender() {
+    const expandedList = this.expandRecurringSchedules(this.data.rawSchedules);
+    this.setData({ scheduleList: expandedList });
+    this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
+    this.updateDaySchedules(this.data.selectedDate);
   },
 
   selectDay(e) {
@@ -166,10 +177,13 @@ Page({
         data: { familyId: this.data.familyId }
       });
       
-      // 处理循环日程，展开到当前月份的每一天
-      const expandedList = this.expandRecurringSchedules(res.data || []);
+      const rawSchedules = res.data || [];
+      const expandedList = this.expandRecurringSchedules(rawSchedules);
       
-      this.setData({ scheduleList: expandedList });
+      this.setData({ 
+        rawSchedules,
+        scheduleList: expandedList 
+      });
       this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
       this.updateDaySchedules(this.data.selectedDate);
     } catch (err) {
@@ -198,6 +212,50 @@ Page({
             schedule_date: dateStr,
             isRecurring: true
           });
+        }
+      } else if (recurring === 'weekly') {
+        // 每周循环：在当前月份的匹配星期几显示
+        const originalDate = new Date(schedule.schedule_date);
+        const targetWeekday = originalDate.getDay(); // 0-6, 周日-周六
+        const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+          const date = new Date(currentYear, currentMonthNum - 1, d);
+          if (date.getDay() === targetWeekday) {
+            const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            expanded.push({
+              ...schedule,
+              schedule_date: dateStr,
+              isRecurring: true
+            });
+          }
+        }
+      } else if (recurring === 'monthly') {
+        // 每月循环：在当前月份的同一日期显示
+        const originalDay = new Date(schedule.schedule_date).getDate();
+        const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+        if (originalDay <= daysInMonth) {
+          const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
+          expanded.push({
+            ...schedule,
+            schedule_date: dateStr,
+            isRecurring: true
+          });
+        }
+      } else if (recurring === 'yearly') {
+        // 每年循环：在当前月份且日期匹配时显示（如生日）
+        const originalDate = new Date(schedule.schedule_date);
+        const originalMonth = originalDate.getMonth() + 1;
+        const originalDay = originalDate.getDate();
+        if (originalMonth === currentMonthNum) {
+          const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+          if (originalDay <= daysInMonth) {
+            const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
+            expanded.push({
+              ...schedule,
+              schedule_date: dateStr,
+              isRecurring: true
+            });
+          }
         }
       }
     });
@@ -263,7 +321,7 @@ Page({
     const index = e.detail.value;
     this.setData({
       remindIndex: index,
-      'formData.remind': index === 0 ? 0 : [0, 1, 3, 7][index - 1]
+      'formData.remind': this.data.remindValues[index]
     });
   },
 
@@ -314,7 +372,6 @@ Page({
       wx.showToast({ title: this.data.editMode ? '已保存' : '已添加', icon: 'success' });
       this.hideModal();
       this.loadScheduleList();
-      this.updateDaySchedules(this.data.selectedDate);
     } catch (err) {
       wx.hideLoading();
       wx.showToast({ title: '操作失败', icon: 'none' });
@@ -324,8 +381,20 @@ Page({
   editItem(e) {
     const item = e.currentTarget.dataset.item;
     const typeIndex = this.data.types.findIndex(t => t.value === item.type);
-    const remindMap = { 0: 0, 1: 1, 3: 2, 7: 3 };
-    const remindIndex = item.remind ? remindMap[item.remind] + 1 : 0;
+    
+    // remind 反向映射：0→index 0(不提醒), 0→index 1(当天), 1→index 2(提前1天), 3→index 3(提前3天), 7→index 4(提前7天)
+    // 注意 remind=0 时优先选 "当天"（index 1），因为用户之前选了提醒
+    const remindReverseMap = { 0: 1, 1: 2, 3: 3, 7: 4 };
+    let remindIndex;
+    if (item.remind === undefined || item.remind === null) {
+      remindIndex = 0; // 不提醒
+    } else if (item.remind === 0) {
+      // 区分：如果 remind 是 0，可能是"当天"也可能是"不提醒"
+      // 默认选"当天"更合理（用户选了提醒意图）
+      remindIndex = 1;
+    } else {
+      remindIndex = remindReverseMap[item.remind] || 0;
+    }
 
     this.setData({
       showModal: true,

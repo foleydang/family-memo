@@ -1,15 +1,35 @@
+// pages/shopping/index.js
+const app = getApp();
+
+// 分类映射：id → 显示名，兼容旧数据中的 name 格式
 const CATEGORY_MAP = {
   'food': '🥬 食品',
   'daily': '🧴 日用品',
-  'fresh': '🥬 食品',  // 生鲜归入食品
-  'electronics': '📱 电器',
   'clothing': '👕 服饰',
   'other': '📦 其他',
+  // 兼容旧数据（之前存的是 name）
+  '🥬 食品': '🥬 食品',
+  '🧴 日用品': '🧴 日用品',
+  '👟 鞋服': '👕 服饰',
+  '📦 其他': '📦 其他',
   '其他': '📦 其他'
 };
 
-// pages/shopping/index.js
-const app = getApp();
+// 将旧 name 格式统一转为 id
+function normalizeCategory(raw) {
+  // 已经是标准 id
+  if (['food', 'daily', 'clothing', 'other'].includes(raw)) return raw;
+  // 旧 name 格式反向映射
+  const reverseMap = {
+    '🥬 食品': 'food',
+    '🧴 日用品': 'daily',
+    '👟 鞋服': 'clothing',
+    '👕 服饰': 'clothing',
+    '📦 其他': 'other',
+    '其他': 'other'
+  };
+  return reverseMap[raw] || 'other';
+}
 
 Page({
   data: {
@@ -26,9 +46,9 @@ Page({
     editId: null,
     formData: {
       title: '',
-      category: '其他',
+      category: 'other',
       quantity: 1,
-      unit: '个',
+      unit: '',
       priority: 0
     }
   },
@@ -67,10 +87,11 @@ Page({
         url: '/shopping/list',
         data: { familyId: this.data.familyId, status: 'all' }
       });
-      // 转换分类为中文
+      // 标准化分类 id，生成显示名
       const listWithCategoryName = res.data.all.map(item => ({
         ...item,
-        categoryName: CATEGORY_MAP[item.category] || item.category
+        category: normalizeCategory(item.category),
+        categoryName: CATEGORY_MAP[normalizeCategory(item.category)] || item.category
       }));
       
       this.setData({
@@ -111,12 +132,12 @@ Page({
       editId: null,
       formData: {
         title: '',
-        category: '其他',
+        category: 'other',
         quantity: 1,
-        unit: '个',
+        unit: '',
         priority: 0
       },
-      categoryIndex: 0
+      categoryIndex: 3  // 默认选 "其他"
     });
   },
 
@@ -147,14 +168,15 @@ Page({
   },
 
   inputUnit(e) {
-    this.setData({ 'formData.unit': e.detail.value || '个' });
+    this.setData({ 'formData.unit': e.detail.value });
   },
 
+  // picker 选择分类 → 存 id
   pickCategory(e) {
     const index = e.detail.value;
     this.setData({
       categoryIndex: index,
-      'formData.category': this.data.categories[index].name
+      'formData.category': this.data.categories[index].id
     });
   },
 
@@ -172,6 +194,8 @@ Page({
       return;
     }
 
+    const finalUnit = (unit && unit.trim()) || '个';
+
     wx.showLoading({ title: '提交中' });
 
     try {
@@ -183,7 +207,7 @@ Page({
             title,
             category,
             quantity: parseInt(quantity) || 1,
-            unit,
+            unit: finalUnit,
             priority
           }
         });
@@ -196,7 +220,7 @@ Page({
             title,
             category,
             quantity: parseInt(quantity) || 1,
-            unit,
+            unit: finalUnit,
             priority
           }
         });
@@ -214,7 +238,8 @@ Page({
 
   editItem(e) {
     const item = e.currentTarget.dataset.item;
-    const categoryIndex = this.data.categories.findIndex(c => c.name === item.category);
+    const normalizedCat = normalizeCategory(item.category);
+    const categoryIndex = this.data.categories.findIndex(c => c.id === normalizedCat);
 
     this.setData({
       showModal: true,
@@ -222,12 +247,12 @@ Page({
       editId: item.id,
       formData: {
         title: item.title,
-        category: item.category,
+        category: normalizedCat,
         quantity: item.quantity,
-        unit: item.unit,
+        unit: item.unit || '',
         priority: item.priority
       },
-      categoryIndex: categoryIndex >= 0 ? categoryIndex : 0
+      categoryIndex: categoryIndex >= 0 ? categoryIndex : 3
     });
   },
 
