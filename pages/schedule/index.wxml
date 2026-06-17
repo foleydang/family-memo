@@ -22,10 +22,12 @@
       <block wx:for="{{calendarDays}}" wx:key="index">
         <view wx:if="{{item.empty}}" class="day-cell empty"></view>
         <view wx:else class="day-cell {{item.isToday ? 'today' : ''}} {{item.selected ? 'selected' : ''}} {{item.hasSchedule ? 'has-schedule' : ''}} {{item.isHoliday ? 'is-holiday' : ''}} {{item.isWorkday ? 'is-workday' : ''}}" bindtap="selectDay" data-date="{{item.dateStr}}">
-          <text class="day-num {{item.isWorkday ? 'workday-text' : ''}}">{{item.day}}</text>
-          <view class="day-labels" wx:if="{{item.holidayLabel || item.holidaySubLabel}}">
-            <text wx:if="{{item.holidayLabel}}" class="holiday-label {{item.holidayLabelClass}}">{{item.holidayLabel}}</text>
-            <text wx:if="{{item.holidaySubLabel}}" class="holiday-label sub-label">{{item.holidaySubLabel}}</text>
+          <view class="day-num-row">
+            <text class="day-num">{{item.day}}</text>
+            <text wx:if="{{item.restMark}}" class="rest-mark {{item.restMarkClass}}">{{item.restMark}}</text>
+          </view>
+          <view class="day-tags" wx:if="{{item.dayTags.length > 0}}">
+            <text wx:for="{{item.dayTags}}" wx:key="index" class="day-tag {{item.cls}}">{{item.text}}</text>
           </view>
           <view wx:if="{{item.hasSchedule}}" class="schedule-dot"></view>
         </view>
@@ -36,12 +38,14 @@
   <!-- 选中日期的日程列表 -->
   <view class="day-schedules">
     <view class="date-title">
-      <text>{{selectedDate}}</text>
-      <text wx:if="{{monthHolidays[selectedDate].holiday === true && monthHolidays[selectedDate].wage === 3}}" class="date-holiday">🎉 {{monthHolidays[selectedDate].holidayName}}</text>
-      <text wx:if="{{monthHolidays[selectedDate].holiday === true && monthHolidays[selectedDate].wage === 2}}" class="date-rest">休</text>
-      <text wx:if="{{monthHolidays[selectedDate].holiday === false}}" class="date-work">班</text>
-      <text wx:if="{{monthHolidays[selectedDate].term}}" class="date-term">🌿 {{monthHolidays[selectedDate].term}}</text>
-      <text wx:if="{{monthHolidays[selectedDate].festival}}" class="date-festival">{{monthHolidays[selectedDate].festivalEmoji}} {{monthHolidays[selectedDate].festival}}</text>
+      <view class="date-title-left">
+        <text>{{selectedDate}}</text>
+        <text wx:if="{{monthHolidays[selectedDate].holiday === true && monthHolidays[selectedDate].wage === 3}}" class="date-holiday">🎉 {{monthHolidays[selectedDate].holidayName}}</text>
+        <text wx:if="{{monthHolidays[selectedDate].holiday === true && monthHolidays[selectedDate].wage === 2}}" class="date-rest">休</text>
+        <text wx:if="{{monthHolidays[selectedDate].holiday === false}}" class="date-work">班</text>
+        <text wx:if="{{monthHolidays[selectedDate].term}}" class="date-term">🌿 {{monthHolidays[selectedDate].term}}</text>
+        <text wx:if="{{monthHolidays[selectedDate].festival}}" class="date-festival">{{monthHolidays[selectedDate].festivalEmoji}} {{monthHolidays[selectedDate].festival}}</text>
+      </view>
       <view class="add-btn" bindtap="showAddModal">+ 添加</view>
     </view>
 
