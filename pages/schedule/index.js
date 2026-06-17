@@ -9,6 +9,7 @@ Page({
     rawSchedules: [], // 服务器原始数据，不展开循环
     daySchedules: [], // 当天日程
     monthHolidays: {}, // 该月节假日数据
+    selectedDateInfo: {}, // 选中日期的标签信息
     currentMonth: '',
     currentYear: 0,
     currentMonthNum: 0,
@@ -206,7 +207,20 @@ Page({
   updateDaySchedules(date) {
     const typeNames = { birthday: '生日', anniversary: '纪念日', appointment: '预约', meeting: '会议', trip: '出行', schedule: '日程', other: '其他' };
     const daySchedules = this.data.scheduleList.filter(s => s.schedule_date === date).map(s => ({ ...s, typeName: typeNames[s.type] || '其他' }));
-    this.setData({ daySchedules });
+    // 计算选中日期的标签信息，传到wxml
+    const holidayInfo = this.data.monthHolidays[date] || {};
+    const isHoliday = holidayInfo.holiday === true;
+    const isWorkday = holidayInfo.holiday === false;
+    const selectedDateInfo = {
+      holidayName: isHoliday ? (holidayInfo.holidayName || '') : '',
+      holidaySuffix: isHoliday && holidayInfo.wage === 2 ? '休' : '',
+      isWorkday,
+      term: holidayInfo.term || '',
+      termEmoji: holidayInfo.termEmoji || '',
+      festival: holidayInfo.festival || '',
+      festivalEmoji: holidayInfo.festivalEmoji || ''
+    };
+    this.setData({ daySchedules, selectedDateInfo });
   },
 
   async loadScheduleList() {
