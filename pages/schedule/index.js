@@ -161,7 +161,7 @@ Page({
     return this.data.scheduleList.some(s => s.schedule_date === dateStr);
   },
 
-  prevMonth() {
+  async prevMonth() {
     let { currentYear, currentMonthNum } = this.data;
     if (currentMonthNum === 1) {
       currentYear--; currentMonthNum = 12;
@@ -169,18 +169,18 @@ Page({
       currentMonthNum--;
     }
     this.setData({ currentYear, currentMonthNum, currentMonth: `${currentYear}年${currentMonthNum}月` });
-    this.expandAndRender();
+    await this.expandAndRender();
   },
 
-  nextMonth() {
-    let { currentYear, currentMonthNum } = this.data
+  async nextMonth() {
+    let { currentYear, currentMonthNum } = this.data;
     if (currentMonthNum === 12) {
-      currentYear++ currentMonthNum = 1;
+      currentYear++; currentMonthNum = 1;
     } else {
       currentMonthNum++;
     }
     this.setData({ currentYear, currentMonthNum, currentMonth: `${currentYear}年${currentMonthNum}月` });
-    this.expandAndRender();
+    await this.expandAndRender();
   },
 
   async expandAndRender() {
