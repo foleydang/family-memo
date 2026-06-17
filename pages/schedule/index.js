@@ -193,7 +193,7 @@ Page({
     const expanded = [];
     
     schedules.forEach(schedule => {
-      const recurring = schedule.repeat_type || schedule.recurring || 'none';
+      const recurring = schedule.recurring || schedule.repeat_type || 'none';
       
       if (recurring === 'none') {
         expanded.push(schedule);
