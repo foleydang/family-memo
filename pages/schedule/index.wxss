@@ -106,7 +106,13 @@
 
 .holiday-label.holiday-text {
   color: #f5222d;
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.holiday-label.holiday-text.rest-day {
+  color: #FF85A2;
+  font-weight: 400;
+  font-size: 16rpx;
 }
 
 .holiday-label.term-text {
@@ -140,6 +146,8 @@
 }
 
 .date-holiday { color: #f5222d; font-size: 24rpx; font-weight: 500; margin-left: 8rpx; }
+.date-rest { color: #FF85A2; font-size: 24rpx; background: #FFE4EC; padding: 2rpx 8rpx; border-radius: 6rpx; margin-left: 8rpx; }
+.date-work { color: #999; font-size: 24rpx; background: #f5f5f5; padding: 2rpx 8rpx; border-radius: 6rpx; margin-left: 8rpx; }
 .date-term { color: #52c41a; font-size: 24rpx; margin-left: 8rpx; }
 .date-festival { color: #FF85A2; font-size: 24rpx; margin-left: 8rpx; }
 

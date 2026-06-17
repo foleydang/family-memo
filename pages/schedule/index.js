@@ -102,6 +102,7 @@ Page({
       const holidayInfo = monthHolidays[dateStr] || {};
       const isHoliday = holidayInfo.holiday === true;
       const isWorkday = holidayInfo.holiday === false;
+      const holidayWage = holidayInfo.wage || 0;
 
       days.push({
         day: d,
@@ -111,7 +112,8 @@ Page({
         selected: dateStr === this.data.selectedDate,
         holidayLabel,
         isHoliday,
-        isWorkday
+        isWorkday,
+        holidayWage
       });
     }
 

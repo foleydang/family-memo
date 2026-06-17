@@ -45,20 +45,26 @@ function getDayLabel(dateStr, monthHolidays) {
   const info = monthHolidays[dateStr];
   if (!info) return null;
   
-  // 优先级: 法定假日 > 节气 > 纪念日
-  if (info.holidayName) {
-    // 简化名称：初一/初二等显示为"春节"，补班不显示
-    if (info.holiday === false) return null; // 补班不标
-    const name = info.holidayName;
-    if (name.includes('初')) return '春节';
-    if (name.includes('清明')) return '清明';
-    if (name.includes('劳动')) return '劳动节';
-    if (name.includes('端午')) return '端午';
-    if (name.includes('中秋')) return '中秋';
-    if (name.includes('国庆')) return '国庆';
-    if (name.includes('元旦')) return '元旦';
-    if (name.includes('除夕')) return '除夕';
-    return name;
+  // 补班日 → "班"
+  if (info.holiday === false) return '班';
+  
+  // 法定假日：wage=3 是真正的节日日，wage=2 是调休放假日
+  if (info.holiday === true) {
+    if (info.wage === 3) {
+      // 真正的节日：简化名称
+      const name = info.holidayName;
+      if (name.includes('除夕')) return '除夕';
+      if (name.includes('初一')) return '春节';
+      if (name.includes('清明')) return '清明';
+      if (name.includes('劳动')) return '劳动节';
+      if (name.includes('端午')) return '端午';
+      if (name.includes('中秋')) return '中秋';
+      if (name.includes('国庆')) return '国庆';
+      if (name.includes('元旦')) return '元旦';
+      return name;
+    }
+    // wage=2 的放假日 → "休"
+    return '休';
   }
   
   if (info.term) return info.term;
