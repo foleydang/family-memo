@@ -1,6 +1,27 @@
 // pages/my-records/index.js
 const app = getApp();
 
+const CATEGORY_MAP = {
+  'food': '🥬 食品',
+  'daily': '🧴 日用品',
+  'clothing': '👕 服饰',
+  'other': '📦 其他',
+  // 兼容旧数据
+  '🥬 食品': '🥬 食品',
+  '🧴 日用品': '🧴 日用品',
+  '👟 鞋服': '👕 服饰',
+  '📦 其他': '📦 其他',
+  '其他': '📦 其他'
+};
+
+function normalizeCategory(raw) {
+  if (['food', 'daily', 'clothing', 'other'].includes(raw)) return raw;
+  const reverseMap = {
+    '🥬 食品': 'food', '🧴 日用品': 'daily', '👟 鞋服': 'clothing', '👕 服饰': 'clothing',
+    '📦 其他': 'other', '其他': 'other'
+  return reverseMap[raw] || 'other'
+}
+
 Page({
   data: {
     familyId: null,
@@ -65,7 +86,10 @@ Page({
         url: '/shopping/my-records',
         data: { familyId: this.data.familyId }
       });
-      return res.data || [];
+      return (res.data || []).map(item => ({
+        ...item,
+        category: CATEGORY_MAP[normalizeCategory(item.category)] || item.category
+      }));
     } catch (err) {
       return [];
     }

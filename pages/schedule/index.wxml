@@ -42,7 +42,7 @@
           <view class="schedule-type">{{item.typeName || '其他'}}</view>
           <view class="schedule-content">
             <view class="schedule-title">{{item.title}}</view>
-            <view wx:if="{{item.time}}" class="schedule-time">🕐 {{item.time}}</view>
+            <view wx:if="{{item.schedule_time || item.time}}" class="schedule-time">🕐 {{item.schedule_time || item.time}}</view>
             <view wx:if="{{item.description}}" class="schedule-desc">{{item.description}}</view>
           </view>
           <view class="schedule-actions">
@@ -102,6 +102,13 @@
           <text class="form-label">提醒</text>
           <picker mode="selector" range="{{remindOptions}}" value="{{remindIndex}}" bindchange="pickRemind">
             <view class="picker-value">{{remindOptions[remindIndex]}}</view>
+          </picker>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">循环</text>
+          <picker mode="selector" range="{{repeatOptions}}" value="{{repeatIndex}}" bindchange="pickRepeat">
+            <view class="picker-value">{{repeatOptions[repeatIndex]}}</view>
           </picker>
         </view>
       </view>

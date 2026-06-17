@@ -1,6 +1,27 @@
 // pages/export/index.js
 const app = getApp();
 
+const CATEGORY_MAP = {
+  'food': '🥬 食品',
+  'daily': '🧴 日用品',
+  'clothing': '👕 服饰',
+  'other': '📦 其他',
+  '🥬 食品': '🥬 食品',
+  '🧴 日用品': '🧴 日用品',
+  '👟 鞋服': '👕 服饰',
+  '📦 其他': '📦 其他',
+  '其他': '📦 其他'
+};
+
+function normalizeCategory(raw) {
+  if (['food', 'daily', 'clothing', 'other'].includes(raw)) return raw;
+  const reverseMap = {
+    '🥬 食品': 'food', '🧴 日用品': 'daily', '👟 鞋服': 'clothing', '👕 服饰': 'clothing',
+    '📦 其他': 'other', '其他': 'other'
+  };
+  return reverseMap[raw] || 'other';
+}
+
 Page({
   data: {
     familyId: null,
@@ -77,7 +98,6 @@ Page({
 
       wx.hideLoading();
 
-      // 复制到剪贴板
       wx.setClipboardData({
         data: text,
         success: () => {
@@ -121,15 +141,20 @@ Page({
 
   formatShopping(data) {
     let text = '';
-    const pending = data.filter(item => item.status === 'pending');
-    const done = data.filter(item => item.status === 'done');
+    // 标准化分类显示
+    const normalized = data.map(item => ({
+      ...item,
+      categoryName: CATEGORY_MAP[normalizeCategory(item.category)] || item.category
+    }));
+    const pending = normalized.filter(item => item.status === 'pending');
+    const done = normalized.filter(item => item.status === 'done');
 
     if (pending.length > 0) {
       text += `🛒 待购买 (${pending.length})\n`;
       pending.forEach((item, i) => {
         text += `${i + 1}. ${item.title} ×${item.quantity}${item.unit}`;
-        if (item.category && item.category !== '其他') {
-          text += ` [${item.category}]`;
+        if (item.categoryName && item.categoryName !== '📦 其他') {
+          text += ` [${item.categoryName}]`;
         }
         text += '\n';
       });
@@ -176,8 +201,8 @@ Page({
     data.forEach(item => {
       const emoji = typeEmoji[item.type] || '📌';
       text += `${emoji} ${item.schedule_date}`;
-      if (item.schedule_time) {
-        text += ` ${item.schedule_time}`;
+      if (item.schedule_time || item.time) {
+        text += ` ${item.schedule_time || item.time}`;
       }
       text += ` ${item.title}\n`;
     });

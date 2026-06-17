@@ -21,7 +21,8 @@ Page({
       date: '',
       time: '',
       description: '',
-      remind: 0
+      remind: 0,
+      repeatType: 'none'
     },
     types: [
       { name: '生日', value: 'birthday' },
@@ -35,7 +36,10 @@ Page({
     // 提醒值映射：index → remind天数
     // 0: 不提醒(0), 1: 当天(0), 2: 提前1天(1), 3: 提前3天(3), 4: 提前7天(7)
     remindValues: [0, 0, 1, 3, 7],
-    remindIndex: 0
+    remindIndex: 0,
+    repeatOptions: ['不循环', '每日', '每周', '每月', '每年'],
+    repeatIndex: 0,
+    repeatValues: ['none', 'daily', 'weekly', 'monthly', 'yearly']
   },
 
   onLoad() {
@@ -122,7 +126,6 @@ Page({
       currentMonthNum,
       currentMonth: `${currentYear}年${currentMonthNum}月`
     });
-    // 只重新展开循环日程，不重新请求服务器
     this.expandAndRender();
   },
 
@@ -139,11 +142,9 @@ Page({
       currentMonthNum,
       currentMonth: `${currentYear}年${currentMonthNum}月`
     });
-    // 只重新展开循环日程，不重新请求服务器
     this.expandAndRender();
   },
 
-  // 从 rawSchedules 展开循环日程并渲染
   expandAndRender() {
     const expandedList = this.expandRecurringSchedules(this.data.rawSchedules);
     this.setData({ scheduleList: expandedList });
@@ -156,11 +157,7 @@ Page({
     this.setData({ selectedDate: dateStr });
     this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
     this.updateDaySchedules(dateStr);
-
-    // 设置表单日期
-    this.setData({
-      'formData.date': dateStr
-    });
+    this.setData({ 'formData.date': dateStr });
   },
 
   updateDaySchedules(date) {
@@ -191,19 +188,16 @@ Page({
     }
   },
   
-  // 展开循环日程到每一天
   expandRecurringSchedules(schedules) {
     const { currentYear, currentMonthNum } = this.data;
     const expanded = [];
     
     schedules.forEach(schedule => {
-      const recurring = schedule.recurring || schedule.repeat_type || 'none';
+      const recurring = schedule.repeat_type || schedule.recurring || 'none';
       
       if (recurring === 'none') {
-        // 非循环日程，直接添加
         expanded.push(schedule);
       } else if (recurring === 'daily') {
-        // 每日循环：在当前月份的每一天都显示
         const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
         for (let d = 1; d <= daysInMonth; d++) {
           const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -214,9 +208,8 @@ Page({
           });
         }
       } else if (recurring === 'weekly') {
-        // 每周循环：在当前月份的匹配星期几显示
         const originalDate = new Date(schedule.schedule_date);
-        const targetWeekday = originalDate.getDay(); // 0-6, 周日-周六
+        const targetWeekday = originalDate.getDay();
         const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
         for (let d = 1; d <= daysInMonth; d++) {
           const date = new Date(currentYear, currentMonthNum - 1, d);
@@ -230,7 +223,6 @@ Page({
           }
         }
       } else if (recurring === 'monthly') {
-        // 每月循环：在当前月份的同一日期显示
         const originalDay = new Date(schedule.schedule_date).getDate();
         const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
         if (originalDay <= daysInMonth) {
@@ -242,7 +234,6 @@ Page({
           });
         }
       } else if (recurring === 'yearly') {
-        // 每年循环：在当前月份且日期匹配时显示（如生日）
         const originalDate = new Date(schedule.schedule_date);
         const originalMonth = originalDate.getMonth() + 1;
         const originalDay = originalDate.getDate();
@@ -263,10 +254,6 @@ Page({
     return expanded;
   },
 
-  getDaySchedules() {
-    return this.data.scheduleList.filter(s => s.schedule_date === this.data.selectedDate);
-  },
-
   showAddModal() {
     this.setData({
       showModal: true,
@@ -278,10 +265,12 @@ Page({
         date: this.data.selectedDate,
         time: '',
         description: '',
-        remind: 0
+        remind: 0,
+        repeatType: 'none'
       },
       typeIndex: 0,
-      remindIndex: 0
+      remindIndex: 0,
+      repeatIndex: 0
     });
   },
 
@@ -289,9 +278,7 @@ Page({
     this.setData({ showModal: false });
   },
 
-  stopPropagation() {
-    // 阻止事件冒泡，空方法即可
-  },
+  stopPropagation() {},
 
   inputTitle(e) {
     this.setData({ 'formData.title': e.detail.value });
@@ -325,8 +312,16 @@ Page({
     });
   },
 
+  pickRepeat(e) {
+    const index = e.detail.value;
+    this.setData({
+      repeatIndex: index,
+      'formData.repeatType': this.data.repeatValues[index]
+    });
+  },
+
   async submitForm() {
-    const { title, type, date, time, description, remind } = this.data.formData;
+    const { title, type, date, time, description, remind, repeatType } = this.data.formData;
 
     if (!title.trim()) {
       wx.showToast({ title: '请输入日程标题', icon: 'none' });
@@ -350,7 +345,7 @@ Page({
         await app.request({
           url: `/schedule/${this.data.editId}`,
           method: 'PUT',
-          data: { title, type, date, time, description, remind }
+          data: { title, type, date, time, description, remind, repeatType }
         });
       } else {
         await app.request({
@@ -363,7 +358,8 @@ Page({
             date,
             time,
             description,
-            remind
+            remind,
+            repeatType
           }
         });
       }
@@ -382,19 +378,24 @@ Page({
     const item = e.currentTarget.dataset.item;
     const typeIndex = this.data.types.findIndex(t => t.value === item.type);
     
-    // remind 反向映射：0→index 0(不提醒), 0→index 1(当天), 1→index 2(提前1天), 3→index 3(提前3天), 7→index 4(提前7天)
-    // 注意 remind=0 时优先选 "当天"（index 1），因为用户之前选了提醒
+    // 后端返回 remind_before，前端用 remind
+    const remindBefore = item.remind_before ?? item.remind ?? 0;
     const remindReverseMap = { 0: 1, 1: 2, 3: 3, 7: 4 };
     let remindIndex;
-    if (item.remind === undefined || item.remind === null) {
-      remindIndex = 0; // 不提醒
-    } else if (item.remind === 0) {
-      // 区分：如果 remind 是 0，可能是"当天"也可能是"不提醒"
-      // 默认选"当天"更合理（用户选了提醒意图）
-      remindIndex = 1;
+    if (remindBefore === undefined || remindBefore === null) {
+      remindIndex = 0;
+    } else if (remindBefore === 0) {
+      remindIndex = 1; // 当天
     } else {
-      remindIndex = remindReverseMap[item.remind] || 0;
+      remindIndex = remindReverseMap[remindBefore] || 0;
     }
+
+    // 后端返回 repeat_type，前端用 repeatType
+    const repeatType = item.repeat_type ?? item.recurring ?? 'none';
+    const repeatIndex = this.data.repeatValues.indexOf(repeatType);
+    
+    // 后端返回 schedule_time，前端用 time
+    const scheduleTime = item.schedule_time ?? item.time ?? '';
 
     this.setData({
       showModal: true,
@@ -404,12 +405,14 @@ Page({
         title: item.title,
         type: item.type,
         date: item.schedule_date,
-        time: item.time || '',
+        time: scheduleTime,
         description: item.description || '',
-        remind: item.remind || 0
+        remind: remindBefore,
+        repeatType
       },
       typeIndex: typeIndex >= 0 ? typeIndex : 0,
-      remindIndex
+      remindIndex,
+      repeatIndex: repeatIndex >= 0 ? repeatIndex : 0
     });
   },
 
