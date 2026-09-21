@@ -210,7 +210,7 @@ Page({
     const { currentYear, currentMonthNum, rawSchedules } = this.data;
     const expandedList = this.expandRecurringSchedules(rawSchedules, year, month);
     this.setData({ scheduleList: expandedList });
-    
+
     // 加载该月节假日数据
     const monthHolidays = await getMonthHolidays(year, month);
     this.setData({ monthHolidays });
@@ -267,7 +267,7 @@ Page({
 
       const rawSchedules = res.data || [];
       const expandedList = this.expandRecurringSchedules(rawSchedules, this.data.currentYear, this.data.currentMonthNum);
-      
+
       // 加载节假日
       const monthHolidays = await getMonthHolidays(this.data.currentYear, this.data.currentMonthNum);
 
@@ -279,12 +279,10 @@ Page({
 
   expandRecurringSchedules(schedules, year, month) {
     const expanded = [];
-    console.log('=== expandRecurringSchedules ===', { year, month, scheduleCount: schedules.length });
-
+    
     schedules.forEach(schedule => {
       const recurring = schedule.recurring || schedule.repeat_type || 'none';
-      console.log('  schedule:', schedule.title, 'recurring:', recurring, 'orig_date:', schedule.schedule_date, 'recurring_end:', schedule.recurring_end);
-
+      
       if (recurring === 'none') {
         expanded.push(schedule);
       } else if (recurring === 'daily') {
@@ -295,7 +293,7 @@ Page({
           expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
         }
       } else if (recurring === 'weekly') {
-        // 解析原始日期的星期几（用本地时间避免UTC偏移）
+        // 解析原始日期的星期几(用本地时间避免UTC偏移)
         const parts = schedule.schedule_date.split('-');
         const originalDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         const targetWeekday = originalDate.getDay();
@@ -329,13 +327,7 @@ Page({
         }
       }
     });
-
-    console.log('expanded total:', expanded.length, 'items');
-    expanded.forEach(s => {
-      if (s.isRecurring || s.recurring !== 'none' || s.repeat_type !== 'none') {
-        console.log('  →', s.schedule_date, s.title);
-      }
-    });
+    
     return expanded;
   },
 
