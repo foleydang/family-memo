@@ -193,6 +193,7 @@ Page({
   goToTodo() { wx.switchTab({ url: '/pages/todo/index' }) },
   goToSchedule() { wx.switchTab({ url: '/pages/schedule/index' }) },
   goToWish() { wx.navigateTo({ url: '/pages/wish/index' }) },
+  goToAccount() { wx.navigateTo({ url: '/pages/account/index' }) },
 
   handleLogin() {
     wx.showLoading({ title: '登录中' });

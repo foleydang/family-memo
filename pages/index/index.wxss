@@ -189,6 +189,7 @@
 .action-icon-box.todo { background: linear-gradient(135deg, #E8F5E9 0%, #A5D6A7 100%); }
 .action-icon-box.schedule { background: linear-gradient(135deg, #FFF3E0 0%, #FFCC80 100%); }
 .action-icon-box.wish { background: linear-gradient(135deg, #E8DEF8 0%, #C4B5FD 100%); }
+.action-icon-box.account { background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 100%); }
 .action-icon { font-size: 32rpx; }
 
 .action-info { flex: 1; }

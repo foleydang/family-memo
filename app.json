@@ -12,6 +12,7 @@
     "pages/remind-settings/index",
     "pages/announcement/index",
     "pages/export/index",
+    "pages/account/index",
     "pages/wish/index"
   ],
   "window": {

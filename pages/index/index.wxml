@@ -151,6 +151,13 @@
           <view class="action-desc">写下家人的心愿</view>
         </view>
       </view>
+      <view class="action-card" bindtap="goToAccount">
+        <view class="action-icon-box account"><text class="action-icon">💰</text></view>
+        <view class="action-info">
+          <view class="action-title">家庭记账</view>
+          <view class="action-desc">记录家庭收支明细</view>
+        </view>
+      </view>
     </view>
   </view>
 </view>

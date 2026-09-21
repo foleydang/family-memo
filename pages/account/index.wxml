@@ -1,0 +1,163 @@
+<!--pages/account/index.wxml-->
+<view class="container">
+  <!-- 月份导航 + 统计 -->
+  <view class="header-bar">
+    <view class="month-nav">
+      <text class="nav-arrow" bindtap="prevMonth">‹</text>
+      <text class="month-label">{{currentYear}}年{{currentMonth}}月</text>
+      <text class="nav-arrow" bindtap="nextMonth">›</text>
+    </view>
+    <view class="header-actions">
+      <text class="stats-toggle" bindtap="toggleStats">{{showStats ? '收起' : '统计'}}</text>
+    </view>
+  </view>
+
+  <!-- 月度统计面板 -->
+  <view class="stats-panel" wx:if="{{showStats && stats}}">
+    <view class="stat-row">
+      <view class="stat-item expense">
+        <text class="stat-label">总支出</text>
+        <text class="stat-value">¥{{stats.expenseTotal}}</text>
+      </view>
+      <view class="stat-item income">
+        <text class="stat-label">总收入</text>
+        <text class="stat-value">¥{{stats.incomeTotal}}</text>
+      </view>
+      <view class="stat-item balance">
+        <text class="stat-label">结余</text>
+        <text class="stat-value {{stats.incomeTotal - stats.expenseTotal >= 0 ? 'green' : 'red'}}">¥{{stats.incomeTotal - stats.expenseTotal}}</text>
+      </view>
+    </view>
+    <!-- 分类排行 -->
+    <view class="category-rank" wx:if="{{stats.byCategory.length > 0}}">
+      <view class="rank-title">📊 分类排行</view>
+      <view class="rank-list">
+        <view class="rank-item" wx:for="{{stats.byCategory}}" wx:key="category" wx:if="{{item.type === 'expense'}}">
+          <text class="rank-cat">{{item.category}}</text>
+          <view class="rank-bar-wrap">
+            <view class="rank-bar" style="width: {{item.total / stats.expenseTotal * 100}}%"></view>
+          </view>
+          <text class="rank-amount">¥{{item.total}}</text>
+        </view>
+      </view>
+    </view>
+    <!-- 成员排行 -->
+    <view class="member-rank" wx:if="{{stats.byMember.length > 0}}">
+      <view class="rank-title">👤 成员排行</view>
+      <view class="rank-list">
+        <view class="rank-item" wx:for="{{stats.byMember}}" wx:key="payer_id" wx:if="{{item.type === 'expense'}}">
+          <text class="rank-cat">{{item.payer_name || '未知'}}</text>
+          <text class="rank-amount">¥{{item.total}} ({{item.count}}笔)</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 类型筛选 -->
+  <view class="filter-bar">
+    <view class="filter-item {{typeFilter === 'expense' ? 'active expense' : ''}}" bindtap="filterType" data-type="expense">支出</view>
+    <view class="filter-item {{typeFilter === 'income' ? 'active income' : ''}}" bindtap="filterType" data-type="income">收入</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-card" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:elif="{{!groupedData || Object.keys(groupedData).length === 0}}">
+    <text class="empty-icon">📝</text>
+    <text class="empty-text">还没有记账记录</text>
+    <text class="empty-desc">开始记录家庭的每一笔收支</text>
+  </view>
+
+  <!-- 按日期分组的账单列表 -->
+  <view class="account-list" wx:else>
+    <block wx:for="{{groupedData}}" wx:key="date" wx:for-item="items" wx:for-index="date">
+      <view class="date-group">
+        <view class="date-header">
+          <text class="date-text">{{date}}</text>
+          <text class="date-sum">
+            <text wx:for="{{items}}" wx:key="id" wx:for-item="it">
+              <text wx:if="{{index > 0}}"> | </text>
+              <text class="{{it.type === 'expense' ? 'expense-color' : 'income-color'}}">¥{{it.amount}}</text>
+            </text>
+          </text>
+        </view>
+        <view class="account-item {{it.type}}" wx:for="{{items}}" wx:key="id" wx:for-item="it" bindlongpress="editItem" data-item="{{it}}">
+          <view class="item-left">
+            <text class="item-category">{{it.category}}</text>
+            <text class="item-title">{{it.title}}</text>
+            <text class="item-payer">{{it.payer_name || '我'}}</text>
+          </view>
+          <view class="item-right">
+            <text class="item-amount {{it.type === 'expense' ? 'expense-color' : 'income-color'}}">{{it.type === 'expense' ? '-' : '+'}}¥{{it.amount}}</text>
+            <view class="item-actions">
+              <text class="action-edit" catchtap="editItem" data-item="{{it}}">✏️</text>
+              <text class="action-del" catchtap="deleteItem" data-id="{{it.id}}">🗑</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="fab" bindtap="openAdd">
+    <text class="fab-text">+</text>
+  </view>
+
+  <!-- 弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" bindtap="hideModal"></view>
+  <view class="modal" wx:if="{{showModal}}">
+    <view class="modal-title">{{editMode ? '编辑记录' : '记一笔'}}</view>
+    
+    <!-- 类型切换 -->
+    <view class="type-switch">
+      <view class="type-btn {{formData.type === 'expense' ? 'active expense' : ''}}" bindtap="onTypeChange" data-type="expense">支出</view>
+      <view class="type-btn {{formData.type === 'income' ? 'active income' : ''}}" bindtap="onTypeChange" data-type="income">收入</view>
+    </view>
+
+    <!-- 金额 -->
+    <view class="form-item">
+      <text class="form-label">金额</text>
+      <input class="form-input amount-input" type="digit" placeholder="0.00" value="{{formData.amount}}" data-field="amount" bindinput="onInput" focus/>
+    </view>
+
+    <!-- 分类 -->
+    <view class="form-item">
+      <text class="form-label">分类</text>
+      <view class="category-grid">
+        <view class="cat-item {{formData.category === item ? 'selected' : ''}}" wx:for="{{categories}}" wx:key="*this" bindtap="onPicker" data-value="{{index}}">
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 标题 -->
+    <view class="form-item">
+      <text class="form-label">说明</text>
+      <input class="form-input" placeholder="买了什么？" value="{{formData.title}}" data-field="title" bindinput="onInput"/>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <input class="form-input" placeholder="选填" value="{{formData.description}}" data-field="description" bindinput="onInput"/>
+    </view>
+
+    <!-- 日期 -->
+    <view class="form-item">
+      <text class="form-label">日期</text>
+      <picker mode="date" value="{{formData.recordDate}}" bindchange="onDateChange">
+        <view class="picker-val">{{formData.recordDate || '选择日期'}}</view>
+      </picker>
+    </view>
+
+    <!-- 按钮 -->
+    <view class="modal-btns">
+      <button class="btn-cancel" bindtap="hideModal">取消</button>
+      <button class="btn-submit" bindtap="submitForm">{{editMode ? '保存' : '记一笔'}}</button>
+    </view>
+  </view>
+</view>
