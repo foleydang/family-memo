@@ -6,7 +6,7 @@ Page({
   data: {
     familyId: null,
     scheduleList: [],
-    rawSchedules: [], // 服务器原始数据，不展开循环
+    rawSchedules: [], // 服务器原始数据,不展开循环
     daySchedules: [], // 当天日程
     monthHolidays: {}, // 该月节假日数据
     selectedDateInfo: {}, // 选中日期的标签信息
@@ -97,7 +97,7 @@ Page({
       const isHoliday = holidayInfo.holiday === true;
       const isWorkday = holidayInfo.holiday === false;
       const holidayWage = holidayInfo.wage || 0;
-      
+
       // 农历显示: 初一显示月份(如"五月"), 其他显示日(如"初七")
       let lunarText = null;
       if (holidayInfo.lunarMonth && holidayInfo.lunarDay) {
@@ -107,7 +107,7 @@ Page({
           lunarText = holidayInfo.lunarDay;
         }
       }
-      
+
       // 右上角标记: 休/班
       let restMark = null, restMarkClass = '';
       if (isHoliday && holidayWage === 2) { restMark = '休'; restMarkClass = 'rest-tag'; }
@@ -124,7 +124,7 @@ Page({
 
       // 下方标签行: 只有假期正日才显示节日名, 其他天只显示"休"
       const dayTags = [];
-      
+
       if (isHoliday && holidayWage === 3 && isHolidayMainDay) {
         const name = holidayInfo.holidayName || '';
         let shortName = name;
@@ -153,12 +153,12 @@ Page({
           }
         }
       });
-      
+
       // 农历日(只在没有其他标签时显示)
       if (lunarText && dayTags.length === 0) {
         dayTags.push({ text: lunarText, cls: 'lunar-tag' });
       }
-      
+
       // 只保留最多2个标签
       const displayTags = dayTags.slice(0, 2);
 
@@ -207,14 +207,15 @@ Page({
   },
 
   async expandAndRender() {
-    const expandedList = this.expandRecurringSchedules(this.data.rawSchedules);
+    const { currentYear, currentMonthNum, rawSchedules } = this.data;
+    const expandedList = this.expandRecurringSchedules(rawSchedules, year, month);
     this.setData({ scheduleList: expandedList });
     
     // 加载该月节假日数据
-    const monthHolidays = await getMonthHolidays(this.data.currentYear, this.data.currentMonthNum);
+    const monthHolidays = await getMonthHolidays(year, month);
     this.setData({ monthHolidays });
-    
-    this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
+
+    this.generateCalendar(year, month);
     this.updateDaySchedules(this.data.selectedDate);
   },
 
@@ -229,7 +230,7 @@ Page({
   updateDaySchedules(date) {
     const typeNames = { birthday: '生日', anniversary: '纪念日', appointment: '预约', meeting: '会议', trip: '出行', schedule: '日程', other: '其他' };
     const daySchedules = this.data.scheduleList.filter(s => s.schedule_date === date).map(s => ({ ...s, typeName: typeNames[s.type] || '其他' }));
-    // 计算选中日期的标签信息，传到wxml
+    // 计算选中日期的标签信息,传到wxml
     const holidayInfo = this.data.monthHolidays[date] || {};
     const isHoliday = holidayInfo.holiday === true;
     const isWorkday = holidayInfo.holiday === false;
@@ -263,66 +264,78 @@ Page({
         url: '/schedule/list',
         data: { familyId: this.data.familyId }
       });
-      
+
       const rawSchedules = res.data || [];
-      const expandedList = this.expandRecurringSchedules(rawSchedules);
+      const expandedList = this.expandRecurringSchedules(rawSchedules, this.data.currentYear, this.data.currentMonthNum);
       
       // 加载节假日
       const monthHolidays = await getMonthHolidays(this.data.currentYear, this.data.currentMonthNum);
-      
+
       this.setData({ rawSchedules, scheduleList: expandedList, monthHolidays });
       this.generateCalendar(this.data.currentYear, this.data.currentMonthNum);
       this.updateDaySchedules(this.data.selectedDate);
     } catch (err) { console.error('加载日程失败', err) }
   },
-  
-  expandRecurringSchedules(schedules) {
-    const { currentYear, currentMonthNum } = this.data;
+
+  expandRecurringSchedules(schedules, year, month) {
     const expanded = [];
-    
+    console.log('=== expandRecurringSchedules ===', { year, month, scheduleCount: schedules.length });
+
     schedules.forEach(schedule => {
       const recurring = schedule.recurring || schedule.repeat_type || 'none';
-      
+      console.log('  schedule:', schedule.title, 'recurring:', recurring, 'orig_date:', schedule.schedule_date, 'recurring_end:', schedule.recurring_end);
+
       if (recurring === 'none') {
         expanded.push(schedule);
       } else if (recurring === 'daily') {
-        const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+        const daysInMonth = new Date(year, month, 0).getDate();
         for (let d = 1; d <= daysInMonth; d++) {
-          const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          if (schedule.recurring_end && dateStr > schedule.recurring_end) continue;
           expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
         }
       } else if (recurring === 'weekly') {
-        const originalDate = new Date(schedule.schedule_date);
+        // 解析原始日期的星期几（用本地时间避免UTC偏移）
+        const parts = schedule.schedule_date.split('-');
+        const originalDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         const targetWeekday = originalDate.getDay();
-        const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+        const daysInMonth = new Date(year, month, 0).getDate();
         for (let d = 1; d <= daysInMonth; d++) {
-          const date = new Date(currentYear, currentMonthNum - 1, d);
+          const date = new Date(year, month - 1, d);
           if (date.getDay() === targetWeekday) {
-            const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            // 检查recurring_end是否已过期
+            if (schedule.recurring_end && dateStr > schedule.recurring_end) continue;
             expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
           }
         }
       } else if (recurring === 'monthly') {
         const originalDay = new Date(schedule.schedule_date).getDate();
-        const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+        const daysInMonth = new Date(year, month, 0).getDate();
         if (originalDay <= daysInMonth) {
-          const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
           expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
         }
       } else if (recurring === 'yearly') {
         const originalDate = new Date(schedule.schedule_date);
         const originalMonth = originalDate.getMonth() + 1;
         const originalDay = originalDate.getDate();
-        if (originalMonth === currentMonthNum) {
-          const daysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+        if (originalMonth === month) {
+          const daysInMonth = new Date(year, month, 0).getDate();
           if (originalDay <= daysInMonth) {
-            const dateStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(originalDay).padStart(2, '0')}`;
             expanded.push({ ...schedule, schedule_date: dateStr, isRecurring: true });
           }
         }
       }
     });
-    
+
+    console.log('expanded total:', expanded.length, 'items');
+    expanded.forEach(s => {
+      if (s.isRecurring || s.recurring !== 'none' || s.repeat_type !== 'none') {
+        console.log('  →', s.schedule_date, s.title);
+      }
+    });
     return expanded;
   },
 
@@ -395,13 +408,13 @@ Page({
         await app.request({
           url: `/schedule/${this.data.editId}`,
           method: 'PUT',
-          data: { title, type, date, time, description, remind, repeatType }
+          data: { title, type, date, time, description, remind, repeatType, recurringEnd: this.data.formData.recurringEnd || null }
         });
       } else {
         await app.request({
           url: '/schedule/add',
           method: 'POST',
-          data: { familyId: this.data.familyId, title, type, date, time, description, remind, repeatType }
+          data: { familyId: this.data.familyId, title, type, date, time, description, remind, repeatType, recurringEnd: this.data.formData.recurringEnd || null }
         });
       }
 
@@ -418,7 +431,7 @@ Page({
   editItem(e) {
     const item = e.currentTarget.dataset.item;
     const typeIndex = this.data.types.findIndex(t => t.value === item.type);
-    
+
     const remindBefore = item.remind_before ?? item.remind ?? 0;
     const remindReverseMap = { 0: 1, 1: 2, 3: 3, 7: 4 };
     let remindIndex;
@@ -432,7 +445,7 @@ Page({
 
     const repeatType = item.repeat_type ?? item.recurring ?? 'none';
     const repeatIndex = this.data.repeatValues.indexOf(repeatType);
-    
+
     const scheduleTime = item.schedule_time ?? item.time ?? '';
 
     this.setData({
@@ -457,7 +470,7 @@ Page({
   async deleteItem(e) {
     const id = e.currentTarget.dataset.id
 
-    const res = await wx.showModal({ title: '确认删除', content: '确定要删除这个日程吗？' });
+    const res = await wx.showModal({ title: '确认删除', content: '确定要删除这个日程吗?' });
 
     if (res.confirm) {
       try {
