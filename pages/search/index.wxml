@@ -1,0 +1,70 @@
+<!--pages/search/index.wxml-->
+<view class="container">
+  <view class="search-bar">
+    <input class="search-input" placeholder="搜索日程、待办、购物、记账..." value="{{keyword}}" bindinput="onInput" focus/>
+    <text class="clear-btn" wx:if="{{keyword}}" bindtap="clearSearch">✕</text>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">搜索中...</view>
+
+  <view class="empty-hint" wx:elif="{{!keyword}}">
+    <text class="empty-icon">🔍</text>
+    <text class="empty-text">输入关键词搜索所有内容</text>
+  </view>
+
+  <view class="no-result" wx:elif="{{results && totalCount === 0}}">
+    <text>没有找到「{{keyword}}」相关结果</text>
+  </view>
+
+  <view class="results" wx:elif="{{results && totalCount > 0}}">
+    <view class="result-count">找到 {{totalCount}} 条结果</view>
+
+    <!-- 日程 -->
+    <view class="section" wx:if="{{results.schedules.length > 0}}">
+      <view class="section-title">📅 日程 ({{results.schedules.length}})</view>
+      <view class="result-item" wx:for="{{results.schedules}}" wx:key="id" bindtap="goTo" data-type="schedule" data-id="{{item.id}}">
+        <view class="item-main">
+          <text class="item-title">{{item.title}}</text>
+          <text class="item-meta">{{item.schedule_date}} {{item.schedule_time || '全天'}}</text>
+        </view>
+        <text class="item-badge">›</text>
+      </view>
+    </view>
+
+    <!-- 待办 -->
+    <view class="section" wx:if="{{results.todos.length > 0}}">
+      <view class="section-title">✅ 待办 ({{results.todos.length}})</view>
+      <view class="result-item" wx:for="{{results.todos}}" wx:key="id" bindtap="goTo" data-type="todo" data-id="{{item.id}}">
+        <view class="item-main">
+          <text class="item-title">{{item.title}}</text>
+          <text class="item-meta">{{item.status === 'done' ? '✓ 已完成' : item.due_date || '无截止'}}</text>
+        </view>
+        <text class="item-badge">›</text>
+      </view>
+    </view>
+
+    <!-- 购物 -->
+    <view class="section" wx:if="{{results.shopping.length > 0}}">
+      <view class="section-title">🛒 购物 ({{results.shopping.length}})</view>
+      <view class="result-item" wx:for="{{results.shopping}}" wx:key="id" bindtap="goTo" data-type="shopping" data-id="{{item.id}}">
+        <view class="item-main">
+          <text class="item-title">{{item.title}}</text>
+          <text class="item-meta">{{item.category}} · {{item.status === 'done' ? '已购买' : '待购买'}}</text>
+        </view>
+        <text class="item-badge">›</text>
+      </view>
+    </view>
+
+    <!-- 记账 -->
+    <view class="section" wx:if="{{results.accounts.length > 0}}">
+      <view class="section-title">💰 记账 ({{results.accounts.length}})</view>
+      <view class="result-item" wx:for="{{results.accounts}}" wx:key="id" bindtap="goTo" data-type="account" data-id="{{item.id}}">
+        <view class="item-main">
+          <text class="item-title">{{item.title}}</text>
+          <text class="item-meta">{{item.record_date}} · {{item.category}}</text>
+        </view>
+        <text class="item-amount {{item.type === 'expense' ? 'red' : 'green'}}">¥{{item.amount}}</text>
+      </view>
+    </view>
+  </view>
+</view>

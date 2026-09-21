@@ -1,5 +1,10 @@
 <!--pages/index/index.wxml-->
 <view class="container">
+  <!-- 搜索入口 -->
+  <view class="search-bar" bindtap="goToSearch" wx:if="{{familyInfo}}">
+    <text class="search-icon">🔍</text>
+    <text class="search-placeholder">搜索日程、待办、购物、记账...</text>
+  </view>
   <!-- 加载中 -->
   <view class="loading-card card" wx:if="{{loading}}">
     <view class="loading-content">

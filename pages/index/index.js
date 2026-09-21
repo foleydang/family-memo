@@ -197,6 +197,7 @@ Page({
   goToWish() { wx.navigateTo({ url: '/pages/wish/index' }) },
   goToAccount() { wx.navigateTo({ url: '/pages/account/index' }) },
   goToNotification() { wx.navigateTo({ url: '/pages/notification/index' }) },
+  goToSearch() { wx.navigateTo({ url: '/pages/search/index' }) },
   async loadUnreadCount() {
     if (!this.data.familyInfo) return;
     try {
