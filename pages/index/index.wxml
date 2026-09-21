@@ -24,6 +24,10 @@
       <text class="subscribe-icon">🔔</text>
     </view>
     <view class="subscribe-tip" wx:if="{{familyInfo && !subscribed}}">点击订阅提醒</view>
+    <view class="notif-bell" bindtap="goToNotification" wx:if="{{familyInfo && unreadCount > 0}}">
+      <text class="bell-icon">🔔</text>
+      <text class="bell-badge">{{unreadCount > 99 ? '99+' : unreadCount}}</text>
+    </view>
   </view>
 
   <!-- 未登录 -->

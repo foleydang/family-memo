@@ -1,0 +1,27 @@
+<!--pages/notification/index.wxml-->
+<view class="container">
+  <view class="header-bar">
+    <text class="page-title">消息通知</text>
+    <text class="read-all-btn" bindtap="markAllRead" wx:if="{{unread > 0}}">全部已读</text>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="empty" wx:elif="{{notifications.length === 0}}">
+    <text class="empty-icon">🔔</text>
+    <text class="empty-text">暂无消息</text>
+  </view>
+
+  <view class="notif-list" wx:else>
+    <view class="notif-item {{item.is_read ? '' : 'unread'}}" wx:for="{{notifications}}" wx:key="id" bindtap="markRead" data-id="{{item.id}}">
+      <text class="notif-dot" wx:if="{{!item.is_read}}"></text>
+      <view class="notif-body">
+        <text class="notif-title">{{item.title}}</text>
+        <text class="notif-content">{{item.content}}</text>
+        <text class="notif-time">{{item.created_at}}</text>
+      </view>
+    </view>
+  </view>
+</view>

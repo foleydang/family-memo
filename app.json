@@ -13,6 +13,7 @@
     "pages/announcement/index",
     "pages/export/index",
     "pages/account/index",
+    "pages/notification/index",
     "pages/wish/index"
   ],
   "window": {

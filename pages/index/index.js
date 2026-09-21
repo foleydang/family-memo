@@ -12,7 +12,8 @@ Page({
     greeting: '',
     todayStr: '',
     loading: true,
-    subscribed: false
+    subscribed: false,
+    unreadCount: 0
   },
 
   onLoad() { this.initPage() },
@@ -72,6 +73,7 @@ Page({
       if (app.globalData.familyInfo) {
         await this.loadMembers()
         await this.loadMyData()
+        this.loadUnreadCount()
       }
     } catch (err) { 
       console.error('刷新数据失败', err);
@@ -194,6 +196,14 @@ Page({
   goToSchedule() { wx.switchTab({ url: '/pages/schedule/index' }) },
   goToWish() { wx.navigateTo({ url: '/pages/wish/index' }) },
   goToAccount() { wx.navigateTo({ url: '/pages/account/index' }) },
+  goToNotification() { wx.navigateTo({ url: '/pages/notification/index' }) },
+  async loadUnreadCount() {
+    if (!this.data.familyInfo) return;
+    try {
+      const res = await app.request({ url: '/notification/unread', data: { familyId: this.data.familyInfo.id } });
+      this.setData({ unreadCount: res.data || 0 });
+    } catch (e) {}
+  },
 
   handleLogin() {
     wx.showLoading({ title: '登录中' });
