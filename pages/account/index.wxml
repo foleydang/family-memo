@@ -124,6 +124,14 @@
       <input class="form-input amount-input" type="digit" placeholder="0.00" value="{{formData.amount}}" data-field="amount" bindinput="onInput" focus/>
     </view>
 
+    <!-- 付款人 -->
+    <view class="form-item">
+      <text class="form-label">付款人</text>
+      <picker mode="selector" range="{{memberNames}}" value="{{payerIndex}}" bindchange="pickPayer">
+        <view class="picker-val">{{memberNames[payerIndex]}}</view>
+      </picker>
+    </view>
+
     <!-- 分类 -->
     <view class="form-item">
       <text class="form-label">分类</text>

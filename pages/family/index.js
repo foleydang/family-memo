@@ -10,7 +10,8 @@ Page({
     action: '',
     createForm: { name: '' },
     joinForm: { code: '' },
-    currentUserId: null // 当前用户 ID
+    currentUserId: null, // 当前用户 ID
+    createdAtStr: '' // 家庭创建时间（预计算，wxml 不能调方法）
   },
 
   onLoad(options) {
@@ -18,15 +19,20 @@ Page({
       this.setData({ action: options.action });
     }
 
+    // 从分享链接带邀请码进入：自动弹出"加入家庭"弹窗并预填邀请码
+    if (options.code) {
+      this.setData({ showModal: true, action: 'join', joinForm: { code: options.code } });
+    }
+
     if (app.globalData.familyInfo) {
-      this.setData({ familyInfo: app.globalData.familyInfo });
+      this.setData({ familyInfo: app.globalData.familyInfo, createdAtStr: this.formatDate(app.globalData.familyInfo.created_at) });
       this.loadFamilyInfo();
     }
   },
 
   onShow() {
     if (app.globalData.familyInfo) {
-      this.setData({ familyInfo: app.globalData.familyInfo });
+      this.setData({ familyInfo: app.globalData.familyInfo, createdAtStr: this.formatDate(app.globalData.familyInfo.created_at) });
       this.loadFamilyInfo();
     }
   },
@@ -42,7 +48,8 @@ Page({
         familyInfo: res.data,
         members: res.data.members || [],
         inviteCode: res.data.invite_code || '',  // 从API获取邀请码
-        currentUserId: app.globalData.userInfo?.id
+        currentUserId: app.globalData.userInfo?.id,
+        createdAtStr: this.formatDate(res.data.created_at)
       });
     } catch (err) {
       console.error('加载家庭信息失败', err);
@@ -105,7 +112,8 @@ Page({
       this.setData({
         familyInfo: res.data,
         showModal: false,
-        inviteCode: res.data.invite_code || ''  // 使用API返回的字段名''
+        inviteCode: res.data.invite_code || '',  // 使用API返回的字段名''
+        createdAtStr: this.formatDate(res.data.created_at)
       });
 
       // 刷新用户信息
@@ -139,7 +147,8 @@ Page({
       app.globalData.familyInfo = res.data;
       this.setData({
         familyInfo: res.data,
-        showModal: false
+        showModal: false,
+        createdAtStr: this.formatDate(res.data.created_at)
       });
 
       // 刷新用户信息
@@ -193,6 +202,22 @@ Page({
       withShareTicket: true,
       menus: ['shareAppMessage', 'shareTimeline']
     });
+  },
+
+  onShareAppMessage() {
+    const familyInfo = this.data.familyInfo;
+    const code = this.data.inviteCode;
+    if (familyInfo) {
+      // 分享链接带上邀请码，家人点进来自动弹出加入弹窗并预填
+      return {
+        title: `邀请你加入「${familyInfo.name}」`,
+        path: code ? `/pages/family/index?action=join&code=${code}` : `/pages/family/index?action=join`
+      };
+    }
+    return {
+      title: '家庭备忘录 - 记录家庭生活的点滴',
+      path: '/pages/index/index'
+    };
   },
 
   async removeMember(e) {
@@ -269,7 +294,7 @@ Page({
   async leaveFamily() {
     const res = await wx.showModal({
       title: '确认退出',
-      content: '确定要退出家庭吗？退出后数据将无法访问'
+      content: '退出后你将看不到本家庭的内容；家庭其他成员仍可正常使用，你创建的数据不会被删除。重新加入可恢复访问。'
     });
 
     if (res.confirm) {

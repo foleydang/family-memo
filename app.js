@@ -5,7 +5,7 @@ App({
     familyInfo: null,
     token: null,
     baseUrl: 'https://api.yanten.top/api',
-    _isRefreshing: false // token刷新锁
+    _refreshPromise: null // token刷新共享Promise（并发401复用）
   },
 
   onLaunch() {
@@ -91,32 +91,32 @@ App({
   // 封装请求方法 - 支持401自动重登
   async request(options) {
     const res = await this._rawRequest(options);
-    
+
     // 401/token过期 → 自动重新登录后重试
     if (res.statusCode === 401 && !options._isRetry) {
-      if (!this.globalData._isRefreshing) {
-        this.globalData._isRefreshing = true;
-        try {
-          await this.login();
-          this.globalData._isRefreshing = false;
-          // 重试原请求
-          return this.request({ ...options, _isRetry: true });
-        } catch (err) {
-          this.globalData._isRefreshing = false;
-          this.logout();
-          wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
-          throw err;
-        }
+      // 并发请求复用同一个刷新 Promise，避免各自 setTimeout(1000) 后拿旧 token 再次撞 401
+      if (!this.globalData._refreshPromise) {
+        this.globalData._refreshPromise = (async () => {
+          try {
+            await this.login();
+          } catch (err) {
+            this.logout();
+            wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+            throw err;
+          } finally {
+            this.globalData._refreshPromise = null;
+          }
+        })();
       }
-      // 其他请求等待刷新完成后再重试
-      await new Promise(r => setTimeout(r, 1000));
+      // 刷新失败时这里会抛出，由调用方处理
+      await this.globalData._refreshPromise;
       return this.request({ ...options, _isRetry: true });
     }
-    
+
     if (res.data.success) {
       return res.data;
     }
-    
+
     // 业务错误不弹toast，由调用方处理
     throw res.data;
   }

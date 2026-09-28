@@ -12,6 +12,8 @@ Page({
     },
     menuItems: [
       { icon: '📝', title: '我的记录', desc: '查看我添加的内容' },
+      { icon: '💰', title: '家庭记账', desc: '记录家庭每一笔收支' },
+      { icon: '📢', title: '家庭公告', desc: '发布和查看家庭公告' },
       { icon: '🔔', title: '提醒设置', desc: '管理通知提醒' },
       { icon: '🌟', title: '心愿墙', desc: '写下家人的心愿和梦想' },
       { icon: '📤', title: '数据导出', desc: '导出数据到剪贴板' },
@@ -79,16 +81,22 @@ Page({
       case 0: // 我的记录
         wx.navigateTo({ url: '/pages/my-records/index' });
         break;
-      case 1: // 提醒设置
+      case 1: // 家庭记账
+        wx.navigateTo({ url: '/pages/account/index' });
+        break;
+      case 2: // 家庭公告
+        wx.navigateTo({ url: '/pages/announcement/index' });
+        break;
+      case 3: // 提醒设置
         wx.navigateTo({ url: '/pages/remind-settings/index' });
         break;
-      case 2: // 心愿墙
+      case 4: // 心愿墙
         wx.navigateTo({ url: '/pages/wish/index' });
         break;
-      case 3: // 数据导出
+      case 5: // 数据导出
         wx.navigateTo({ url: '/pages/export/index' });
         break;
-      case 4: // 帮助反馈
+      case 6: // 帮助反馈
         wx.navigateTo({ url: '/pages/feedback/index' });
         break;
     }
@@ -142,9 +150,10 @@ Page({
   onShareAppMessage() {
     const familyInfo = this.data.familyInfo;
     if (familyInfo) {
+      const code = familyInfo.invite_code || '';
       return {
         title: `邀请你加入「${familyInfo.name}」`,
-        path: `/pages/family/index?action=join`
+        path: code ? `/pages/family/index?action=join&code=${code}` : `/pages/family/index?action=join`
       };
     }
     return {

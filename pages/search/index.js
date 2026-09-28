@@ -35,9 +35,16 @@ Page({
   },
 
   goTo(e) {
-    const { type, id } = e.currentTarget.dataset;
-    const urls = { schedule: '/pages/schedule/index', todo: '/pages/todo/index', shopping: '/pages/shopping/index', account: '/pages/account/index' };
-    wx.navigateTo({ url: urls[type] });
+    const { type } = e.currentTarget.dataset;
+    // tabBar 页用 switchTab（不支持 query），非 tabBar 页用 navigateTo
+    const tabBarPaths = ['pages/schedule/index', 'pages/todo/index', 'pages/shopping/index'];
+    const path = { schedule: 'pages/schedule/index', todo: 'pages/todo/index', shopping: 'pages/shopping/index', account: 'pages/account/index' }[type];
+    if (!path) return;
+    if (tabBarPaths.includes(path)) {
+      wx.switchTab({ url: '/' + path, fail: () => wx.showToast({ title: '跳转失败', icon: 'none' }) });
+    } else {
+      wx.navigateTo({ url: '/' + path, fail: () => wx.showToast({ title: '跳转失败', icon: 'none' }) });
+    }
   },
 
   clearSearch() {

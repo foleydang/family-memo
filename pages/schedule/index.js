@@ -25,7 +25,8 @@ Page({
       time: '',
       description: '',
       remind: 0,
-      repeatType: 'none'
+      repeatType: 'none',
+      recurringEnd: ''
     },
     types: [
       { name: '生日', value: 'birthday' },
@@ -208,14 +209,14 @@ Page({
 
   async expandAndRender() {
     const { currentYear, currentMonthNum, rawSchedules } = this.data;
-    const expandedList = this.expandRecurringSchedules(rawSchedules, year, month);
+    const expandedList = this.expandRecurringSchedules(rawSchedules, currentYear, currentMonthNum);
     this.setData({ scheduleList: expandedList });
 
     // 加载该月节假日数据
-    const monthHolidays = await getMonthHolidays(year, month);
+    const monthHolidays = await getMonthHolidays(currentYear, currentMonthNum);
     this.setData({ monthHolidays });
 
-    this.generateCalendar(year, month);
+    this.generateCalendar(currentYear, currentMonthNum);
     this.updateDaySchedules(this.data.selectedDate);
   },
 
@@ -282,7 +283,10 @@ Page({
     
     schedules.forEach(schedule => {
       const recurring = schedule.recurring || schedule.repeat_type || 'none';
-      
+
+      // 循环日程 schedule_date 缺失时跳过，避免 .split / new Date 抛错导致整月日程渲染中断
+      if (recurring !== 'none' && !schedule.schedule_date) return;
+
       if (recurring === 'none') {
         expanded.push(schedule);
       } else if (recurring === 'daily') {
@@ -343,7 +347,8 @@ Page({
         time: '',
         description: '',
         remind: 0,
-        repeatType: 'none'
+        repeatType: 'none',
+        recurringEnd: ''
       },
       typeIndex: 0,
       remindIndex: 0,
@@ -368,11 +373,19 @@ Page({
   pickRemind(e) {
     const index = e.detail.value;
     this.setData({ remindIndex: index, 'formData.remind': this.data.remindValues[index] });
+    // 提醒推送功能开发中，避免用户设了提醒却等不到通知
+    if (index > 0) {
+      wx.showToast({ title: '提醒推送开发中，暂不会发通知', icon: 'none', duration: 2000 });
+    }
   },
 
   pickRepeat(e) {
     const index = e.detail.value;
     this.setData({ repeatIndex: index, 'formData.repeatType': this.data.repeatValues[index] });
+  },
+
+  pickRecurringEnd(e) {
+    this.setData({ 'formData.recurringEnd': e.detail.value });
   },
 
   async submitForm() {
@@ -451,7 +464,8 @@ Page({
         time: scheduleTime,
         description: item.description || '',
         remind: remindBefore,
-        repeatType
+        repeatType,
+        recurringEnd: item.recurring_end || ''
       },
       typeIndex: typeIndex >= 0 ? typeIndex : 0,
       remindIndex,

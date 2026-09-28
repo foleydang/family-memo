@@ -55,7 +55,7 @@
     </view>
     
     <view class="history-list" wx:if="{{showHistory && feedbackList.length > 0}}">
-      <view class="history-item" wx:for="{{feedbackList}}" wx:key="id" bindtap="viewFeedback" data-id="{{item.id}}">
+      <view class="history-item" wx:for="{{feedbackList}}" wx:key="id" bindtap="viewFeedback" data-id="{{item.id}}" data-index="{{index}}">
         <view class="history-type">{{item.type === 'bug' ? '异常' : item.type === 'suggest' ? '建议' : item.type === 'question' ? '问题' : '其他'}}</view>
         <view class="history-content">{{item.content}}</view>
         <view class="history-status">

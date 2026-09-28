@@ -255,7 +255,7 @@ Page({
     const item = e.currentTarget.dataset.item
     if (this.data.togglingId === item.id) return
     
-    const statusFlow = { pending: 'doing', doing: 'done', done: 'pending' }
+    const statusFlow = { pending: 'done', done: 'pending', doing: 'done' }
     const newStatus = statusFlow[item.status]
     
     const todos = this.data.todos.map(t => t.id === item.id ? { ...t, status: newStatus } : t)

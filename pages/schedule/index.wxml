@@ -124,6 +124,13 @@
             <view class="picker-value">{{repeatOptions[repeatIndex]}}</view>
           </picker>
         </view>
+
+        <view class="form-item" wx:if="{{formData.repeatType !== 'none'}}">
+          <text class="form-label">循环至</text>
+          <picker mode="date" value="{{formData.recurringEnd}}" bindchange="pickRecurringEnd">
+            <view class="picker-value">{{formData.recurringEnd || '不限（永久循环）'}}</view>
+          </picker>
+        </view>
       </view>
 
       <view class="modal-footer">

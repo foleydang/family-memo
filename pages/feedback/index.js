@@ -182,7 +182,8 @@ Page({
 
   // 查看反馈详情
   viewFeedback(e) {
-    const item = this.data.feedbackList[e.currentTarget.dataset.index || e.currentTarget.dataset.id - 1];
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.feedbackList[index];
     if (!item) return;
     const statusText = { pending: '待处理', processing: '处理中', resolved: '已解决' };
     const status = statusText[item.status] || '待处理';

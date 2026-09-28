@@ -1,6 +1,9 @@
 // pages/index/index.js - 服务器版本
 const app = getApp()
 
+// 待办订阅消息模板（与 pages/todo/index.js 保持一致）
+const TODO_TEMPLATE_ID = 'tjimAHRkF_Go-ELPIr3Vqq1K3QB03bCzauINTe6Dqc0D'
+
 Page({
   data: {
     userInfo: null,
@@ -187,7 +190,18 @@ Page({
   },
 
   subscribeNotify() {
-    wx.switchTab({ url: '/pages/todo/index' })
+    // 真正发起订阅授权，而非仅跳转待办页（图标语义是"订阅提醒"）
+    wx.requestSubscribeMessage({
+      tmplIds: [TODO_TEMPLATE_ID],
+      success: (res) => {
+        if (res[TODO_TEMPLATE_ID] === 'accept') {
+          wx.setStorageSync('subscribeTodo', true)
+          this.setData({ subscribed: true })
+          wx.showToast({ title: '已开启待办提醒', icon: 'success' })
+        }
+      },
+      fail: (err) => { console.error('订阅失败:', err) }
+    })
   },
 
   goToFamily() { wx.navigateTo({ url: '/pages/family/index' }) },

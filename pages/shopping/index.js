@@ -57,11 +57,22 @@ Page({
     this.loadCategories();
   },
 
-  onShow() {
-    if (app.globalData.familyInfo) {
-      this.setData({ familyId: app.globalData.familyInfo.id });
-      this.loadList();
+  // 未加入家庭时引导去创建/加入，避免静默失败（复用 todo 页 checkStatus 的 familyInfo 分支）
+  checkFamily() {
+    if (!app.globalData.familyInfo) {
+      wx.showModal({
+        title: '提示', content: '请先创建或加入家庭', showCancel: false,
+        success: () => { wx.navigateTo({ url: '/pages/family/index' }) }
+      });
+      return false;
     }
+    return true;
+  },
+
+  onShow() {
+    if (!this.checkFamily()) return;
+    this.setData({ familyId: app.globalData.familyInfo.id });
+    this.loadList();
   },
 
   onPullDownRefresh() {
